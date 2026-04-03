@@ -44,3 +44,4 @@ export function ComicListWrapper({ children }: ComicListWrapperProps) {
         </div>
     );
 }
+

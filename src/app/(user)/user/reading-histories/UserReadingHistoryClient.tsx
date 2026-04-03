@@ -13,7 +13,7 @@ export default function UserReadingHistoryClient() {
     const [loading, setLoading] = useState(true);
     const [history, setHistory] = useState<ReadingHistory[]>([]);
     const { isAuthenticated } = useAuthStore();
-    const { showError, showSuccess } = useToastContext();
+    const { showSuccess, showError } = useToastContext();
 
     const fetchHistory = useCallback(async () => {
         setLoading(true);

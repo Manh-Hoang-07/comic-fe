@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { useAdminListPage } from "@/hooks/useAdminListPage";
+import { useListPage } from "@/hooks";
 import { adminEndpoints } from "@/lib/api/endpoints";
 import Pagination from "@/components/UI/DataDisplay/Pagination";
 import SkeletonLoader from "@/components/UI/Feedback/SkeletonLoader";
@@ -19,22 +19,11 @@ export default function AdminWards() {
     pagination,
     filters,
     apiErrors,
-    modals,
-    selectedItem,
-    openCreateModal,
-    closeCreateModal,
-    openEditModal,
-    closeEditModal,
-    openDeleteModal,
-    closeDeleteModal,
-    updateFilters,
-    changePage,
-    handleCreate,
-    handleUpdate,
-    handleDelete,
-    getSerialNumber,
     hasData,
-  } = useAdminListPage({
+    getSerialNumber,
+    modal,
+    actions,
+  } = useListPage({
     endpoints: {
       list: adminEndpoints.location.wards.list,
       create: adminEndpoints.location.wards.create,
@@ -87,14 +76,14 @@ export default function AdminWards() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Quản lý Phường/Xã</h1>
         <button
-          onClick={openCreateModal}
+          onClick={() => modal.open("create")}
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none"
         >
           Thêm Phường/Xã
         </button>
       </div>
 
-      <WardFilter initialFilters={filters} onUpdateFilters={updateFilters} />
+      <WardFilter initialFilters={filters} onUpdateFilters={actions.updateFilters} />
 
       <div className="bg-white shadow-md rounded-lg overflow-hidden mt-6">
         {loading ? (
@@ -147,11 +136,11 @@ export default function AdminWards() {
                           item={ward}
                           showView={false}
                           showDelete={false}
-                          onEdit={() => openEditModal(ward)}
+                          onEdit={() => modal.open("edit", ward)}
                           additionalActions={[
                             {
                               label: "Xóa",
-                              action: () => openDeleteModal(ward),
+                              action: () => modal.open("delete", ward),
                               icon: "trash",
                             },
                           ]}
@@ -181,39 +170,40 @@ export default function AdminWards() {
           currentPage={pagination.page}
           totalPages={pagination.totalPages}
           totalItems={pagination.totalItems}
-          onPageChange={changePage}
+          onPageChange={actions.changePage}
         />
       )}
 
-      {modals.create && (
+      {modal.state.create && (
         <CreateWard
-          show={modals.create}
+          show={modal.state.create}
           apiErrors={apiErrors}
-          onClose={closeCreateModal}
-          onCreated={handleCreate}
+          onClose={() => modal.close("create")}
+          onCreated={actions.create}
         />
       )}
 
-      {modals.edit && selectedItem && (
+      {modal.state.edit && modal.selected && (
         <EditWard
-          show={modals.edit}
-          ward={selectedItem}
+          show={modal.state.edit}
+          ward={modal.selected}
           apiErrors={apiErrors}
-          onClose={closeEditModal}
-          onUpdated={(data) => handleUpdate(selectedItem.id, data)}
+          onClose={() => modal.close("edit")}
+          onUpdated={(data) => actions.update(modal.selected.id, data)}
         />
       )}
 
-      {selectedItem && (
+      {modal.selected && (
         <ConfirmModal
-          show={modals.delete}
+          show={modal.state.delete}
           title="Xác nhận xóa"
-          message={`Bạn có chắc chắn muốn xóa Phường/Xã "${selectedItem.name || selectedItem.code}"?`}
-          onClose={closeDeleteModal}
-          onConfirm={() => handleDelete(selectedItem.id)}
+          message={`Bạn có chắc chắn muốn xóa Phường/Xã "${modal.selected.name || modal.selected.code}"?`}
+          onClose={() => modal.close("delete")}
+          onConfirm={() => actions.delete(modal.selected.id)}
         />
       )}
     </div>
   );
 }
+
 

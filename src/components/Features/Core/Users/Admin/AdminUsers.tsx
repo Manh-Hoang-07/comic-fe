@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import api from "@/lib/api/client";
 import { adminEndpoints } from "@/lib/api/endpoints";
-import { useAdminListPage } from "@/hooks/useAdminListPage";
+import { useListPage } from "@/hooks";
 import SkeletonLoader from "@/components/UI/Feedback/SkeletonLoader";
 import ConfirmModal from "@/components/UI/Feedback/ConfirmModal";
 import Actions from "@/components/UI/DataDisplay/Actions";
@@ -29,26 +29,12 @@ export default function AdminUsers({
     pagination,
     filters,
     apiErrors,
-    modals,
-    selectedItem,
-    openCreateModal,
-    closeCreateModal,
-    openEditModal,
-    closeEditModal,
-    openDeleteModal,
-    closeDeleteModal,
-    updateFilters,
-    changePage,
-    handleCreate,
-    handleUpdate,
-    handleDelete,
-    getSerialNumber,
     hasData,
-    showSuccess,
-    openModal,
-    closeModal,
-    refresh,
-  } = useAdminListPage({
+    getSerialNumber,
+    modal,
+    actions,
+    toast,
+  } = useListPage({
     endpoints: {
       list: adminEndpoints.users.list,
       create: adminEndpoints.users.create,
@@ -90,22 +76,6 @@ export default function AdminUsers({
     loadEnums();
   }, []);
 
-  const openChangePasswordModal = (user: any) => {
-    openModal("changePassword", user);
-  };
-
-  const closeChangePasswordModal = () => {
-    closeModal("changePassword");
-  };
-
-  const openAssignRoleModal = (user: any) => {
-    openModal("assignRole", user);
-  };
-
-  const closeAssignRoleModal = () => {
-    closeModal("assignRole");
-  };
-
   const getStatusLabel = (status?: string): string => {
     const found = statusEnums.find((s) => s.value === status || s.id === status);
     return found?.label || found?.name || status || "Không xác định";
@@ -116,7 +86,7 @@ export default function AdminUsers({
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">{title}</h1>
         <button
-          onClick={openCreateModal}
+          onClick={() => modal.open("create")}
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
         >
           {createButtonText}
@@ -126,7 +96,7 @@ export default function AdminUsers({
       <UsersFilter
         initialFilters={filters}
         statusEnums={statusEnums}
-        onUpdateFilters={updateFilters}
+        onUpdateFilters={actions.updateFilters}
       />
 
       <div className="bg-white shadow-md rounded-lg overflow-hidden mt-6">
@@ -161,11 +131,11 @@ export default function AdminUsers({
                       <div className="flex items-center space-x-2">
                         <Actions
                           item={user}
-                          onEdit={() => openEditModal(user)}
-                          onDelete={() => openDeleteModal(user)}
+                          onEdit={() => modal.open("edit", user)}
+                          onDelete={() => modal.open("delete", user)}
                         />
                         <button
-                          onClick={() => openChangePasswordModal(user)}
+                          onClick={() => modal.open("changePassword", user)}
                           className="p-2 rounded-full hover:bg-blue-100 transition-colors"
                           title="Đổi mật khẩu"
                         >
@@ -174,7 +144,7 @@ export default function AdminUsers({
                           </svg>
                         </button>
                         <button
-                          onClick={() => openAssignRoleModal(user)}
+                          onClick={() => modal.open("assignRole", user)}
                           className="p-2 rounded-full hover:bg-green-100 transition-colors"
                           title="Phân quyền"
                         >
@@ -202,60 +172,60 @@ export default function AdminUsers({
           currentPage={pagination.page}
           totalPages={pagination.totalPages}
           totalItems={pagination.totalItems}
-          onPageChange={changePage}
+          onPageChange={actions.changePage}
         />
       )}
 
       <CreateUser
-        show={modals.create}
+        show={modal.state.create}
         statusEnums={statusEnums}
         genderEnums={genderEnums}
         apiErrors={apiErrors}
-        onClose={closeCreateModal}
-        onCreated={handleCreate}
+        onClose={() => modal.close("create")}
+        onCreated={actions.create}
       />
 
-      {selectedItem && (
+      {modal.selected && (
         <>
           <EditUser
-            show={modals.edit}
-            user={selectedItem}
+            show={modal.state.edit}
+            user={modal.selected}
             statusEnums={statusEnums}
             genderEnums={genderEnums}
             apiErrors={apiErrors}
-            onClose={closeEditModal}
-            onUpdated={(data) => handleUpdate(selectedItem.id, data)}
+            onClose={() => modal.close("edit")}
+            onUpdated={(data) => actions.update(modal.selected.id, data)}
           />
 
           <ConfirmModal
-            show={modals.delete}
+            show={modal.state.delete}
             title="Xác nhận xóa"
-            message={`Bạn có chắc chắn muốn xóa người dùng "${selectedItem.username || selectedItem.email}"?`}
-            onClose={closeDeleteModal}
-            onConfirm={() => handleDelete(selectedItem.id)}
+            message={`Bạn có chắc chắn muốn xóa người dùng "${modal.selected.username || modal.selected.email}"?`}
+            onClose={() => modal.close("delete")}
+            onConfirm={() => actions.delete(modal.selected.id)}
           />
 
-          {modals.changePassword && (
+          {modal.state.changePassword && (
             <ChangePassword
               show={true}
-              user={selectedItem}
-              onClose={closeChangePasswordModal}
+              user={modal.selected}
+              onClose={() => modal.close("changePassword")}
               onPasswordChanged={() => {
-                closeChangePasswordModal();
-                showSuccess("Mật khẩu đã được thay đổi thành công");
+                modal.close("changePassword");
+                toast.success("Mật khẩu đã được thay đổi thành công");
               }}
             />
           )}
 
-          {modals.assignRole && (
+          {modal.state.assignRole && (
             <AssignRole
               show={true}
-              user={selectedItem}
-              onClose={closeAssignRoleModal}
+              user={modal.selected}
+              onClose={() => modal.close("assignRole")}
               onRoleAssigned={() => {
-                closeAssignRoleModal();
-                showSuccess("Vai trò đã được phân công thành công");
-                refresh();
+                modal.close("assignRole");
+                toast.success("Vai trò đã được phân công thành công");
+                actions.refresh();
               }}
             />
           )}
@@ -264,5 +234,4 @@ export default function AdminUsers({
     </div>
   );
 }
-
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
-import { useAdminListPage } from "@/hooks/useAdminListPage";
+import { useListPage } from "@/hooks";
 import { adminEndpoints } from "@/lib/api/endpoints";
 import SkeletonLoader from "@/components/UI/Feedback/SkeletonLoader";
 import ConfirmModal from "@/components/UI/Feedback/ConfirmModal";
@@ -50,22 +50,11 @@ export default function AdminBannerLocations({
     pagination,
     filters,
     apiErrors,
-    modals,
-    selectedItem,
-    openCreateModal,
-    closeCreateModal,
-    openEditModal,
-    closeEditModal,
-    openDeleteModal,
-    closeDeleteModal,
-    updateFilters,
-    changePage,
-    handleCreate,
-    handleUpdate,
-    handleDelete,
-    getSerialNumber,
     hasData,
-  } = useAdminListPage(useMemo(() => ({
+    getSerialNumber,
+    modal,
+    actions,
+  } = useListPage(useMemo(() => ({
     endpoints: {
       list: adminEndpoints.bannerLocations.list,
       create: adminEndpoints.bannerLocations.create,
@@ -90,7 +79,7 @@ export default function AdminBannerLocations({
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">{title}</h1>
         <button
-          onClick={openCreateModal}
+          onClick={() => modal.open("create")}
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none"
         >
           {createButtonText}
@@ -100,7 +89,7 @@ export default function AdminBannerLocations({
       <BannerLocationsFilter
         initialFilters={filters}
         statusEnums={statusEnums}
-        onUpdateFilters={updateFilters}
+        onUpdateFilters={actions.updateFilters}
       />
 
       <div className="bg-white shadow-md rounded-lg overflow-hidden">
@@ -161,7 +150,7 @@ export default function AdminBannerLocations({
                       item={location}
                       showView={false}
                       showDelete={false}
-                      onEdit={() => openEditModal(location)}
+                      onEdit={() => modal.open("edit", location)}
                       additionalActions={[
                         {
                           label: location.status === "active" ? "Vô hiệu hóa" : "Kích hoạt",
@@ -170,7 +159,7 @@ export default function AdminBannerLocations({
                         },
                         {
                           label: location.deleted_at ? "Khôi phục" : "Xóa",
-                          action: () => openDeleteModal(location),
+                          action: () => modal.open("delete", location),
                           icon: location.deleted_at ? "refresh" : "trash",
                         },
                       ]}
@@ -188,42 +177,43 @@ export default function AdminBannerLocations({
           currentPage={pagination.page}
           totalPages={pagination.totalPages}
           totalItems={pagination.totalItems}
-          onPageChange={changePage}
+          onPageChange={actions.changePage}
         />
       )}
 
-      {modals.create && (
+      {modal.state.create && (
         <CreateBannerLocation
-          show={modals.create}
+          show={modal.state.create}
           statusEnums={statusEnums}
           apiErrors={apiErrors}
-          onClose={closeCreateModal}
-          onCreated={handleCreate}
+          onClose={() => modal.close("create")}
+          onCreated={actions.create}
         />
       )}
 
-      {modals.edit && selectedItem && (
+      {modal.state.edit && modal.selected && (
         <EditBannerLocation
-          show={modals.edit}
-          locationId={selectedItem.id}
+          show={modal.state.edit}
+          locationId={modal.selected.id}
           statusEnums={statusEnums}
           apiErrors={apiErrors}
-          onClose={closeEditModal}
-          onUpdated={(data) => handleUpdate(selectedItem.id, data)}
+          onClose={() => modal.close("edit")}
+          onUpdated={(data) => actions.update(modal.selected.id, data)}
         />
       )}
 
-      {selectedItem && (
+      {modal.selected && (
         <ConfirmModal
-          show={modals.delete}
+          show={modal.state.delete}
           title="Xác nhận xóa"
-          message={`Bạn có chắc chắn muốn xóa vị trí ${(selectedItem as BannerLocation).name || ""}?`}
-          onClose={closeDeleteModal}
-          onConfirm={() => handleDelete(selectedItem.id)}
+          message={`Bạn có chắc chắn muốn xóa vị trí ${(modal.selected as BannerLocation).name || ""}?`}
+          onClose={() => modal.close("delete")}
+          onConfirm={() => actions.delete(modal.selected.id)}
         />
       )}
     </div>
   );
 }
+
 
 

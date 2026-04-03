@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useAdminListPage } from "@/hooks/useAdminListPage";
+import { useListPage } from "@/hooks";
 import { adminEndpoints } from "@/lib/api/endpoints";
 import SkeletonLoader from "@/components/UI/Feedback/SkeletonLoader";
 import ConfirmModal from "@/components/UI/Feedback/ConfirmModal";
@@ -57,22 +57,11 @@ export default function AdminCertificates({
     pagination,
     filters,
     apiErrors,
-    modals,
-    selectedItem,
-    openCreateModal,
-    closeCreateModal,
-    openEditModal,
-    closeEditModal,
-    openDeleteModal,
-    closeDeleteModal,
-    updateFilters,
-    changePage,
-    handleCreate,
-    handleUpdate,
-    handleDelete,
-    getSerialNumber,
     hasData,
-  } = useAdminListPage({
+    getSerialNumber,
+    modal,
+    actions,
+  } = useListPage({
     endpoints: {
       list: adminEndpoints.certificates.list,
       create: adminEndpoints.certificates.create,
@@ -93,7 +82,7 @@ export default function AdminCertificates({
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">{title}</h1>
         <button
-          onClick={openCreateModal}
+          onClick={() => modal.open("create")}
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none"
         >
           {createButtonText}
@@ -102,7 +91,7 @@ export default function AdminCertificates({
 
       <CertificatesFilter
         initialFilters={filters}
-        onUpdateFilters={updateFilters}
+        onUpdateFilters={actions.updateFilters}
       />
 
       <div className="bg-white shadow-md rounded-lg overflow-hidden mt-4">
@@ -191,13 +180,13 @@ export default function AdminCertificates({
                     <td className="px-6 py-4 text-sm font-medium">
                       <Actions
                         item={item}
-                        onEdit={() => openEditModal(item)}
+                        onEdit={() => modal.open("edit", item)}
                         showView={false}
                         showDelete={false}
                         additionalActions={[
                           {
                             label: "Xóa",
-                            action: () => openDeleteModal(item),
+                            action: () => modal.open("delete", item),
                             icon: "trash",
                           },
                         ]}
@@ -216,40 +205,41 @@ export default function AdminCertificates({
           currentPage={pagination.page}
           totalPages={pagination.totalPages}
           totalItems={pagination.totalItems}
-          onPageChange={changePage}
+          onPageChange={actions.changePage}
         />
       )}
 
-      {modals.create && (
+      {modal.state.create && (
         <CreateCertificate
-          show={modals.create}
+          show={modal.state.create}
           apiErrors={apiErrors}
-          onClose={closeCreateModal}
-          onCreated={handleCreate}
+          onClose={() => modal.close("create")}
+          onCreated={actions.create}
         />
       )}
 
-      {modals.edit && selectedItem && (
+      {modal.state.edit && modal.selected && (
         <EditCertificate
-          show={modals.edit}
-          certificate={selectedItem}
+          show={modal.state.edit}
+          certificate={modal.selected}
           apiErrors={apiErrors}
-          onClose={closeEditModal}
-          onUpdated={(data) => handleUpdate(selectedItem.id, data)}
+          onClose={() => modal.close("edit")}
+          onUpdated={(data) => actions.update(modal.selected.id, data)}
         />
       )}
 
-      {selectedItem && (
+      {modal.selected && (
         <ConfirmModal
-          show={modals.delete}
+          show={modal.state.delete}
           title="Xác nhận xóa"
-          message={`Bạn có chắc chắn muốn xóa ${(selectedItem as Certificate).name || ""}?`}
-          onClose={closeDeleteModal}
-          onConfirm={() => handleDelete(selectedItem.id)}
+          message={`Bạn có chắc chắn muốn xóa ${(modal.selected as Certificate).name || ""}?`}
+          onClose={() => modal.close("delete")}
+          onConfirm={() => actions.delete(modal.selected.id)}
         />
       )}
     </div>
   );
 }
+
 
 

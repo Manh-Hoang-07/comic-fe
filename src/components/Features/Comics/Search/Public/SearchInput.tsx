@@ -92,3 +92,4 @@ export default function SearchInput({ className = "" }: { className?: string }) 
         </div>
     );
 }
+

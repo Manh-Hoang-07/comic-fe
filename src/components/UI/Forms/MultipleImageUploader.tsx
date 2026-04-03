@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
-import { useUpload, UploadResponse } from "@/hooks/useUpload";
+import { useUpload, UploadResponse } from "@/hooks";
 
 interface MultipleImageUploaderProps {
   value?: string[];

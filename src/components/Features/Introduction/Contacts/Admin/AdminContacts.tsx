@@ -1,6 +1,6 @@
 "use client";
 
-import { useAdminListPage } from "@/hooks/useAdminListPage";
+import { useListPage } from "@/hooks";
 import { adminEndpoints } from "@/lib/api/endpoints";
 import ContactsFilter from "./ContactsFilter";
 import SkeletonLoader from "@/components/UI/Feedback/SkeletonLoader";
@@ -19,17 +19,12 @@ export default function AdminContacts({ title = "Quản lý Liên hệ" }: Admin
         loading,
         pagination,
         filters,
-        selectedItem,
-        modals,
-        updateFilters,
-        changePage,
-        handleDelete,
-        getSerialNumber,
         hasData,
-        openDeleteModal,
-        closeDeleteModal,
-        showSuccess,
-    } = useAdminListPage({
+        getSerialNumber,
+        modal,
+        actions,
+        toast,
+    } = useListPage({
         endpoints: {
             list: adminEndpoints.contacts.list,
             delete: (id) => adminEndpoints.contacts.delete(id),
@@ -69,7 +64,7 @@ export default function AdminContacts({ title = "Quản lý Liên hệ" }: Admin
 
             <ContactsFilter
                 initialFilters={filters}
-                onUpdateFilters={updateFilters}
+                onUpdateFilters={actions.updateFilters}
             />
 
             <div className="bg-white shadow-md rounded-lg overflow-hidden mt-6">
@@ -113,7 +108,7 @@ export default function AdminContacts({ title = "Quản lý Liên hệ" }: Admin
                                             <Actions
                                                 item={contact}
                                                 showEdit={false}
-                                                onDelete={() => openDeleteModal(contact)}
+                                                onDelete={() => modal.open("delete", contact)}
                                             />
                                         </td>
                                     </tr>
@@ -136,21 +131,22 @@ export default function AdminContacts({ title = "Quản lý Liên hệ" }: Admin
                     currentPage={pagination.page}
                     totalPages={pagination.totalPages}
                     totalItems={pagination.totalItems}
-                    onPageChange={changePage}
+                    onPageChange={actions.changePage}
                 />
             )}
 
-            {selectedItem && (
+            {modal.selected && (
                 <ConfirmModal
-                    show={modals.delete}
+                    show={modal.state.delete}
                     title="Xác nhận xóa"
-                    message={`Bạn có chắc chắn muốn xóa liên hệ từ "${selectedItem.name}"?`}
-                    onClose={closeDeleteModal}
-                    onConfirm={() => handleDelete(selectedItem.id)}
+                    message={`Bạn có chắc chắn muốn xóa liên hệ từ "${modal.selected.name}"?`}
+                    onClose={() => modal.close("delete")}
+                    onConfirm={() => actions.delete(modal.selected.id)}
                 />
             )}
         </div>
     );
 }
+
 
 

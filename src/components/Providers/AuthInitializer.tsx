@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuthInit } from "@/hooks/useAuthInit";
+import { useAuthInit } from "@/hooks";
 
 /**
  * Component để khởi tạo và verify authentication khi ứng dụng load

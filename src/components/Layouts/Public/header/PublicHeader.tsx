@@ -14,7 +14,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { useAuthStore } from "@/lib/store/authStore";
 import Image from "next/image";
-import { useSystemConfig } from "@/hooks/useSystemConfig";
+import { useSystemConfig } from "@/hooks";
 import { Suspense } from "react";
 import SearchInput from "@/components/Features/Comics/Search/Public/SearchInput";
 import apiClient from "@/lib/api/client";

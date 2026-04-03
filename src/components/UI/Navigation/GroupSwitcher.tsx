@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useGroup, Group } from "@/hooks/useGroup";
+import { useGroup, Group } from "@/hooks";
 
 interface GroupSwitcherProps {
   className?: string;

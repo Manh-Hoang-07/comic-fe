@@ -1,6 +1,6 @@
 "use client";
 
-import { useAdminListPage } from "@/hooks/useAdminListPage";
+import { useListPage } from "@/hooks";
 import { adminEndpoints } from "@/lib/api/endpoints";
 import { ContentTemplate } from "@/types/api";
 import SkeletonLoader from "@/components/UI/Feedback/SkeletonLoader";
@@ -25,22 +25,11 @@ export default function AdminContentTemplates() {
         pagination,
         filters,
         apiErrors,
-        modals,
-        selectedItem,
-        openCreateModal,
-        closeCreateModal,
-        openEditModal,
-        closeEditModal,
-        openDeleteModal,
-        closeDeleteModal,
-        updateFilters,
-        changePage,
-        handleCreate,
-        handleUpdate,
-        handleDelete,
-        getSerialNumber,
         hasData,
-    } = useAdminListPage({
+        getSerialNumber,
+        modal,
+        actions,
+    } = useListPage({
         endpoints: {
             list: adminEndpoints.contentTemplates.list,
             create: adminEndpoints.contentTemplates.create,
@@ -77,7 +66,7 @@ export default function AdminContentTemplates() {
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-2xl font-bold">Mẫu nội dung</h1>
                 <button
-                    onClick={openCreateModal}
+                    onClick={() => modal.open("create")}
                     className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center gap-2"
                 >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -89,7 +78,7 @@ export default function AdminContentTemplates() {
 
             <ContentTemplateFilter
                 initialFilters={filters}
-                onUpdateFilters={updateFilters}
+                onUpdateFilters={actions.updateFilters}
             />
 
             <div className="bg-white shadow-md rounded-lg overflow-hidden mt-6">
@@ -140,7 +129,7 @@ export default function AdminContentTemplates() {
                                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                                 <Actions
                                                     item={item}
-                                                    onEdit={() => openEditModal(item)}
+                                                    onEdit={() => modal.open("edit", item)}
                                                     showDelete={false}
                                                     showView={false}
                                                     additionalActions={[
@@ -152,7 +141,7 @@ export default function AdminContentTemplates() {
                                                         {
                                                             label: "Xóa",
                                                             icon: "trash",
-                                                            action: () => openDeleteModal(item),
+                                                            action: () => modal.open("delete", item),
                                                         }
                                                     ]}
                                                 />
@@ -177,56 +166,56 @@ export default function AdminContentTemplates() {
                 <Pagination
                     currentPage={pagination.page}
                     totalPages={pagination.totalPages}
-                    onPageChange={changePage}
+                    onPageChange={actions.changePage}
                     totalItems={pagination.totalItems}
                 />
             )}
 
             {/* Create Modal */}
             <Modal
-                show={modals.create}
-                onClose={closeCreateModal}
+                show={modal.state.create}
+                onClose={() => modal.close("create")}
                 title="Thêm mẫu nội dung mới"
                 size="xl"
             >
                 <div className="p-1">
                     <ContentTemplateForm
-                        onSubmit={handleCreate}
+                        onSubmit={actions.create}
                         loading={loading}
                         apiErrors={apiErrors}
-                        onCancel={closeCreateModal}
+                        onCancel={() => modal.close("create")}
                     />
                 </div>
             </Modal>
 
             {/* Edit Modal */}
             <Modal
-                show={modals.edit}
-                onClose={closeEditModal}
+                show={modal.state.edit}
+                onClose={() => modal.close("edit")}
                 title="Chỉnh sửa mẫu nội dung"
                 size="xl"
             >
                 <div className="p-1">
-                    {selectedItem && (
+                    {modal.selected && (
                         <ContentTemplateForm
-                            initialData={selectedItem}
-                            onSubmit={(data) => handleUpdate(selectedItem.id, data)}
+                            initialData={modal.selected}
+                            onSubmit={(data) => actions.update(modal.selected.id, data)}
                             loading={loading}
                             apiErrors={apiErrors}
-                            onCancel={closeEditModal}
+                            onCancel={() => modal.close("edit")}
                         />
                     )}
                 </div>
             </Modal>
 
             {/* Delete Confirmation */}
-            {selectedItem && (
+            {modal.selected && (
                 <ConfirmModal
-                    show={modals.delete}
+                    show={modal.state.delete}
                     title="Xác nhận xóa"
-                    message={`Bạn có chắc chắn muốn xóa mẫu "${(selectedItem as ContentTemplate).name}"? Hành động này không thể hoàn tác.`}
-                    onClose={closeDeleteModal}
-                    onConfirm={() => handleDelete(selectedItem.id)}
+                    message={`Bạn có chắc chắn muốn xóa mẫu "${(modal.selected as ContentTemplate).name}"? Hành động này không thể hoàn tác.`}
+                    onClose={() => modal.close("delete")}
+                    onConfirm={() => actions.delete(modal.selected.id)}
                 />
             )}
 
@@ -241,5 +230,6 @@ export default function AdminContentTemplates() {
         </div>
     );
 }
+
 
 

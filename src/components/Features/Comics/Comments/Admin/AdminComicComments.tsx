@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, Fragment } from "react";
-import { useAdminListPage } from "@/hooks/useAdminListPage";
+import { useListPage } from "@/hooks";
 import { adminEndpoints } from "@/lib/api/endpoints";
 import SkeletonLoader from "@/components/UI/Feedback/SkeletonLoader";
 import ConfirmModal from "@/components/UI/Feedback/ConfirmModal";
@@ -43,19 +43,11 @@ export default function AdminComicComments() {
         loading,
         pagination,
         filters,
-        modals,
-        selectedItem,
-        openDeleteModal,
-        closeDeleteModal,
-        updateFilters,
-        changePage,
-        handleDelete,
-        getSerialNumber,
         hasData,
-        refresh,
-        showSuccess,
-        showError,
-    } = useAdminListPage(listOptions);
+        getSerialNumber,
+        modal,
+        actions, toast,
+    } = useListPage(listOptions);
 
     const [togglingId, setTogglingId] = useState<string | number | null>(null);
 
@@ -66,10 +58,10 @@ export default function AdminComicComments() {
             await api.put(adminEndpoints.comicComments.update(comment.id), {
                 status: newStatus,
             });
-            showSuccess(`Đã ${newStatus === "visible" ? "hiện" : "ẩn"} bình luận`);
-            refresh();
+            toast.success(`Đã ${newStatus === "visible" ? "hiện" : "ẩn"} bình luận`);
+            actions.refresh();
         } catch (error) {
-            showError("Không thể cập nhật trạng thái bình luận");
+            toast.error("Không thể cập nhật trạng thái bình luận");
         } finally {
             setTogglingId(null);
         }
@@ -173,7 +165,7 @@ export default function AdminComicComments() {
                             showView={false}
                             showEdit={false}
                             showDelete={true}
-                            onDelete={() => openDeleteModal(comment)}
+                            onDelete={() => modal.open("delete", comment)}
                             additionalActions={[
                                 {
                                     label: comment.status === 'visible' ? 'Ẩn bình luận' : 'Hiện bình luận',
@@ -201,7 +193,7 @@ export default function AdminComicComments() {
                 </h1>
             </div>
 
-            <ComicCommentFilter initialFilters={filters} onUpdateFilters={updateFilters} />
+            <ComicCommentFilter initialFilters={filters} onUpdateFilters={actions.updateFilters} />
 
             <div className="mt-6 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
                 {loading ? (
@@ -252,22 +244,23 @@ export default function AdminComicComments() {
                         currentPage={pagination.page}
                         totalPages={pagination.totalPages}
                         totalItems={pagination.totalItems}
-                        onPageChange={changePage}
+                        onPageChange={actions.changePage}
                     />
                 </div>
             )}
 
             <ConfirmModal
-                show={modals.delete}
+                show={modal.state.delete}
                 title="Xác nhận xóa"
                 message="Bạn có chắc chắn muốn xóa bình luận này?"
-                onClose={closeDeleteModal}
-                onConfirm={() => handleDelete(selectedItem?.id)}
+                onClose={() => modal.close("delete")}
+                onConfirm={() => actions.delete(modal.selected?.id)}
                 confirmText="Xác nhận xóa"
                 confirmButtonClass="bg-red-600 hover:bg-red-700"
             />
         </div>
     );
 }
+
 
 

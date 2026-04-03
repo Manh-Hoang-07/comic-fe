@@ -84,3 +84,4 @@ export default function ComicCard({ comic }: ComicCardProps) {
 
 
 
+

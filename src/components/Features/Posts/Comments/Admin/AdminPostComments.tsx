@@ -4,7 +4,7 @@ import { useMemo, useState, Fragment } from "react";
 import Image from "next/image";
 import api from "@/lib/api/client";
 import { adminEndpoints } from "@/lib/api/endpoints";
-import { useAdminListPage } from "@/hooks/useAdminListPage";
+import { useListPage } from "@/hooks";
 import SkeletonLoader from "@/components/UI/Feedback/SkeletonLoader";
 import ConfirmModal from "@/components/UI/Feedback/ConfirmModal";
 import Actions from "@/components/UI/DataDisplay/Actions";
@@ -50,19 +50,11 @@ export default function AdminPostComments({
         loading,
         pagination,
         filters,
-        modals,
-        selectedItem,
-        openDeleteModal,
-        closeDeleteModal,
-        updateFilters,
-        changePage,
-        handleDelete,
-        getSerialNumber,
         hasData,
-        refresh,
-        showSuccess,
-        showError,
-    } = useAdminListPage(listOptions);
+        getSerialNumber, toast,
+        modal,
+        actions,
+    } = useListPage(listOptions);
 
     const [togglingId, setTogglingId] = useState<string | null>(null);
     const [viewComment, setViewComment] = useState<PostComment | null>(null);
@@ -75,11 +67,11 @@ export default function AdminPostComments({
                 status: newStatus,
             });
             if (response.data) {
-                showSuccess(`Đã ${newStatus === "visible" ? "hiện" : "ẩn"} bình luận`);
-                refresh();
+                toast.success(`Đã ${newStatus === "visible" ? "hiện" : "ẩn"} bình luận`);
+                actions.refresh();
             }
         } catch (error) {
-            showError("Không thể cập nhật trạng thái bình luận");
+            toast.error("Không thể cập nhật trạng thái bình luận");
         } finally {
             setTogglingId(null);
         }
@@ -163,7 +155,7 @@ export default function AdminPostComments({
                             showView={false} // View handled by Modal
                             showEdit={false}
                             showDelete={true}
-                            onDelete={() => openDeleteModal(comment)}
+                            onDelete={() => modal.open("delete", comment)}
                             additionalActions={[
                                 {
                                     label: "Xem chi tiết",
@@ -198,7 +190,7 @@ export default function AdminPostComments({
 
             <PostCommentsFilter
                 initialFilters={filters}
-                onUpdateFilters={updateFilters}
+                onUpdateFilters={actions.updateFilters}
             />
 
             <div className="bg-white shadow-sm rounded-lg overflow-hidden mt-6 border border-gray-200">
@@ -238,7 +230,7 @@ export default function AdminPostComments({
                         currentPage={pagination.page}
                         totalPages={pagination.totalPages}
                         totalItems={pagination.totalItems}
-                        onPageChange={changePage}
+                        onPageChange={actions.changePage}
                     />
                 </div>
             )}
@@ -317,13 +309,13 @@ export default function AdminPostComments({
                 )}
             </Modal>
 
-            {selectedItem && (
+            {modal.selected && (
                 <ConfirmModal
-                    show={modals.delete}
+                    show={modal.state.delete}
                     title="Xác nhận xóa"
-                    message={`Bình luận này sẽ bị xóa vĩnh viễn khỏi hệ thống. Bạn có chắc chắn muốn xóa bình luận của "${selectedItem.user?.name || selectedItem.guest_name || "Khách"}"?`}
-                    onClose={closeDeleteModal}
-                    onConfirm={() => handleDelete(selectedItem.id)}
+                    message={`Bình luận này sẽ bị xóa vĩnh viễn khỏi hệ thống. Bạn có chắc chắn muốn xóa bình luận của "${modal.selected.user?.name || modal.selected.guest_name || "Khách"}"?`}
+                    onClose={() => modal.close("delete")}
+                    onConfirm={() => actions.delete(modal.selected.id)}
                     confirmText="Xác nhận xóa"
                     confirmButtonClass="bg-red-600 hover:bg-red-700"
                 />
@@ -331,3 +323,4 @@ export default function AdminPostComments({
         </div>
     );
 }
+

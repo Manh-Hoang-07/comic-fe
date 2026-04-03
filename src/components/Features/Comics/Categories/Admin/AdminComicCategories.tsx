@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { useAdminListPage } from "@/hooks/useAdminListPage";
+import { useListPage } from "@/hooks";
 import { adminEndpoints } from "@/lib/api/endpoints";
 import SkeletonLoader from "@/components/UI/Feedback/SkeletonLoader";
 import ConfirmModal from "@/components/UI/Feedback/ConfirmModal";
@@ -37,29 +37,18 @@ export default function AdminComicCategories() {
         pagination,
         filters,
         apiErrors,
-        modals,
-        selectedItem,
-        openCreateModal,
-        closeCreateModal,
-        openEditModal,
-        closeEditModal,
-        openDeleteModal,
-        closeDeleteModal,
-        updateFilters,
-        changePage,
-        handleCreate,
-        handleUpdate,
-        handleDelete,
-        getSerialNumber,
         hasData,
-    } = useAdminListPage(listOptions);
+        getSerialNumber,
+        modal,
+        actions,
+    } = useListPage(listOptions);
 
     return (
         <div className="admin-comic-categories">
             <div className="mb-6 flex items-center justify-between">
                 <h1 className="font-primary text-2xl font-bold text-gray-900 leading-none">Danh mục truyện</h1>
                 <button
-                    onClick={openCreateModal}
+                    onClick={() => modal.open("create")}
                     className="flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700 focus:outline-none"
                 >
                     <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -69,7 +58,7 @@ export default function AdminComicCategories() {
                 </button>
             </div>
 
-            <ComicCategoryFilter initialFilters={filters} onUpdateFilters={updateFilters} />
+            <ComicCategoryFilter initialFilters={filters} onUpdateFilters={actions.updateFilters} />
 
             <div className="mt-6 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
                 {loading ? (
@@ -116,8 +105,8 @@ export default function AdminComicCategories() {
                                         <td className="whitespace-nowrap px-6 py-4 text-center text-sm font-medium">
                                             <Actions
                                                 item={category}
-                                                onEdit={() => openEditModal(category)}
-                                                onDelete={() => openDeleteModal(category)}
+                                                onEdit={() => modal.open("edit", category)}
+                                                onDelete={() => modal.open("delete", category)}
                                             />
                                         </td>
                                     </tr>
@@ -141,43 +130,44 @@ export default function AdminComicCategories() {
                         currentPage={pagination.page}
                         totalPages={pagination.totalPages}
                         totalItems={pagination.totalItems}
-                        onPageChange={changePage}
+                        onPageChange={actions.changePage}
                     />
                 </div>
             )}
 
             {/* Standardized Modals */}
-            {modals.create && (
+            {modal.state.create && (
                 <CreateComicCategory
-                    show={modals.create}
+                    show={modal.state.create}
                     apiErrors={apiErrors}
-                    onClose={closeCreateModal}
-                    onCreated={handleCreate}
+                    onClose={() => modal.close("create")}
+                    onCreated={actions.create}
                 />
             )}
 
-            {modals.edit && selectedItem && (
+            {modal.state.edit && modal.selected && (
                 <EditComicCategory
-                    show={modals.edit}
-                    category={selectedItem}
+                    show={modal.state.edit}
+                    category={modal.selected}
                     apiErrors={apiErrors}
-                    onClose={closeEditModal}
-                    onUpdated={(data) => handleUpdate(selectedItem.id, data)}
+                    onClose={() => modal.close("edit")}
+                    onUpdated={(data) => actions.update(modal.selected.id, data)}
                 />
             )}
 
-            {selectedItem && (
+            {modal.selected && (
                 <ConfirmModal
-                    show={modals.delete}
+                    show={modal.state.delete}
                     title="Xác nhận xóa"
-                    message={`Bạn có chắc chắn muốn xóa danh mục "${selectedItem.name}"? Hành động này không thể hoàn tác.`}
-                    onClose={closeDeleteModal}
-                    onConfirm={() => handleDelete(selectedItem.id)}
+                    message={`Bạn có chắc chắn muốn xóa danh mục "${modal.selected.name}"? Hành động này không thể hoàn tác.`}
+                    onClose={() => modal.close("delete")}
+                    onConfirm={() => actions.delete(modal.selected.id)}
                     confirmText="Xác nhận xóa"
                 />
             )}
         </div>
     );
 }
+
 
 

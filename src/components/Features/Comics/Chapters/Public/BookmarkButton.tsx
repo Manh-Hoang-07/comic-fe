@@ -17,7 +17,7 @@ export function BookmarkButton({ chapterId, pageNumber = 1, className = "" }: Bo
     const [bookmarkId, setBookmarkId] = useState<string | number | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const { isAuthenticated } = useAuthStore();
-    const { showError, showSuccess } = useToastContext();
+    const { showSuccess, showError } = useToastContext();
 
     const checkStatus = useCallback(async () => {
         try {
@@ -88,3 +88,4 @@ export function BookmarkButton({ chapterId, pageNumber = 1, className = "" }: Bo
         </button>
     );
 }
+

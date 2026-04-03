@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { useAdminListPage } from "@/hooks/useAdminListPage";
+import { useListPage } from "@/hooks";
 import { adminEndpoints } from "@/lib/api/endpoints";
 import SkeletonLoader from "@/components/UI/Feedback/SkeletonLoader";
 import ConfirmModal from "@/components/UI/Feedback/ConfirmModal";
@@ -41,22 +41,11 @@ export default function AdminComics() {
         pagination,
         filters,
         apiErrors,
-        modals,
-        selectedItem,
-        openCreateModal,
-        closeCreateModal,
-        openEditModal,
-        closeEditModal,
-        openDeleteModal,
-        closeDeleteModal,
-        updateFilters,
-        changePage,
-        handleCreate,
-        handleUpdate,
-        handleDelete,
-        getSerialNumber,
         hasData,
-    } = useAdminListPage(listOptions);
+        getSerialNumber,
+        modal,
+        actions,
+    } = useListPage(listOptions);
 
     const getStatusBadge = (status: string) => {
         const badges: Record<string, string> = {
@@ -86,7 +75,7 @@ export default function AdminComics() {
             <div className="mb-6 flex items-center justify-between">
                 <h1 className="text-2xl font-bold font-primary text-gray-900">Thư viện truyện</h1>
                 <button
-                    onClick={openCreateModal}
+                    onClick={() => modal.open("create")}
                     className="flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700 focus:outline-none"
                 >
                     <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -96,7 +85,7 @@ export default function AdminComics() {
                 </button>
             </div>
 
-            <ComicFilter initialFilters={filters} onUpdateFilters={updateFilters} />
+            <ComicFilter initialFilters={filters} onUpdateFilters={actions.updateFilters} />
 
             <div className="mt-6 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
                 {loading ? (
@@ -213,8 +202,8 @@ export default function AdminComics() {
                                         <td className="whitespace-nowrap px-6 py-4 text-center text-sm font-medium">
                                             <Actions
                                                 item={comic}
-                                                onEdit={() => openEditModal(comic)}
-                                                onDelete={() => openDeleteModal(comic)}
+                                                onEdit={() => modal.open("edit", comic)}
+                                                onDelete={() => modal.open("delete", comic)}
                                                 additionalActions={[
                                                     {
                                                         label: "Chương truyện",
@@ -246,43 +235,44 @@ export default function AdminComics() {
                         currentPage={pagination.page}
                         totalPages={pagination.totalPages}
                         totalItems={pagination.totalItems}
-                        onPageChange={changePage}
+                        onPageChange={actions.changePage}
                     />
                 </div>
             )}
 
             {/* Standardized Modals */}
-            {modals.create && (
+            {modal.state.create && (
                 <CreateComic
-                    show={modals.create}
+                    show={modal.state.create}
                     apiErrors={apiErrors}
-                    onClose={closeCreateModal}
-                    onCreated={handleCreate}
+                    onClose={() => modal.close("create")}
+                    onCreated={actions.create}
                 />
             )}
 
-            {modals.edit && selectedItem && (
+            {modal.state.edit && modal.selected && (
                 <EditComic
-                    show={modals.edit}
-                    comic={selectedItem}
+                    show={modal.state.edit}
+                    comic={modal.selected}
                     apiErrors={apiErrors}
-                    onClose={closeEditModal}
-                    onUpdated={(data) => handleUpdate(selectedItem.id, data)}
+                    onClose={() => modal.close("edit")}
+                    onUpdated={(data) => actions.update(modal.selected.id, data)}
                 />
             )}
 
-            {selectedItem && (
+            {modal.selected && (
                 <ConfirmModal
-                    show={modals.delete}
+                    show={modal.state.delete}
                     title="Xác nhận xóa"
-                    message={`Bạn có chắc chắn muốn xóa truyện "${selectedItem.title}"? Dữ liệu các chương truyện cũng sẽ bị xóa.`}
-                    onClose={closeDeleteModal}
-                    onConfirm={() => handleDelete(selectedItem.id)}
+                    message={`Bạn có chắc chắn muốn xóa truyện "${modal.selected.title}"? Dữ liệu các chương truyện cũng sẽ bị xóa.`}
+                    onClose={() => modal.close("delete")}
+                    onConfirm={() => actions.delete(modal.selected.id)}
                     confirmText="Xác nhận xóa"
                 />
             )}
         </div>
     );
 }
+
 
 

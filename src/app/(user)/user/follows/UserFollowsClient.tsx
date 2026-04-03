@@ -13,7 +13,7 @@ export default function UserFollowsClient() {
     const [loading, setLoading] = useState(true);
     const [follows, setFollows] = useState<Follow[]>([]);
     const { isAuthenticated } = useAuthStore();
-    const { showError, showSuccess } = useToastContext();
+    const { showSuccess, showError } = useToastContext();
 
     const fetchFollows = useCallback(async () => {
         setLoading(true);

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { useUpload, UploadResponse } from "@/hooks/useUpload";
+import { useUpload, UploadResponse } from "@/hooks";
 
 interface UploadProps {
   value?: string | string[] | null;

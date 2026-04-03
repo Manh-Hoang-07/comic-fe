@@ -200,3 +200,4 @@ export const TrendingHero: React.FC<TrendingHeroProps> = ({ comics }) => {
         </section>
     );
 };
+

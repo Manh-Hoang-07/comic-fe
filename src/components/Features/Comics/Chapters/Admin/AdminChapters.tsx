@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { useAdminListPage } from "@/hooks/useAdminListPage";
+import { useListPage } from "@/hooks";
 import { adminEndpoints } from "@/lib/api/endpoints";
 import SkeletonLoader from "@/components/UI/Feedback/SkeletonLoader";
 import ConfirmModal from "@/components/UI/Feedback/ConfirmModal";
@@ -62,24 +62,11 @@ export default function AdminChapters() {
         pagination,
         filters,
         apiErrors,
-        modals,
-        selectedItem,
-        openCreateModal,
-        closeCreateModal,
-        openEditModal,
-        closeEditModal,
-        openDeleteModal,
-        closeDeleteModal,
-        openModal,
-        closeModal,
-        updateFilters,
-        changePage,
-        handleCreate,
-        handleUpdate,
-        handleDelete,
-        getSerialNumber,
         hasData,
-    } = useAdminListPage(listOptions);
+        getSerialNumber,
+        modal,
+        actions,
+    } = useListPage(listOptions);
 
     return (
         <div className="admin-chapters">
@@ -106,7 +93,7 @@ export default function AdminChapters() {
                     </p>
                 </div>
                 <button
-                    onClick={openCreateModal}
+                    onClick={() => modal.open("create")}
                     className="flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700 focus:outline-none"
                 >
                     <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -116,7 +103,7 @@ export default function AdminChapters() {
                 </button>
             </div>
 
-            <ChapterFilter initialFilters={filters} onUpdateFilters={updateFilters} />
+            <ChapterFilter initialFilters={filters} onUpdateFilters={actions.updateFilters} />
 
             <div className="mt-6 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
                 {loading ? (
@@ -190,13 +177,13 @@ export default function AdminChapters() {
                                         <td className="whitespace-nowrap px-6 py-4 text-center text-sm font-medium">
                                             <Actions
                                                 item={chapter}
-                                                onEdit={() => openEditModal(chapter)}
-                                                onDelete={() => openDeleteModal(chapter)}
+                                                onEdit={() => modal.open("edit", chapter)}
+                                                onDelete={() => modal.open("delete", chapter)}
                                                 additionalActions={[
                                                     {
                                                         label: "Quản lý Trang",
                                                         icon: "photo",
-                                                        action: () => openModal("managePages", chapter),
+                                                        action: () => modal.open("managePages", chapter),
                                                         className: "text-blue-600 hover:text-blue-700",
                                                     },
                                                 ]}
@@ -223,59 +210,60 @@ export default function AdminChapters() {
                         currentPage={pagination.page}
                         totalPages={pagination.totalPages}
                         totalItems={pagination.totalItems}
-                        onPageChange={changePage}
+                        onPageChange={actions.changePage}
                     />
                 </div>
             )}
 
             {/* Standardized Modals */}
-            {modals.create && (
+            {modal.state.create && (
                 <CreateChapter
-                    show={modals.create}
+                    show={modal.state.create}
                     comicId={comicId}
                     apiErrors={apiErrors}
-                    onClose={closeCreateModal}
-                    onCreated={handleCreate}
+                    onClose={() => modal.close("create")}
+                    onCreated={actions.create}
                 />
             )}
 
-            {modals.edit && selectedItem && (
+            {modal.state.edit && modal.selected && (
                 <EditChapter
-                    show={modals.edit}
-                    chapter={selectedItem}
+                    show={modal.state.edit}
+                    chapter={modal.selected}
                     apiErrors={apiErrors}
-                    onClose={closeEditModal}
-                    onUpdated={(data) => handleUpdate(selectedItem.id, data)}
+                    onClose={() => modal.close("edit")}
+                    onUpdated={(data) => actions.update(modal.selected.id, data)}
                 />
             )}
 
             {/* Page Manager Modal */}
             <Modal
-                show={modals.managePages}
-                onClose={() => closeModal("managePages")}
-                title={`Quản lý trang - ${selectedItem?.title}`}
+                show={modal.state.managePages}
+                onClose={() => modal.close("managePages")}
+                title={`Quản lý trang - ${modal.selected?.title}`}
                 size="xl"
             >
-                {selectedItem && (
+                {modal.selected && (
                     <PageManager
-                        chapter={selectedItem}
-                        onClose={() => closeModal("managePages")}
+                        chapter={modal.selected}
+                        onClose={() => modal.close("managePages")}
                     />
                 )}
             </Modal>
 
-            {selectedItem && (
+            {modal.selected && (
                 <ConfirmModal
-                    show={modals.delete}
+                    show={modal.state.delete}
                     title="Xác nhận xóa chương"
-                    message={`Bạn có chắc chắn muốn xóa chương #${selectedItem.chapter_index}: ${selectedItem.title}?`}
-                    onClose={closeDeleteModal}
-                    onConfirm={() => handleDelete(selectedItem.id)}
+                    message={`Bạn có chắc chắn muốn xóa chương #${modal.selected.chapter_index}: ${modal.selected.title}?`}
+                    onClose={() => modal.close("delete")}
+                    onConfirm={() => actions.delete(modal.selected.id)}
                     confirmText="Xác nhận xóa"
                 />
             )}
         </div>
     );
 }
+
 
 

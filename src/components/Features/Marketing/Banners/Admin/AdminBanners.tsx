@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import api from "@/lib/api/client";
-import { useAdminListPage } from "@/hooks/useAdminListPage";
+import { useListPage } from "@/hooks";
 import { adminEndpoints } from "@/lib/api/endpoints";
 import SkeletonLoader from "@/components/UI/Feedback/SkeletonLoader";
 import ConfirmModal from "@/components/UI/Feedback/ConfirmModal";
@@ -66,25 +66,12 @@ export default function AdminBanners({ title = "Quản lý banner", createButton
     pagination,
     filters,
     apiErrors,
-    modals,
-    selectedItem,
-    openCreateModal,
-    closeCreateModal,
-    openEditModal,
-    closeEditModal,
-    openDeleteModal,
-    closeDeleteModal,
-    updateFilters,
-    changePage,
-    handleCreate,
-    handleUpdate,
-    handleDelete,
-    getSerialNumber,
     hasData,
-    showSuccess,
-    showError,
-    refresh,
-  } = useAdminListPage({
+    getSerialNumber,
+    modal,
+    actions,
+    toast,
+  } = useListPage({
     endpoints: {
       list: adminEndpoints.banners.list,
       create: adminEndpoints.banners.create,
@@ -134,13 +121,13 @@ export default function AdminBanners({ title = "Quản lý banner", createButton
       const newStatus = banner.status === "active" ? "inactive" : "active";
       const response = await api.patch(adminEndpoints.banners.updateStatus(banner.id), { status: newStatus });
       if (response.data?.success) {
-        showSuccess(`Đã ${newStatus === "active" ? "kích hoạt" : "vô hiệu hóa"} banner`);
-        refresh();
+        toast.success(`Đã ${newStatus === "active" ? "kích hoạt" : "vô hiệu hóa"} banner`);
+        actions.refresh();
       } else {
-        showError("Không thể cập nhật trạng thái banner");
+        toast.error("Không thể cập nhật trạng thái banner");
       }
     } catch (error) {
-      showError("Không thể cập nhật trạng thái banner");
+      toast.error("Không thể cập nhật trạng thái banner");
     }
   };
 
@@ -148,13 +135,13 @@ export default function AdminBanners({ title = "Quản lý banner", createButton
     try {
       const response = await api.put(adminEndpoints.banners.restore(banner.id));
       if (response.data?.success) {
-        showSuccess("Banner đã được khôi phục thành công");
-        refresh();
+        toast.success("Banner đã được khôi phục thành công");
+        actions.refresh();
       } else {
-        showError("Không thể khôi phục banner");
+        toast.error("Không thể khôi phục banner");
       }
     } catch (error) {
-      showError("Không thể khôi phục banner");
+      toast.error("Không thể khôi phục banner");
     }
   };
 
@@ -170,12 +157,12 @@ export default function AdminBanners({ title = "Quản lý banner", createButton
     <div className="admin-banners">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">{title}</h1>
-        <button onClick={openCreateModal} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none">
+        <button onClick={() => modal.open("create")} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none">
           {createButtonText}
         </button>
       </div>
 
-      <BannersFilter initialFilters={filters} statusEnums={statusEnums} locationEnums={locationEnums} onUpdateFilters={updateFilters} />
+      <BannersFilter initialFilters={filters} statusEnums={statusEnums} locationEnums={locationEnums} onUpdateFilters={actions.updateFilters} />
 
       <div className="bg-white shadow-md rounded-lg overflow-hidden">
         {loading ? (
@@ -243,7 +230,7 @@ export default function AdminBanners({ title = "Quản lý banner", createButton
                         item={banner}
                         showView={false}
                         showDelete={false}
-                        onEdit={() => openEditModal(banner)}
+                        onEdit={() => modal.open("edit", banner)}
                         additionalActions={[
                           {
                             label: banner.status === "active" ? "Vô hiệu hóa" : "Kích hoạt",
@@ -252,7 +239,7 @@ export default function AdminBanners({ title = "Quản lý banner", createButton
                           },
                           {
                             label: banner.deleted_at ? "Khôi phục" : "Xóa",
-                            action: () => (banner.deleted_at ? restoreBanner(banner) : openDeleteModal(banner)),
+                            action: () => (banner.deleted_at ? restoreBanner(banner) : modal.open("delete", banner)),
                             icon: banner.deleted_at ? "refresh" : "trash",
                           },
                         ]}
@@ -273,35 +260,36 @@ export default function AdminBanners({ title = "Quản lý banner", createButton
         )}
       </div>
 
-      {hasData && <Pagination currentPage={pagination.page} totalPages={pagination.totalPages} totalItems={pagination.totalItems} onPageChange={changePage} />}
+      {hasData && <Pagination currentPage={pagination.page} totalPages={pagination.totalPages} totalItems={pagination.totalItems} onPageChange={actions.changePage} />}
 
-      {modals.create && (
-        <CreateBanner show={modals.create} statusEnums={statusEnums} locationEnums={locationEnums} apiErrors={apiErrors} onClose={closeCreateModal} onCreated={handleCreate} />
+      {modal.state.create && (
+        <CreateBanner show={modal.state.create} statusEnums={statusEnums} locationEnums={locationEnums} apiErrors={apiErrors} onClose={() => modal.close("create")} onCreated={actions.create} />
       )}
 
-      {modals.edit && selectedItem && (
+      {modal.state.edit && modal.selected && (
         <EditBanner
-          show={modals.edit}
-          bannerId={selectedItem.id}
+          show={modal.state.edit}
+          bannerId={modal.selected.id}
           statusEnums={statusEnums}
           locationEnums={locationEnums}
           apiErrors={apiErrors}
-          onClose={closeEditModal}
-          onUpdated={(data) => handleUpdate(selectedItem.id, data)}
+          onClose={() => modal.close("edit")}
+          onUpdated={(data) => actions.update(modal.selected.id, data)}
         />
       )}
 
-      {selectedItem && (
+      {modal.selected && (
         <ConfirmModal
-          show={modals.delete}
+          show={modal.state.delete}
           title="Xác nhận xóa"
-          message={`Bạn có chắc chắn muốn xóa banner ${(selectedItem as Banner).title || ""}?`}
-          onClose={closeDeleteModal}
-          onConfirm={() => handleDelete(selectedItem.id)}
+          message={`Bạn có chắc chắn muốn xóa banner ${(modal.selected as Banner).title || ""}?`}
+          onClose={() => modal.close("delete")}
+          onConfirm={() => actions.delete(modal.selected.id)}
         />
       )}
     </div>
   );
 }
+
 
 

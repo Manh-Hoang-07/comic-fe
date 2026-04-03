@@ -237,3 +237,4 @@ export function PostList({ initialPosts, categories, meta }: PostListProps) {
         </>
     );
 }
+

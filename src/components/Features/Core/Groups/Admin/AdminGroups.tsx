@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAdminListPage } from "@/hooks/useAdminListPage";
+import { useListPage } from "@/hooks";
 import { adminEndpoints } from "@/lib/api/endpoints";
 import SkeletonLoader from "@/components/UI/Feedback/SkeletonLoader";
 import ConfirmModal from "@/components/UI/Feedback/ConfirmModal";
@@ -45,22 +45,11 @@ export default function AdminGroups({ title = "Quản lý Groups", createButtonT
     pagination,
     filters,
     apiErrors,
-    modals,
-    selectedItem,
-    openCreateModal,
-    closeCreateModal,
-    openEditModal,
-    closeEditModal,
-    openDeleteModal,
-    closeDeleteModal,
-    updateFilters,
-    changePage,
-    handleCreate,
-    handleUpdate,
-    handleDelete,
-    getSerialNumber,
     hasData,
-  } = useAdminListPage({
+    getSerialNumber,
+    modal,
+    actions,
+  } = useListPage({
     endpoints: {
       list: adminEndpoints.groups.list,
       create: adminEndpoints.groups.create,
@@ -113,12 +102,12 @@ export default function AdminGroups({ title = "Quản lý Groups", createButtonT
     <div className="admin-groups">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">{title}</h1>
-        <button onClick={openCreateModal} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none">
+        <button onClick={() => modal.open("create")} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none">
           {createButtonText}
         </button>
       </div>
 
-      <GroupsFilter initialFilters={filters} statusEnums={statusEnums} onUpdateFilters={updateFilters} />
+      <GroupsFilter initialFilters={filters} statusEnums={statusEnums} onUpdateFilters={actions.updateFilters} />
 
       <div className="bg-white shadow-md rounded-lg overflow-hidden">
         {loading ? (
@@ -156,7 +145,7 @@ export default function AdminGroups({ title = "Quản lý Groups", createButtonT
                       item={group}
                       showView={false}
                       showDelete={false}
-                      onEdit={() => openEditModal(group)}
+                      onEdit={() => modal.open("edit", group)}
                       additionalActions={[
                         {
                           label: "Quản lý members",
@@ -165,7 +154,7 @@ export default function AdminGroups({ title = "Quản lý Groups", createButtonT
                         },
                         {
                           label: "Xóa",
-                          action: () => openDeleteModal(group),
+                          action: () => modal.open("delete", group),
                           icon: "trash",
                         },
                       ]}
@@ -185,27 +174,28 @@ export default function AdminGroups({ title = "Quản lý Groups", createButtonT
         )}
       </div>
 
-      {hasData && <Pagination currentPage={pagination.page} totalPages={pagination.totalPages} totalItems={pagination.totalItems} onPageChange={changePage} />}
+      {hasData && <Pagination currentPage={pagination.page} totalPages={pagination.totalPages} totalItems={pagination.totalItems} onPageChange={actions.changePage} />}
 
-      {modals.create && (
-        <CreateGroup show={modals.create} apiErrors={apiErrors} onClose={closeCreateModal} onCreated={handleCreate} />
+      {modal.state.create && (
+        <CreateGroup show={modal.state.create} apiErrors={apiErrors} onClose={() => modal.close("create")} onCreated={actions.create} />
       )}
 
-      {modals.edit && selectedItem && (
-        <EditGroup show={modals.edit} group={selectedItem} apiErrors={apiErrors} onClose={closeEditModal} onUpdated={(data) => handleUpdate(selectedItem.id, data)} />
+      {modal.state.edit && modal.selected && (
+        <EditGroup show={modal.state.edit} group={modal.selected} apiErrors={apiErrors} onClose={() => modal.close("edit")} onUpdated={(data) => actions.update(modal.selected.id, data)} />
       )}
 
-      {selectedItem && (
+      {modal.selected && (
         <ConfirmModal
-          show={modals.delete}
+          show={modal.state.delete}
           title="Xác nhận xóa"
-          message={`Bạn có chắc chắn muốn xóa group ${(selectedItem as Group).name || (selectedItem as Group).code || ""}?`}
-          onClose={closeDeleteModal}
-          onConfirm={() => handleDelete(selectedItem.id)}
+          message={`Bạn có chắc chắn muốn xóa group ${(modal.selected as Group).name || (modal.selected as Group).code || ""}?`}
+          onClose={() => modal.close("delete")}
+          onConfirm={() => actions.delete(modal.selected.id)}
         />
       )}
     </div>
   );
 }
+
 
 

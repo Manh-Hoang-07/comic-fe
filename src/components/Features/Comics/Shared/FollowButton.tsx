@@ -16,7 +16,7 @@ export function FollowButton({ comicId, className = "" }: FollowButtonProps) {
     const [isFollowing, setIsFollowing] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const { isAuthenticated } = useAuthStore();
-    const { showError, showSuccess } = useToastContext();
+    const { showSuccess, showError } = useToastContext();
 
     const checkStatus = useCallback(async () => {
         try {
@@ -82,3 +82,4 @@ export function FollowButton({ comicId, className = "" }: FollowButtonProps) {
         </button>
     );
 }
+

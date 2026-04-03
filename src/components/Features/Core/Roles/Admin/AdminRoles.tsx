@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import api from "@/lib/api/client";
 import { adminEndpoints } from "@/lib/api/endpoints";
-import { useAdminListPage } from "@/hooks/useAdminListPage";
+import { useListPage } from "@/hooks";
 import SkeletonLoader from "@/components/UI/Feedback/SkeletonLoader";
 import ConfirmModal from "@/components/UI/Feedback/ConfirmModal";
 import Actions from "@/components/UI/DataDisplay/Actions";
@@ -28,26 +28,12 @@ export default function AdminRoles({
     pagination,
     filters,
     apiErrors,
-    modals,
-    selectedItem,
-    openCreateModal,
-    closeCreateModal,
-    openEditModal,
-    closeEditModal,
-    openDeleteModal,
-    closeDeleteModal,
-    updateFilters,
-    changePage,
-    handleCreate,
-    handleUpdate,
-    handleDelete,
-    getSerialNumber,
     hasData,
-    refresh,
-    showSuccess,
-    openModal,
-    closeModal,
-  } = useAdminListPage({
+    getSerialNumber,
+    modal,
+    actions,
+    toast,
+  } = useListPage({
     endpoints: {
       list: adminEndpoints.roles.list,
       create: adminEndpoints.roles.create,
@@ -89,16 +75,12 @@ export default function AdminRoles({
     return found?.class || found?.badge_class || "bg-gray-100 text-gray-800";
   };
 
-  const openAssignPermissionsModal = (item: any) => {
-    openModal("assignPermissions", item);
-  };
-
   return (
     <div className="admin-roles">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">{title}</h1>
         <button
-          onClick={openCreateModal}
+          onClick={() => modal.open("create")}
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium"
         >
           {createButtonText}
@@ -108,7 +90,7 @@ export default function AdminRoles({
       <RolesFilter
         initialFilters={filters}
         statusEnums={statusEnums}
-        onUpdateFilters={updateFilters}
+        onUpdateFilters={actions.updateFilters}
       />
 
       <div className="bg-white shadow-md rounded-lg overflow-hidden mt-6">
@@ -144,16 +126,16 @@ export default function AdminRoles({
                         item={role}
                         showView={false}
                         showDelete={false}
-                        onEdit={() => openEditModal(role)}
+                        onEdit={() => modal.open("edit", role)}
                         additionalActions={[
                           {
                             label: "Gán quyền",
-                            action: () => openAssignPermissionsModal(role),
+                            action: () => modal.open("assignPermissions", role),
                             icon: "key",
                           },
                           {
                             label: "Xóa",
-                            action: () => openDeleteModal(role),
+                            action: () => modal.open("delete", role),
                             icon: "trash",
                           },
                         ]}
@@ -177,46 +159,46 @@ export default function AdminRoles({
           currentPage={pagination.page}
           totalPages={pagination.totalPages}
           totalItems={pagination.totalItems}
-          onPageChange={changePage}
+          onPageChange={actions.changePage}
         />
       )}
 
       <CreateRole
-        show={modals.create}
+        show={modal.state.create}
         statusEnums={statusEnums}
         apiErrors={apiErrors}
-        onClose={closeCreateModal}
-        onCreated={handleCreate}
+        onClose={() => modal.close("create")}
+        onCreated={actions.create}
       />
 
-      {selectedItem && (
+      {modal.selected && (
         <>
           <EditRole
-            show={modals.edit}
-            role={selectedItem}
+            show={modal.state.edit}
+            role={modal.selected}
             statusEnums={statusEnums}
             apiErrors={apiErrors}
-            onClose={closeEditModal}
-            onUpdated={(data) => handleUpdate(selectedItem.id, data)}
+            onClose={() => modal.close("edit")}
+            onUpdated={(data) => actions.update(modal.selected.id, data)}
           />
 
           <ConfirmModal
-            show={modals.delete}
+            show={modal.state.delete}
             title="Xác nhận xóa"
-            message={`Bạn có chắc chắn muốn xóa vai trò "${selectedItem.name || selectedItem.code}"?`}
-            onClose={closeDeleteModal}
-            onConfirm={() => handleDelete(selectedItem.id)}
+            message={`Bạn có chắc chắn muốn xóa vai trò "${modal.selected.name || modal.selected.code}"?`}
+            onClose={() => modal.close("delete")}
+            onConfirm={() => actions.delete(modal.selected.id)}
           />
 
-          {modals.assignPermissions && (
+          {modal.state.assignPermissions && (
             <AssignPermissions
               show={true}
-              role={selectedItem}
-              onClose={() => closeModal("assignPermissions")}
+              role={modal.selected}
+              onClose={() => modal.close("assignPermissions")}
               onPermissionsAssigned={() => {
-                closeModal("assignPermissions");
-                showSuccess("Quyền đã được gán thành công");
-                refresh();
+                modal.close("assignPermissions");
+                toast.success("Quyền đã được gán thành công");
+                actions.refresh();
               }}
             />
           )}
@@ -225,5 +207,4 @@ export default function AdminRoles({
     </div>
   );
 }
-
 

@@ -13,7 +13,7 @@ export default function UserBookmarksClient() {
     const [loading, setLoading] = useState(true);
     const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
     const { isAuthenticated } = useAuthStore();
-    const { showError, showSuccess } = useToastContext();
+    const { showSuccess, showError } = useToastContext();
 
     const fetchBookmarks = useCallback(async () => {
         setLoading(true);

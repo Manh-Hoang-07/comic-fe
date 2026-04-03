@@ -33,3 +33,4 @@ export const ComicSection: React.FC<ComicSectionProps> = ({ title, comics, viewA
 };
 
 
+

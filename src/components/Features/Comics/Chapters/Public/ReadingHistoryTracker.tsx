@@ -27,3 +27,4 @@ export function ReadingHistoryTracker({ comicId, chapterId }: ReadingHistoryTrac
 
     return null;
 }
+

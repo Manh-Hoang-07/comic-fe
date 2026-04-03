@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { adminEndpoints } from "@/lib/api/endpoints";
-import { useAdminListPage } from "@/hooks/useAdminListPage";
+import { useListPage } from "@/hooks";
 import SkeletonLoader from "@/components/UI/Feedback/SkeletonLoader";
 import ConfirmModal from "@/components/UI/Feedback/ConfirmModal";
 import Actions from "@/components/UI/DataDisplay/Actions";
@@ -44,22 +44,12 @@ export default function AdminPermissions({
     pagination,
     filters,
     apiErrors,
-    modals,
-    selectedItem,
-    openCreateModal,
-    closeCreateModal,
-    openEditModal,
-    closeEditModal,
-    openDeleteModal,
-    closeDeleteModal,
-    updateFilters,
-    changePage,
-    handleCreate,
-    handleUpdate,
-    handleDelete,
-    getSerialNumber,
     hasData,
-  } = useAdminListPage({
+    getSerialNumber,
+    modal,
+    actions,
+    toast,
+  } = useListPage({
     endpoints: {
       list: adminEndpoints.permissions.list,
       create: adminEndpoints.permissions.create,
@@ -73,14 +63,14 @@ export default function AdminPermissions({
     },
   });
 
-  const [statusEnums, setStatusEnums] = useState(getBasicStatusArray());
+  const [statusEnums] = useState(getBasicStatusArray());
 
   return (
     <div className="admin-permissions">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">{title}</h1>
         <button
-          onClick={openCreateModal}
+          onClick={() => modal.open("create")}
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
         >
           {createButtonText}
@@ -90,7 +80,7 @@ export default function AdminPermissions({
       <PermissionsFilter
         initialFilters={filters}
         statusEnums={statusEnums}
-        onUpdateFilters={updateFilters}
+        onUpdateFilters={actions.updateFilters}
       />
 
       <div className="bg-white shadow-md rounded-lg overflow-hidden mt-6">
@@ -122,8 +112,7 @@ export default function AdminPermissions({
                       {permission.name || "—"}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${permission.scope === "system" ? "bg-purple-100 text-purple-800" : "bg-blue-100 text-blue-800"
-                        }`}>
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${permission.scope === "system" ? "bg-purple-100 text-purple-800" : "bg-blue-100 text-blue-800"}`}>
                         {permission.scope === "system" ? "System" : "Context"}
                       </span>
                     </td>
@@ -136,8 +125,8 @@ export default function AdminPermissions({
                       {!permission.has_children ? (
                         <Actions
                           item={permission}
-                          onEdit={() => openEditModal(permission)}
-                          onDelete={() => openDeleteModal(permission)}
+                          onEdit={() => modal.open("edit", permission)}
+                          onDelete={() => modal.open("delete", permission)}
                         />
                       ) : (
                         <span className="text-gray-400 text-xs italic">Có {permission.children_count} quyền con</span>
@@ -161,40 +150,39 @@ export default function AdminPermissions({
           currentPage={pagination.page}
           totalPages={pagination.totalPages}
           totalItems={pagination.totalItems}
-          onPageChange={changePage}
+          onPageChange={actions.changePage}
         />
       )}
 
       <CreatePermission
-        show={modals.create}
+        show={modal.state.create}
         statusEnums={statusEnums}
         apiErrors={apiErrors}
-        onClose={closeCreateModal}
-        onCreated={handleCreate}
+        onClose={() => modal.close("create")}
+        onCreated={actions.create}
       />
 
-      {selectedItem && (
+      {modal.selected && (
         <>
           <EditPermission
-            show={modals.edit}
-            permission={selectedItem}
+            show={modal.state.edit}
+            permission={modal.selected}
             statusEnums={statusEnums}
             apiErrors={apiErrors}
-            onClose={closeEditModal}
-            onUpdated={(data) => handleUpdate(selectedItem.id, data)}
+            onClose={() => modal.close("edit")}
+            onUpdated={(data) => actions.update(modal.selected.id, data)}
           />
 
           <ConfirmModal
-            show={modals.delete}
+            show={modal.state.delete}
             title="Xác nhận xóa"
-            message={`Bạn có chắc chắn muốn xóa quyền "${selectedItem.name || selectedItem.code}"?`}
-            onClose={closeDeleteModal}
-            onConfirm={() => handleDelete(selectedItem.id)}
+            message={`Bạn có chắc chắn muốn xóa quyền "${modal.selected.name || modal.selected.code}"?`}
+            onClose={() => modal.close("delete")}
+            onConfirm={() => actions.delete(modal.selected.id)}
           />
         </>
       )}
     </div>
   );
 }
-
 

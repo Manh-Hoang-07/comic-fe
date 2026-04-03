@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import api from "@/lib/api/client";
 import { adminEndpoints } from "@/lib/api/endpoints";
-import { useAdminListPage } from "@/hooks/useAdminListPage";
+import { useListPage } from "@/hooks";
 import SkeletonLoader from "@/components/UI/Feedback/SkeletonLoader";
 import ConfirmModal from "@/components/UI/Feedback/ConfirmModal";
 import Actions from "@/components/UI/DataDisplay/Actions";
@@ -43,25 +43,12 @@ export default function AdminPosts({
     pagination,
     filters,
     apiErrors,
-    modals,
-    selectedItem,
-    openCreateModal,
-    closeCreateModal,
-    openEditModal,
-    closeEditModal,
-    openDeleteModal,
-    closeDeleteModal,
-    updateFilters,
-    changePage,
-    handleCreate,
-    handleUpdate,
-    handleDelete,
-    getSerialNumber,
     hasData,
-    refresh,
-    showSuccess,
-    showError,
-  } = useAdminListPage({
+    getSerialNumber,
+    modal,
+    actions,
+    toast,
+  } = useListPage({
     endpoints: {
       list: adminEndpoints.posts.list,
       create: adminEndpoints.posts.create,
@@ -106,13 +93,13 @@ export default function AdminPosts({
     try {
       const response = await api.put(`${adminEndpoints.posts.delete(post.id)}/restore`);
       if (response.data?.success) {
-        showSuccess("Bài viết đã được khôi phục thành công");
-        refresh();
+        toast.success("Bài viết đã được khôi phục thành công");
+        actions.refresh();
       } else {
-        showError("Không thể khôi phục bài viết");
+        toast.error("Không thể khôi phục bài viết");
       }
     } catch (error) {
-      showError("Không thể khôi phục bài viết");
+      toast.error("Không thể khôi phục bài viết");
     }
   };
 
@@ -131,7 +118,7 @@ export default function AdminPosts({
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">{title}</h1>
         <button
-          onClick={openCreateModal}
+          onClick={() => modal.open("create")}
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium transition-colors"
         >
           {createButtonText}
@@ -142,7 +129,7 @@ export default function AdminPosts({
         initialFilters={filters}
         statusEnums={statusEnums}
         categoryEnums={categoryEnums}
-        onUpdateFilters={updateFilters}
+        onUpdateFilters={actions.updateFilters}
       />
 
       <div className="bg-white shadow-md rounded-lg overflow-hidden mt-6">
@@ -181,7 +168,7 @@ export default function AdminPosts({
                         item={post}
                         showView={false}
                         showDelete={false}
-                        onEdit={() => openEditModal(post)}
+                        onEdit={() => modal.open("edit", post)}
                         additionalActions={[
                           {
                             label: "Xem bình luận",
@@ -190,7 +177,7 @@ export default function AdminPosts({
                           },
                           {
                             label: post.deleted_at ? "Khôi phục" : "Xóa",
-                            action: () => (post.deleted_at ? restorePost(post) : openDeleteModal(post)),
+                            action: () => (post.deleted_at ? restorePost(post) : modal.open("delete", post)),
                             icon: post.deleted_at ? "refresh" : "trash",
                           },
                         ]}
@@ -215,47 +202,48 @@ export default function AdminPosts({
           currentPage={pagination.page}
           totalPages={pagination.totalPages}
           totalItems={pagination.totalItems}
-          onPageChange={changePage}
+          onPageChange={actions.changePage}
         />
       )}
 
       <CreatePost
-        show={modals.create}
+        show={modal.state.create}
         statusEnums={statusEnums}
         postTypeEnums={postTypeEnums}
         categoryEnums={categoryEnums}
         tagEnums={tagEnums}
         apiErrors={apiErrors}
-        onClose={closeCreateModal}
-        onCreated={handleCreate}
+        onClose={() => modal.close("create")}
+        onCreated={actions.create}
       />
 
-      {selectedItem && (
+      {modal.selected && (
         <>
           <EditPost
-            show={modals.edit}
-            post={selectedItem}
+            show={modal.state.edit}
+            post={modal.selected}
             statusEnums={statusEnums}
             postTypeEnums={postTypeEnums}
             categoryEnums={categoryEnums}
             tagEnums={tagEnums}
             apiErrors={apiErrors}
-            onClose={closeEditModal}
-            onUpdated={(data) => handleUpdate(selectedItem.id, data)}
+            onClose={() => modal.close("edit")}
+            onUpdated={(data) => actions.update(modal.selected.id, data)}
           />
 
           <ConfirmModal
-            show={modals.delete}
+            show={modal.state.delete}
             title="Xác nhận xóa"
-            message={`Bạn có chắc chắn muốn xóa bài viết "${selectedItem.name}"?`}
-            onClose={closeDeleteModal}
-            onConfirm={() => handleDelete(selectedItem.id)}
+            message={`Bạn có chắc chắn muốn xóa bài viết "${modal.selected.name}"?`}
+            onClose={() => modal.close("delete")}
+            onConfirm={() => actions.delete(modal.selected.id)}
           />
         </>
       )}
     </div>
   );
 }
+
 
 
 

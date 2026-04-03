@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 
-export interface AdminModals {
+export interface ModalState {
   create: boolean;
   edit: boolean;
   delete: boolean;
@@ -10,8 +10,8 @@ export interface AdminModals {
   [key: string]: boolean | undefined;
 }
 
-export interface AdminModalsResult {
-  modals: AdminModals;
+export interface UseModalsResult {
+  modals: ModalState;
   selectedItem: any;
   openCreateModal: () => void;
   closeCreateModal: () => void;
@@ -27,7 +27,7 @@ export interface AdminModalsResult {
   resetSelectedItem: () => void;
 }
 
-export interface AdminModalsOptions {
+export interface UseModalsOptions {
   onOpen?: (modalName: string, item?: any) => void;
   onClose?: (modalName: string) => void;
   clearApiErrors?: () => void;
@@ -36,11 +36,11 @@ export interface AdminModalsOptions {
 }
 
 /**
- * Hook để quản lý các modal trong trang admin CRUD
+ * Hook để quản lý các modal trong các trang CRUD (danh sách, thêm, sửa, xóa)
  */
-export function useAdminModals(
-  options: AdminModalsOptions = {}
-): AdminModalsResult {
+export function useModals(
+  options: UseModalsOptions = {}
+): UseModalsResult {
   const {
     onOpen,
     onClose,
@@ -50,7 +50,7 @@ export function useAdminModals(
   } = options;
 
   // Initialize modals state
-  const initialModals: AdminModals = {
+  const initialModals: ModalState = {
     create: false,
     edit: false,
     delete: false,
@@ -66,7 +66,7 @@ export function useAdminModals(
     initialModals[modalName] = false;
   });
 
-  const [modals, setModals] = useState<AdminModals>(initialModals);
+  const [modals, setModals] = useState<ModalState>(initialModals);
   const [selectedItem, setSelectedItem] = useState<any>(null);
 
   // Helper function to handle modal opening
@@ -172,7 +172,7 @@ export function useAdminModals(
   // Utility functions
   const closeAllModals = useCallback(() => {
     setModals((prev) => {
-      const newModals: AdminModals = { ...prev };
+      const newModals: ModalState = { ...prev };
       Object.keys(newModals).forEach((key) => {
         newModals[key] = false;
       });
@@ -205,6 +205,3 @@ export function useAdminModals(
     resetSelectedItem,
   };
 }
-
-
-

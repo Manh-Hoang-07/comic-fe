@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from "react";
 import api from "@/lib/api/client";
 import { adminEndpoints } from "@/lib/api/endpoints";
-import { useAdminListPage } from "@/hooks/useAdminListPage";
+import { useListPage } from "@/hooks";
 import SkeletonLoader from "@/components/UI/Feedback/SkeletonLoader";
 import ConfirmModal from "@/components/UI/Feedback/ConfirmModal";
 import Actions from "@/components/UI/DataDisplay/Actions";
@@ -47,25 +47,11 @@ export default function AdminMenus({ title = "Quản lý menu", createButtonText
     pagination,
     filters,
     apiErrors,
-    modals,
-    selectedItem,
-    openCreateModal,
-    closeCreateModal,
-    openEditModal,
-    closeEditModal,
-    openDeleteModal,
-    closeDeleteModal,
-    updateFilters,
-    changePage,
-    handleCreate,
-    handleUpdate,
-    handleDelete,
-    getSerialNumber,
     hasData,
-    showSuccess,
-    showError,
-    refresh, // Get refresh function
-  } = useAdminListPage({
+    getSerialNumber, toast,
+    modal,
+    actions,
+  } = useListPage({
     endpoints: {
       list: adminEndpoints.menus.list,
       create: adminEndpoints.menus.create,
@@ -123,14 +109,14 @@ export default function AdminMenus({ title = "Quản lý menu", createButtonText
     fetchEnums();
   }, [fetchEnums]);
 
-  // Hook into handleCreate/Update to refresh enums
+  // Hook into create/update to refresh enums after
   const customHandleCreate = async (data: any) => {
-    await handleCreate(data);
+    await actions.create(data);
     fetchEnums();
   };
 
   const customHandleUpdate = async (id: any, data: any) => {
-    await handleUpdate(id, data);
+    await actions.update(id, data);
     fetchEnums();
   };
 
@@ -138,13 +124,13 @@ export default function AdminMenus({ title = "Quản lý menu", createButtonText
     try {
       const response = await api.put(adminEndpoints.menus.restore(menu.id));
       if (response.data?.success) {
-        showSuccess("Menu đã được khôi phục thành công");
-        refresh();
+        toast.success("Menu đã được khôi phục thành công");
+        actions.refresh();
       } else {
-        showError("Không thể khôi phục menu");
+        toast.error("Không thể khôi phục menu");
       }
     } catch (error) {
-      showError("Không thể khôi phục menu");
+      toast.error("Không thể khôi phục menu");
     }
   };
 
@@ -162,12 +148,12 @@ export default function AdminMenus({ title = "Quản lý menu", createButtonText
     <div className="admin-menus">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">{title}</h1>
-        <button onClick={openCreateModal} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none">
+        <button onClick={() => modal.open("create")} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none">
           {createButtonText}
         </button>
       </div>
 
-      <MenusFilter initialFilters={filters} statusEnums={statusEnums} parentMenus={parentMenus} onUpdateFilters={updateFilters} />
+      <MenusFilter initialFilters={filters} statusEnums={statusEnums} parentMenus={parentMenus} onUpdateFilters={actions.updateFilters} />
 
       <div className="bg-white shadow-md rounded-lg overflow-x-auto">
         {loading ? (
@@ -232,11 +218,11 @@ export default function AdminMenus({ title = "Quản lý menu", createButtonText
                       item={menu}
                       showView={false}
                       showDelete={false}
-                      onEdit={() => openEditModal(menu)}
+                      onEdit={() => modal.open("edit", menu)}
                       additionalActions={[
                         {
                           label: menu.deleted_at ? "Khôi phục" : "Xóa",
-                          action: () => (menu.deleted_at ? restoreMenu(menu) : openDeleteModal(menu)),
+                          action: () => (menu.deleted_at ? restoreMenu(menu) : modal.open("delete", menu)),
                           icon: menu.deleted_at ? "refresh" : "trash",
                         },
                       ]}
@@ -256,45 +242,46 @@ export default function AdminMenus({ title = "Quản lý menu", createButtonText
         )}
       </div>
 
-      {hasData && <Pagination currentPage={pagination.page} totalPages={pagination.totalPages} totalItems={pagination.totalItems} onPageChange={changePage} />}
+      {hasData && <Pagination currentPage={pagination.page} totalPages={pagination.totalPages} totalItems={pagination.totalItems} onPageChange={actions.changePage} />}
 
-      {modals.create && (
+      {modal.state.create && (
         <CreateMenu
-          show={modals.create}
+          show={modal.state.create}
           statusEnums={statusEnums}
           parentMenus={parentMenus}
           permissions={permissions}
           apiErrors={apiErrors}
-          onClose={closeCreateModal}
+          onClose={() => modal.close("create")}
           onCreated={customHandleCreate}
         />
       )}
 
-      {modals.edit && selectedItem && (
+      {modal.state.edit && modal.selected && (
         <EditMenu
-          show={modals.edit}
-          menu={selectedItem}
+          show={modal.state.edit}
+          menu={modal.selected}
           statusEnums={statusEnums}
           parentMenus={parentMenus}
           permissions={permissions}
           apiErrors={apiErrors}
-          onClose={closeEditModal}
-          onUpdated={(data) => customHandleUpdate(selectedItem.id, data)}
+          onClose={() => modal.close("edit")}
+          onUpdated={(data) => customHandleUpdate(modal.selected.id, data)}
         />
       )}
 
-      {selectedItem && (
+      {modal.selected && (
         <ConfirmModal
-          show={modals.delete}
+          show={modal.state.delete}
           title="Xác nhận xóa"
-          message={`Bạn có chắc chắn muốn xóa menu ${(selectedItem as Menu).name || ""}?`}
-          onClose={closeDeleteModal}
-          onConfirm={() => handleDelete(selectedItem.id)}
+          message={`Bạn có chắc chắn muốn xóa menu ${(modal.selected as Menu).name || ""}?`}
+          onClose={() => modal.close("delete")}
+          onConfirm={() => actions.delete(modal.selected.id)}
         />
       )}
     </div>
   );
 }
+
 
 
 

@@ -37,3 +37,4 @@ export const ChapterList: React.FC<ChapterListProps> = ({ chapters, comicSlug })
 };
 
 
+

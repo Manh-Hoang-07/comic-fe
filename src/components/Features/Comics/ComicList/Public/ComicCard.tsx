@@ -49,3 +49,4 @@ export const ComicCard: React.FC<ComicCardProps> = ({ comic, priority = false })
 };
 
 
+

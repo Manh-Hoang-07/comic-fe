@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from "react";
 import Image from "next/image";
-import { useUpload } from "@/hooks/useUpload";
+import { useUpload } from "@/hooks";
 
 interface ImageUploaderProps {
   value?: File | string | null;

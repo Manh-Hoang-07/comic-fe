@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSystemConfig } from "@/hooks/useSystemConfig";
+import { useSystemConfig } from "@/hooks";
 import FormField from "@/components/UI/Forms/FormField";
 import ImageUploader from "@/components/UI/Forms/ImageUploader";
 import { api } from "@/lib/api/client";
@@ -173,5 +173,6 @@ export default function SystemConfigForm({ group, fields }: SystemConfigFormProp
         </form>
     );
 }
+
 
 
