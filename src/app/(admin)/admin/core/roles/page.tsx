@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { Metadata } from "next";
-import AdminRoles from "@/components/Features/Core/Iam/Roles/Admin/AdminRoles";
+import AdminRoles from "@/components/Features/Core/Roles/Admin/AdminRoles";
 import PageMeta from "@/components/UI/Navigation/PageMeta";
 
 export const metadata: Metadata = {
