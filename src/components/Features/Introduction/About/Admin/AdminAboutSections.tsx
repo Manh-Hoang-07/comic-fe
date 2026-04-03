@@ -50,17 +50,7 @@ export default function AdminAboutSections({
   title = "Quản lý giới thiệu",
   createButtonText = "Thêm section mới",
 }: AdminAboutSectionsProps) {
-  const {
-    items,
-    loading,
-    pagination,
-    filters,
-    apiErrors,
-    hasData,
-    getSerialNumber,
-    modal,
-    actions,
-  } = useListPage(useMemo(() => ({
+  const { data, modal, actions, ui } = useListPage(useMemo(() => ({
     endpoints: {
       list: adminEndpoints.aboutSections.list,
       create: adminEndpoints.aboutSections.create,
@@ -75,6 +65,8 @@ export default function AdminAboutSections({
     },
     fetchDetailBeforeEdit: true,
   }), []));
+  const { items, loading, pagination, filters, apiErrors, hasData } = data;
+  const { getSerialNumber } = ui;
 
   return (
     <div className="admin-Abouts">

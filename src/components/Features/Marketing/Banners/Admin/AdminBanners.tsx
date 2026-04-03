@@ -60,18 +60,7 @@ interface AdminBannersProps {
 }
 
 export default function AdminBanners({ title = "Quản lý banner", createButtonText = "Thêm banner mới" }: AdminBannersProps) {
-  const {
-    items,
-    loading,
-    pagination,
-    filters,
-    apiErrors,
-    hasData,
-    getSerialNumber,
-    modal,
-    actions,
-    toast,
-  } = useListPage({
+  const { data, modal, actions, ui } = useListPage({
     endpoints: {
       list: adminEndpoints.banners.list,
       create: adminEndpoints.banners.create,
@@ -84,6 +73,8 @@ export default function AdminBanners({ title = "Quản lý banner", createButton
       deleteSuccess: "Banner đã được xóa thành công",
     },
   });
+  const { items, loading, pagination, filters, apiErrors, hasData } = data;
+  const { getSerialNumber, toast } = ui;
 
   const [statusEnums, setStatusEnums] = useState<any[]>([]);
   const [locationEnums, setLocationEnums] = useState<any[]>([]);

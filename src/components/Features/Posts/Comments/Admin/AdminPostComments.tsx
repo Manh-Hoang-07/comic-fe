@@ -45,16 +45,9 @@ export default function AdminPostComments({
         []
     );
 
-    const {
-        items,
-        loading,
-        pagination,
-        filters,
-        hasData,
-        getSerialNumber, toast,
-        modal,
-        actions,
-    } = useListPage(listOptions);
+    const { data, modal, actions, ui } = useListPage(listOptions);
+    const { items, loading, pagination, filters, hasData } = data;
+    const { getSerialNumber, toast } = ui;
 
     const [togglingId, setTogglingId] = useState<string | null>(null);
     const [viewComment, setViewComment] = useState<PostComment | null>(null);

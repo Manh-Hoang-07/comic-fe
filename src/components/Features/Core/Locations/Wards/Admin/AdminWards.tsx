@@ -13,17 +13,7 @@ import CreateWard from "./CreateWard";
 import EditWard from "./EditWard";
 
 export default function AdminWards() {
-  const {
-    items,
-    loading,
-    pagination,
-    filters,
-    apiErrors,
-    hasData,
-    getSerialNumber,
-    modal,
-    actions,
-  } = useListPage({
+  const { data, modal, actions, ui } = useListPage({
     endpoints: {
       list: adminEndpoints.location.wards.list,
       create: adminEndpoints.location.wards.create,
@@ -38,6 +28,8 @@ export default function AdminWards() {
     },
     fetchDetailBeforeEdit: true,
   });
+  const { items, loading, pagination, filters, apiErrors, hasData } = data;
+  const { getSerialNumber } = ui;
 
   const getStatusBadge = (status?: string) => {
     if (status === "active") {

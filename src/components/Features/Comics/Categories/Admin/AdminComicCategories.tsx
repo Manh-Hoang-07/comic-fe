@@ -31,17 +31,9 @@ export default function AdminComicCategories() {
         []
     );
 
-    const {
-        items,
-        loading,
-        pagination,
-        filters,
-        apiErrors,
-        hasData,
-        getSerialNumber,
-        modal,
-        actions,
-    } = useListPage(listOptions);
+    const { data, modal, actions, ui } = useListPage(listOptions);
+    const { items, loading, pagination, filters, apiErrors, hasData } = data;
+    const { getSerialNumber } = ui;
 
     return (
         <div className="admin-comic-categories">

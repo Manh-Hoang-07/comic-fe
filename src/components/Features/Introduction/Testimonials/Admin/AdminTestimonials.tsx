@@ -37,17 +37,7 @@ export default function AdminTestimonials({
   title = "Quản lý đánh giá",
   createButtonText = "Thêm đánh giá mới",
 }: AdminTestimonialsProps) {
-  const {
-    items,
-    loading,
-    pagination,
-    filters,
-    apiErrors,
-    hasData,
-    getSerialNumber,
-    modal,
-    actions,
-  } = useListPage({
+  const { data, modal, actions, ui } = useListPage({
     endpoints: {
       list: adminEndpoints.testimonials.list,
       create: adminEndpoints.testimonials.create,
@@ -62,6 +52,8 @@ export default function AdminTestimonials({
     },
     fetchDetailBeforeEdit: true,
   });
+  const { items, loading, pagination, filters, apiErrors, hasData } = data;
+  const { getSerialNumber } = ui;
 
   return (
     <div className="admin-testimonials">

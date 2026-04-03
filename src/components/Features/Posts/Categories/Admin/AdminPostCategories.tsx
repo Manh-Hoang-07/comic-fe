@@ -42,17 +42,7 @@ export default function AdminPostCategories({
   title = "Quản lý danh mục bài viết",
   createButtonText = "Thêm danh mục mới",
 }: AdminPostCategoriesProps) {
-  const {
-    items,
-    loading,
-    pagination,
-    filters,
-    apiErrors,
-    hasData,
-    getSerialNumber,
-    modal,
-    actions,
-  } = useListPage({
+  const { data, modal, actions, ui } = useListPage({
     endpoints: {
       list: adminEndpoints.postCategories.list,
       create: adminEndpoints.postCategories.create,
@@ -67,6 +57,8 @@ export default function AdminPostCategories({
     },
     fetchDetailBeforeEdit: true,
   });
+  const { items, loading, pagination, filters, apiErrors, hasData } = data;
+  const { getSerialNumber } = ui;
 
   const [statusEnums, setStatusEnums] = useState<Array<{ value: string; label?: string; name?: string }>>([]);
 

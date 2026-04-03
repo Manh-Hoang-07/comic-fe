@@ -78,27 +78,29 @@ export interface CRUDActions {
 
 // ─── Result ──────────────────────────────────
 
-export interface UseListPageResult {
-  // Data
+/** State danh sách + lỗi API form */
+export interface ListPageData {
   items: any[];
   loading: boolean;
   pagination: any;
   filters: any;
   apiErrors: any;
   hasData: boolean;
+}
 
-  // Modal helpers (gom tất cả vào một object)
-  modal: ModalHelper;
-
-  // CRUD & navigation actions
-  actions: CRUDActions;
-
-  // Utilities
+export interface ListPageUi {
   getSerialNumber: (index: number) => number;
   toast: {
     success: (message: string) => void;
     error: (message: string) => void;
   };
+}
+
+export interface UseListPageResult {
+  data: ListPageData;
+  modal: ModalHelper;
+  actions: CRUDActions;
+  ui: ListPageUi;
 }
 
 // ─────────────────────────────────────────────
@@ -189,7 +191,6 @@ export function useListPage(
       close: closeModal,
       closeAll: closeAllModals,
     }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [modals, selectedItem, smartOpenEdit, openModal, closeModal, closeAllModals]
   );
 
@@ -267,23 +268,41 @@ export function useListPage(
       refresh: composable.refresh,
       clearApiErrors: composable.clearApiErrors,
     }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [handleCreate, handleUpdate, handleDelete, composable]
   );
 
-  return {
-    items: composable.items,
-    loading: composable.loading,
-    pagination: composable.pagination,
-    filters: composable.filters,
-    apiErrors: composable.apiErrors,
-    hasData,
-    modal,
-    actions,
-    getSerialNumber,
-    toast: {
-      success: toastSuccess,
-      error: toastError,
-    },
-  };
+  const data: ListPageData = useMemo(
+    () => ({
+      items: composable.items,
+      loading: composable.loading,
+      pagination: composable.pagination,
+      filters: composable.filters,
+      apiErrors: composable.apiErrors,
+      hasData,
+    }),
+    [
+      composable.items,
+      composable.loading,
+      composable.pagination,
+      composable.filters,
+      composable.apiErrors,
+      hasData,
+    ]
+  );
+
+  const ui: ListPageUi = useMemo(
+    () => ({
+      getSerialNumber,
+      toast: {
+        success: toastSuccess,
+        error: toastError,
+      },
+    }),
+    [getSerialNumber, toastSuccess, toastError]
+  );
+
+  return { data, modal, actions, ui };
 }
+
+/** Alias cùng implementation — dùng tên nào cũng được */
+export const useAdminListPage = useListPage;

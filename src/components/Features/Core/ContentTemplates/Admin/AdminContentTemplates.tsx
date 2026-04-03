@@ -19,17 +19,7 @@ export default function AdminContentTemplates() {
         template: null,
     });
 
-    const {
-        items,
-        loading,
-        pagination,
-        filters,
-        apiErrors,
-        hasData,
-        getSerialNumber,
-        modal,
-        actions,
-    } = useListPage({
+    const { data, modal, actions, ui } = useListPage({
         endpoints: {
             list: adminEndpoints.contentTemplates.list,
             create: adminEndpoints.contentTemplates.create,
@@ -44,6 +34,8 @@ export default function AdminContentTemplates() {
         },
         fetchDetailBeforeEdit: true,
     });
+    const { items, loading, pagination, filters, apiErrors, hasData } = data;
+    const { getSerialNumber } = ui;
 
     const handleOpenTest = (item: ContentTemplate) => {
         setTestModal({ show: true, template: item });

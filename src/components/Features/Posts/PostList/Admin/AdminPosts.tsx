@@ -37,18 +37,7 @@ export default function AdminPosts({
   title = "Quản lý bài viết",
   createButtonText = "Thêm bài viết mới",
 }: AdminPostsProps) {
-  const {
-    items,
-    loading,
-    pagination,
-    filters,
-    apiErrors,
-    hasData,
-    getSerialNumber,
-    modal,
-    actions,
-    toast,
-  } = useListPage({
+  const { data, modal, actions, ui } = useListPage({
     endpoints: {
       list: adminEndpoints.posts.list,
       create: adminEndpoints.posts.create,
@@ -61,6 +50,8 @@ export default function AdminPosts({
       deleteSuccess: "Bài viết đã được xóa thành công",
     },
   });
+  const { items, loading, pagination, filters, apiErrors, hasData } = data;
+  const { getSerialNumber, toast } = ui;
 
   const [statusEnums, setStatusEnums] = useState<any[]>([]);
   const [postTypeEnums, setPostTypeEnums] = useState<any[]>([]);

@@ -132,7 +132,7 @@ export default function ComicForm({
 
             if (coverFile && savedItem?.id) {
                 await adminComicService.uploadCover(savedItem.id, coverFile);
-                toast.success("Đã cập nhật ảnh bìa");
+                showSuccess("Đã cập nhật ảnh bìa");
             }
         } catch (error) {
             // Error handled by useListPage/ToastContext

@@ -35,17 +35,9 @@ export default function AdminComics() {
         []
     );
 
-    const {
-        items,
-        loading,
-        pagination,
-        filters,
-        apiErrors,
-        hasData,
-        getSerialNumber,
-        modal,
-        actions,
-    } = useListPage(listOptions);
+    const { data, modal, actions, ui } = useListPage(listOptions);
+    const { items, loading, pagination, filters, apiErrors, hasData } = data;
+    const { getSerialNumber } = ui;
 
     const getStatusBadge = (status: string) => {
         const badges: Record<string, string> = {

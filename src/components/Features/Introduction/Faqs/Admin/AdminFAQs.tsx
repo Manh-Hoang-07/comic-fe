@@ -35,17 +35,7 @@ export default function AdminFAQs({
   title = "Quản lý câu hỏi thường gặp",
   createButtonText = "Thêm câu hỏi mới",
 }: AdminFAQsProps) {
-  const {
-    items,
-    loading,
-    pagination,
-    filters,
-    apiErrors,
-    hasData,
-    getSerialNumber,
-    modal,
-    actions,
-  } = useListPage(useMemo(() => ({
+  const { data, modal, actions, ui } = useListPage(useMemo(() => ({
     endpoints: {
       list: adminEndpoints.faqs.list,
       create: adminEndpoints.faqs.create,
@@ -60,6 +50,8 @@ export default function AdminFAQs({
     },
     fetchDetailBeforeEdit: true,
   }), []));
+  const { items, loading, pagination, filters, apiErrors, hasData } = data;
+  const { getSerialNumber } = ui;
 
   return (
     <div className="admin-faqs">

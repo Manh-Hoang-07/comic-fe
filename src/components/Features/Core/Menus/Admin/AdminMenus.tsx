@@ -41,17 +41,7 @@ const getTypeLabel = (type?: string): string => {
 };
 
 export default function AdminMenus({ title = "Quản lý menu", createButtonText = "Thêm menu mới" }: AdminMenusProps) {
-  const {
-    items,
-    loading,
-    pagination,
-    filters,
-    apiErrors,
-    hasData,
-    getSerialNumber, toast,
-    modal,
-    actions,
-  } = useListPage({
+  const { data, modal, actions, ui } = useListPage({
     endpoints: {
       list: adminEndpoints.menus.list,
       create: adminEndpoints.menus.create,
@@ -65,6 +55,8 @@ export default function AdminMenus({ title = "Quản lý menu", createButtonText
       deleteError: "Không thể xóa menu",
     },
   });
+  const { items, loading, pagination, filters, apiErrors, hasData } = data;
+  const { getSerialNumber, toast } = ui;
 
   const [statusEnums, setStatusEnums] = useState<any[]>([]);
   const [parentMenus, setParentMenus] = useState<any[]>([]);

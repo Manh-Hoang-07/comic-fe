@@ -13,17 +13,7 @@ import CreateCountry from "./CreateCountry";
 import EditCountry from "./EditCountry";
 
 export default function AdminCountries() {
-  const {
-    items,
-    loading,
-    pagination,
-    filters,
-    apiErrors,
-    hasData,
-    getSerialNumber,
-    modal,
-    actions,
-  } = useListPage({
+  const { data, modal, actions, ui } = useListPage({
     endpoints: {
       list: adminEndpoints.location.countries.list,
       create: adminEndpoints.location.countries.create,
@@ -38,6 +28,8 @@ export default function AdminCountries() {
     },
     fetchDetailBeforeEdit: true,
   });
+  const { items, loading, pagination, filters, apiErrors, hasData } = data;
+  const { getSerialNumber } = ui;
 
   const getStatusBadge = (status?: string) => {
     if (status === "active") {

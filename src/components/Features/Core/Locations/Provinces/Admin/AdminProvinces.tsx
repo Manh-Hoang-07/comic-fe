@@ -13,17 +13,7 @@ import CreateProvince from "./CreateProvince";
 import EditProvince from "./EditProvince";
 
 export default function AdminProvinces() {
-  const {
-    items,
-    loading,
-    pagination,
-    filters,
-    apiErrors,
-    hasData,
-    getSerialNumber,
-    modal,
-    actions,
-  } = useListPage({
+  const { data, modal, actions, ui } = useListPage({
     endpoints: {
       list: adminEndpoints.location.provinces.list,
       create: adminEndpoints.location.provinces.create,
@@ -38,6 +28,8 @@ export default function AdminProvinces() {
     },
     fetchDetailBeforeEdit: true,
   });
+  const { items, loading, pagination, filters, apiErrors, hasData } = data;
+  const { getSerialNumber } = ui;
 
   const getStatusBadge = (status?: string) => {
     if (status === "active") {

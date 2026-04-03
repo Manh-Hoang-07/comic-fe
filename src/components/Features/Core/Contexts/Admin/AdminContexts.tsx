@@ -58,17 +58,7 @@ export default function AdminContexts({
   title = "Quản lý contexts",
   createButtonText = "Thêm context mới",
 }: AdminContextsProps) {
-  const {
-    items,
-    loading,
-    pagination,
-    filters,
-    apiErrors,
-    hasData,
-    getSerialNumber,
-    modal,
-    actions,
-  } = useListPage({
+  const { data, modal, actions, ui } = useListPage({
     endpoints: {
       list: adminEndpoints.contexts.list,
       create: adminEndpoints.contexts.create,
@@ -83,6 +73,8 @@ export default function AdminContexts({
     },
     fetchDetailBeforeEdit: true,
   });
+  const { items, loading, pagination, filters, apiErrors, hasData } = data;
+  const { getSerialNumber } = ui;
 
   const [statusEnums, setStatusEnums] = useState<Array<{ value: string; label?: string; name?: string }>>([]);
 

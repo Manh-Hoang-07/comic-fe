@@ -44,17 +44,7 @@ export default function AdminBannerLocations({
   title = "Quản lý vị trí banner",
   createButtonText = "Thêm vị trí mới",
 }: AdminBannerLocationsProps) {
-  const {
-    items,
-    loading,
-    pagination,
-    filters,
-    apiErrors,
-    hasData,
-    getSerialNumber,
-    modal,
-    actions,
-  } = useListPage(useMemo(() => ({
+  const { data, modal, actions, ui } = useListPage(useMemo(() => ({
     endpoints: {
       list: adminEndpoints.bannerLocations.list,
       create: adminEndpoints.bannerLocations.create,
@@ -67,6 +57,8 @@ export default function AdminBannerLocations({
       deleteSuccess: "Đã xóa thành công",
     },
   }), []));
+  const { items, loading, pagination, filters, apiErrors, hasData } = data;
+  const { getSerialNumber } = ui;
 
   const [statusEnums, setStatusEnums] = useState<Array<{ value: string; label?: string; name?: string }>>([]);
 

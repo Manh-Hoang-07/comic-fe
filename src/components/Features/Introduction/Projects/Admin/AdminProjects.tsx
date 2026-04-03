@@ -59,18 +59,7 @@ export default function AdminProjects({
   title = "Quản lý dự án",
   createButtonText = "Thêm dự án mới",
 }: AdminProjectsProps) {
-  const {
-    items,
-    loading,
-    pagination,
-    filters,
-    apiErrors,
-    hasData,
-    getSerialNumber,
-    modal,
-    actions,
-    toast,
-  } = useListPage({
+  const { data, modal, actions, ui } = useListPage({
     endpoints: {
       list: adminEndpoints.projects.list,
       create: adminEndpoints.projects.create,
@@ -85,6 +74,8 @@ export default function AdminProjects({
     },
     fetchDetailBeforeEdit: true,
   });
+  const { items, loading, pagination, filters, apiErrors, hasData } = data;
+  const { getSerialNumber, toast } = ui;
 
   const [statusEnums, setStatusEnums] = useState<Array<{ value: string; label?: string; name?: string }>>([]);
 

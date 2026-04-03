@@ -23,18 +23,7 @@ export default function AdminUsers({
   title = "Quản lý người dùng",
   createButtonText = "Thêm người dùng mới",
 }: AdminUsersProps) {
-  const {
-    items,
-    loading,
-    pagination,
-    filters,
-    apiErrors,
-    hasData,
-    getSerialNumber,
-    modal,
-    actions,
-    toast,
-  } = useListPage({
+  const { data, modal, actions, ui } = useListPage({
     endpoints: {
       list: adminEndpoints.users.list,
       create: adminEndpoints.users.create,
@@ -48,6 +37,8 @@ export default function AdminUsers({
       deleteSuccess: "Người dùng đã được xóa thành công",
     },
   });
+  const { items, loading, pagination, filters, apiErrors, hasData } = data;
+  const { getSerialNumber, toast } = ui;
 
   const [statusEnums, setStatusEnums] = useState<any[]>([]);
   const [genderEnums, setGenderEnums] = useState<any[]>([]);

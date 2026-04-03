@@ -22,18 +22,7 @@ export default function AdminRoles({
   title = "Quản lý vai trò",
   createButtonText = "Thêm vai trò mới",
 }: AdminRolesProps) {
-  const {
-    items,
-    loading,
-    pagination,
-    filters,
-    apiErrors,
-    hasData,
-    getSerialNumber,
-    modal,
-    actions,
-    toast,
-  } = useListPage({
+  const { data, modal, actions, ui } = useListPage({
     endpoints: {
       list: adminEndpoints.roles.list,
       create: adminEndpoints.roles.create,
@@ -47,6 +36,8 @@ export default function AdminRoles({
       deleteSuccess: "Vai trò đã được xóa thành công",
     },
   });
+  const { items, loading, pagination, filters, apiErrors, hasData } = data;
+  const { getSerialNumber, toast } = ui;
 
   const [statusEnums, setStatusEnums] = useState<any[]>([]);
 

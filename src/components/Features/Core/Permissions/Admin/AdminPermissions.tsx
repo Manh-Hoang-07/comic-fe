@@ -38,18 +38,7 @@ export default function AdminPermissions({
   title = "Quản lý quyền",
   createButtonText = "Thêm quyền mới",
 }: AdminPermissionsProps) {
-  const {
-    items,
-    loading,
-    pagination,
-    filters,
-    apiErrors,
-    hasData,
-    getSerialNumber,
-    modal,
-    actions,
-    toast,
-  } = useListPage({
+  const { data, modal, actions, ui } = useListPage({
     endpoints: {
       list: adminEndpoints.permissions.list,
       create: adminEndpoints.permissions.create,
@@ -62,6 +51,8 @@ export default function AdminPermissions({
       deleteSuccess: "Đã xóa quyền thành công",
     },
   });
+  const { items, loading, pagination, filters, apiErrors, hasData } = data;
+  const { getSerialNumber, toast } = ui;
 
   const [statusEnums] = useState(getBasicStatusArray());
 

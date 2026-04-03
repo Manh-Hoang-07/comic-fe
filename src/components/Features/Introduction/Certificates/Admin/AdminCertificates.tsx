@@ -51,17 +51,7 @@ export default function AdminCertificates({
   title = "Quản lý chứng chỉ",
   createButtonText = "Thêm chứng chỉ mới",
 }: AdminCertificatesProps) {
-  const {
-    items,
-    loading,
-    pagination,
-    filters,
-    apiErrors,
-    hasData,
-    getSerialNumber,
-    modal,
-    actions,
-  } = useListPage({
+  const { data, modal, actions, ui } = useListPage({
     endpoints: {
       list: adminEndpoints.certificates.list,
       create: adminEndpoints.certificates.create,
@@ -76,6 +66,8 @@ export default function AdminCertificates({
     },
     fetchDetailBeforeEdit: true,
   });
+  const { items, loading, pagination, filters, apiErrors, hasData } = data;
+  const { getSerialNumber } = ui;
 
   return (
     <div className="admin-certificates">

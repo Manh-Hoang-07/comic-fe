@@ -30,17 +30,7 @@ export default function AdminStaff({
   title = "Quản lý nhân viên",
   createButtonText = "Thêm nhân viên mới",
 }: AdminStaffProps) {
-  const {
-    items,
-    loading,
-    pagination,
-    filters,
-    apiErrors,
-    hasData,
-    getSerialNumber,
-    modal,
-    actions,
-  } = useListPage({
+  const { data, modal, actions, ui } = useListPage({
     endpoints: {
       list: adminEndpoints.staff.list,
       create: adminEndpoints.staff.create,
@@ -55,6 +45,8 @@ export default function AdminStaff({
     },
     fetchDetailBeforeEdit: true,
   });
+  const { items, loading, pagination, filters, apiErrors, hasData } = data;
+  const { getSerialNumber } = ui;
 
   return (
     <div className="admin-staff">

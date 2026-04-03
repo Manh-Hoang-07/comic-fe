@@ -42,17 +42,7 @@ export default function AdminPartners({
   title = "Quản lý đối tác",
   createButtonText = "Thêm đối tác mới",
 }: AdminPartnersProps) {
-  const {
-    items,
-    loading,
-    pagination,
-    filters,
-    apiErrors,
-    hasData,
-    getSerialNumber,
-    modal,
-    actions,
-  } = useListPage({
+  const { data, modal, actions, ui } = useListPage({
     endpoints: {
       list: adminEndpoints.partners.list,
       create: adminEndpoints.partners.create,
@@ -67,6 +57,8 @@ export default function AdminPartners({
     },
     fetchDetailBeforeEdit: true,
   });
+  const { items, loading, pagination, filters, apiErrors, hasData } = data;
+  const { getSerialNumber } = ui;
 
   return (
     <div className="admin-partners">

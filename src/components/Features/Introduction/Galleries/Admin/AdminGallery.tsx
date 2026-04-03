@@ -40,17 +40,7 @@ export default function AdminGallery({
   title = "Quản lý thư viện ảnh",
   createButtonText = "Thêm ảnh mới",
 }: AdminGalleryProps) {
-  const {
-    items,
-    loading,
-    pagination,
-    filters,
-    apiErrors,
-    hasData,
-    getSerialNumber,
-    modal,
-    actions,
-  } = useListPage(useMemo(() => ({
+  const { data, modal, actions, ui } = useListPage(useMemo(() => ({
     endpoints: {
       list: adminEndpoints.gallery.list,
       create: adminEndpoints.gallery.create,
@@ -65,6 +55,8 @@ export default function AdminGallery({
     },
     fetchDetailBeforeEdit: true,
   }), []));
+  const { items, loading, pagination, filters, apiErrors, hasData } = data;
+  const { getSerialNumber } = ui;
 
   return (
     <div className="admin-gallery">

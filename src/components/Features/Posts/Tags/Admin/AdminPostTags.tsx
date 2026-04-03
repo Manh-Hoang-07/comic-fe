@@ -42,17 +42,7 @@ export default function AdminPostTags({
   title = "Quản lý thẻ bài viết",
   createButtonText = "Thêm thẻ mới",
 }: AdminPostTagsProps) {
-  const {
-    items,
-    loading,
-    pagination,
-    filters,
-    apiErrors,
-    hasData,
-    getSerialNumber,
-    modal,
-    actions,
-  } = useListPage({
+  const { data, modal, actions, ui } = useListPage({
     endpoints: {
       list: adminEndpoints.postTags.list,
       create: adminEndpoints.postTags.create,
@@ -67,6 +57,8 @@ export default function AdminPostTags({
     },
     fetchDetailBeforeEdit: true,
   });
+  const { items, loading, pagination, filters, apiErrors, hasData } = data;
+  const { getSerialNumber } = ui;
 
   const [statusEnums, setStatusEnums] = useState<Array<{ value: string; label?: string; name?: string }>>([]);
 

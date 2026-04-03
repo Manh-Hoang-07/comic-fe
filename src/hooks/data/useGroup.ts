@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import api from "@/lib/api/client";
-import { useToast } from "./useToast";
+import { useToast } from "../ui-ux/useToast";
 import { userEndpoints } from "@/lib/api/endpoints";
 
 export interface Group {

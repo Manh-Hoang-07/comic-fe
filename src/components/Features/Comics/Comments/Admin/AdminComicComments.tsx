@@ -38,16 +38,9 @@ export default function AdminComicComments() {
         []
     );
 
-    const {
-        items,
-        loading,
-        pagination,
-        filters,
-        hasData,
-        getSerialNumber,
-        modal,
-        actions, toast,
-    } = useListPage(listOptions);
+    const { data, modal, actions, ui } = useListPage(listOptions);
+    const { items, loading, pagination, filters, hasData } = data;
+    const { getSerialNumber, toast } = ui;
 
     const [togglingId, setTogglingId] = useState<string | number | null>(null);
 

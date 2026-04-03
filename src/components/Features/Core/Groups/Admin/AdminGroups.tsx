@@ -39,17 +39,7 @@ const getTypeLabel = (type?: string): string => {
 
 export default function AdminGroups({ title = "Quản lý Groups", createButtonText = "Thêm group mới" }: AdminGroupsProps) {
   const router = useRouter();
-  const {
-    items,
-    loading,
-    pagination,
-    filters,
-    apiErrors,
-    hasData,
-    getSerialNumber,
-    modal,
-    actions,
-  } = useListPage({
+  const { data, modal, actions, ui } = useListPage({
     endpoints: {
       list: adminEndpoints.groups.list,
       create: adminEndpoints.groups.create,
@@ -64,6 +54,8 @@ export default function AdminGroups({ title = "Quản lý Groups", createButtonT
     },
     fetchDetailBeforeEdit: true,
   });
+  const { items, loading, pagination, filters, apiErrors, hasData } = data;
+  const { getSerialNumber } = ui;
 
   const [statusEnums, setStatusEnums] = useState<any[]>([]);
 

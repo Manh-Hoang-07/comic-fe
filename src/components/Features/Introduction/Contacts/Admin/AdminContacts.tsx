@@ -14,17 +14,7 @@ interface AdminContactsProps {
 }
 
 export default function AdminContacts({ title = "Quản lý Liên hệ" }: AdminContactsProps) {
-    const {
-        items,
-        loading,
-        pagination,
-        filters,
-        hasData,
-        getSerialNumber,
-        modal,
-        actions,
-        toast,
-    } = useListPage({
+    const { data, modal, actions, ui } = useListPage({
         endpoints: {
             list: adminEndpoints.contacts.list,
             delete: (id) => adminEndpoints.contacts.delete(id),
@@ -33,6 +23,8 @@ export default function AdminContacts({ title = "Quản lý Liên hệ" }: Admin
             deleteSuccess: "Liên hệ đã được xóa thành công",
         },
     });
+    const { items, loading, pagination, filters, hasData } = data;
+    const { getSerialNumber } = ui;
 
     const getStatusLabel = (status: string) => {
         const map: Record<string, string> = {
