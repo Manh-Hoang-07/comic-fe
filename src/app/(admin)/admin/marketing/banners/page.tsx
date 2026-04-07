@@ -15,7 +15,7 @@ export default function AdminBannersPage() {
         title="Quản lý Banner"
         breadcrumbs={[
           { label: "Trang quản trị", href: "/admin", },
-          { label: "Giao diện", href: "/admin/banners" },
+          { label: "Giao diện", href: "/admin/marketing/banners" },
           { label: "Banner" },
         ]}
       />

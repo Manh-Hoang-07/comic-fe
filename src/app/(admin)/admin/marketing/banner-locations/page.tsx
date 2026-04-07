@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { Metadata } from "next";
-import AdminBannerLocations from "@/components/Features/Marketing/Locations/Admin/AdminBannerLocations";
+import AdminBannerLocations from "@/components/Features/Marketing/BannerLocations/Admin/AdminBannerLocations";
 import PageMeta from "@/components/UI/Navigation/PageMeta";
 
 export const metadata: Metadata = {
@@ -15,7 +15,7 @@ export default function AdminBannerLocationsPage() {
         title="Vị trí Banner"
         breadcrumbs={[
           { label: "Trang quản trị", href: "/admin", },
-          { label: "Giao diện", href: "/admin/banners" },
+          { label: "Giao diện", href: "/admin/marketing/banners" },
           { label: "Vị trí Banner" },
         ]}
       />

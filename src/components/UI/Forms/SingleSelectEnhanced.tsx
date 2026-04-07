@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, forwardRef } from "react";
+import { useState, useEffect, useCallback, forwardRef, useRef } from "react";
 import api from "@/lib/api/client";
 
 interface Option {
@@ -52,9 +52,12 @@ const SingleSelectEnhanced = forwardRef<HTMLSelectElement, SingleSelectEnhancedP
     const finalOptions = options.length > 0 ? options : localOptions;
     const loading = externalLoading || isLoading;
 
-    const fetchOptions = useCallback(async () => {
-      if (!searchApi) return;
+    const lastFetchedUrl = useRef<string | null>(null);
 
+    const fetchOptions = useCallback(async () => {
+      if (!searchApi || searchApi === lastFetchedUrl.current) return;
+
+      lastFetchedUrl.current = searchApi;
       setIsLoading(true);
       try {
         const response = await api.get(searchApi);
@@ -83,17 +86,30 @@ const SingleSelectEnhanced = forwardRef<HTMLSelectElement, SingleSelectEnhancedP
           }))
         );
       } catch (error) {
+        lastFetchedUrl.current = null; // Cho phép thử lại nếu lỗi
         setLocalOptions([]);
       } finally {
         setIsLoading(false);
       }
     }, [searchApi, valueField, labelField]);
 
+    // Xóa dữ liệu cũ khi URL thay đổi
     useEffect(() => {
-      if (searchApi && options.length === 0) {
+      if (searchApi) {
+        setLocalOptions([]);
+        // Không xóa lastFetchedUrl ở đây để useEffect bên dưới không gọi lại ngay lập tức nếu dữ liệu đã đang load
+      }
+    }, [searchApi]);
+
+    useEffect(() => {
+      if (searchApi && options.length === 0 && localOptions.length === 0 && !isLoading) {
+        // Chỉ reset ref nếu URL hiện tại khác với URL đã fetch thành công trước đó
+        if (lastFetchedUrl.current !== searchApi) {
+           lastFetchedUrl.current = null;
+        }
         fetchOptions();
       }
-    }, [searchApi, options.length, fetchOptions]);
+    }, [searchApi, options.length, localOptions.length, isLoading, fetchOptions]);
 
     const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
       const rawValue = e.target.value;
@@ -184,6 +200,3 @@ const SingleSelectEnhanced = forwardRef<HTMLSelectElement, SingleSelectEnhancedP
 SingleSelectEnhanced.displayName = "SingleSelectEnhanced";
 
 export default SingleSelectEnhanced;
-
-
-
