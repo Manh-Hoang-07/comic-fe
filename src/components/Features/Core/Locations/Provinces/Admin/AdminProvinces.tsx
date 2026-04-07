@@ -1,35 +1,27 @@
 "use client";
 
-import { useMemo } from "react";
 import { useListPage } from "@/hooks";
+import useModal from "@/hooks/ui-ux/useModal";
 import { adminEndpoints } from "@/lib/api/endpoints";
 import Pagination from "@/components/UI/DataDisplay/Pagination";
 import SkeletonLoader from "@/components/UI/Feedback/SkeletonLoader";
 import Actions from "@/components/UI/DataDisplay/Actions";
 import ConfirmModal from "@/components/UI/Feedback/ConfirmModal";
+import { useToastContext } from "@/contexts/ToastContext";
+import api from "@/lib/api/client";
 import type { AdminProvince } from "@/types/location";
 import ProvinceFilter from "./ProvinceFilter";
 import CreateProvince from "./CreateProvince";
 import EditProvince from "./EditProvince";
 
 export default function AdminProvinces() {
-  const { data, modal, actions, ui } = useListPage({
-    endpoints: {
-      list: adminEndpoints.location.provinces.list,
-      create: adminEndpoints.location.provinces.create,
-      update: (id) => adminEndpoints.location.provinces.update(id),
-      delete: (id) => adminEndpoints.location.provinces.delete(id),
-      show: (id) => adminEndpoints.location.provinces.show(id),
-    },
-    messages: {
-      createSuccess: "Tỉnh/Thành phố đã được tạo thành công",
-      updateSuccess: "Tỉnh/Thành phố đã được cập nhật thành công",
-      deleteSuccess: "Tỉnh/Thành phố đã được xóa thành công",
-    },
-    fetchDetailBeforeEdit: true,
+  const { data, actions, ui } = useListPage({
+    endpoint: adminEndpoints.location.provinces.list,
   });
-  const { items, loading, pagination, filters, apiErrors, hasData } = data;
+  
+  const { items, loading, pagination, filters, hasData } = data;
   const { getSerialNumber } = ui;
+  const { showSuccess, showError } = useToastContext();
 
   const getStatusBadge = (status?: string) => {
     if (status === "active") {
@@ -61,12 +53,28 @@ export default function AdminProvinces() {
     }
   };
 
+  const createModal = useModal<{ createApi: string }>();
+  const editModal = useModal<{ fetchApi?: string; initialData?: any; updateApi: string }>();
+  const deleteModal = useModal<{ id: number; name?: string; deleteApi: string }>();
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteModal.data?.deleteApi) return;
+    try {
+      await api.delete(deleteModal.data.deleteApi);
+      showSuccess("Đã xóa Tỉnh/Thành phố thành công");
+      deleteModal.close();
+      actions.refresh();
+    } catch (error: any) {
+      showError(error.response?.data?.message || "Có lỗi xảy ra khi xóa");
+    }
+  };
+
   return (
     <div className="admin-provinces">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Quản lý Tỉnh/Thành phố</h1>
         <button
-          onClick={() => modal.open("create")}
+          onClick={() => createModal.open({ createApi: adminEndpoints.location.provinces.create })}
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none"
         >
           Thêm Tỉnh/Thành phố
@@ -126,11 +134,18 @@ export default function AdminProvinces() {
                           item={province}
                           showView={false}
                           showDelete={false}
-                          onEdit={() => modal.open("edit", province)}
+                          onEdit={() => editModal.open({
+                            fetchApi: adminEndpoints.location.provinces.show(province.id),
+                            updateApi: adminEndpoints.location.provinces.update(province.id)
+                          })}
                           additionalActions={[
                             {
                               label: "Xóa",
-                              action: () => modal.open("delete", province),
+                              action: () => deleteModal.open({
+                                id: province.id,
+                                name: province.name,
+                                deleteApi: adminEndpoints.location.provinces.delete(province.id)
+                              }),
                               icon: "trash",
                             },
                           ]}
@@ -142,7 +157,7 @@ export default function AdminProvinces() {
                 {!loading && items.length === 0 && (
                   <tr>
                     <td
-                      colSpan={8}
+                      colSpan={5}
                       className="px-6 py-10 text-center text-gray-500 text-sm"
                     >
                       Không có dữ liệu
@@ -164,32 +179,37 @@ export default function AdminProvinces() {
         />
       )}
 
-      {modal.state.create && (
+      {createModal.isOpen && createModal.data && (
         <CreateProvince
-          show={modal.state.create}
-          apiErrors={apiErrors}
-          onClose={() => modal.close("create")}
-          onCreated={actions.create}
+          show={createModal.isOpen}
+          createApi={createModal.data.createApi}
+          onClose={createModal.close}
+          onSuccess={() => {
+            createModal.close();
+            actions.refresh();
+          }}
         />
       )}
 
-      {modal.state.edit && modal.selected && (
+      {editModal.isOpen && editModal.data && (
         <EditProvince
-          show={modal.state.edit}
-          province={modal.selected}
-          apiErrors={apiErrors}
-          onClose={() => modal.close("edit")}
-          onUpdated={(data) => actions.update(modal.selected.id, data)}
+          show={editModal.isOpen}
+          target={editModal.data}
+          onClose={editModal.close}
+          onSuccess={() => {
+            editModal.close();
+            actions.refresh();
+          }}
         />
       )}
 
-      {modal.selected && (
+      {deleteModal.isOpen && deleteModal.data && (
         <ConfirmModal
-          show={modal.state.delete}
+          show={deleteModal.isOpen}
           title="Xác nhận xóa"
-          message={`Bạn có chắc chắn muốn xóa Tỉnh/Thành phố "${modal.selected.name || modal.selected.code}"?`}
-          onClose={() => modal.close("delete")}
-          onConfirm={() => actions.delete(modal.selected.id)}
+          message={`Bạn có chắc chắn muốn xóa Tỉnh/Thành phố "${deleteModal.data.name}"?`}
+          onClose={deleteModal.close}
+          onConfirm={handleDeleteConfirm}
         />
       )}
     </div>

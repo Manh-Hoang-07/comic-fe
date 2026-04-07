@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
 import { useListPage } from "@/hooks";
+import useModal from "@/hooks/ui-ux/useModal";
 import { adminEndpoints } from "@/lib/api/endpoints";
 import SkeletonLoader from "@/components/UI/Feedback/SkeletonLoader";
 import ConfirmModal from "@/components/UI/Feedback/ConfirmModal";
@@ -13,16 +13,16 @@ import CreateChapter from "./CreateChapter";
 import EditChapter from "./EditChapter";
 import PageManager from "./PageManager";
 import { AdminChapter } from "@/types/comic";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { formatDateTime } from "@/utils/formatters";
-
 import Link from "next/link";
 import { adminComicService } from "@/lib/api/admin/comic";
 import { useState, useEffect } from "react";
+import { useToastContext } from "@/contexts/ToastContext";
+import api from "@/lib/api/client";
 
 export default function AdminChapters() {
     const searchParams = useSearchParams();
-    const router = useRouter();
     const comicId = searchParams.get("comic_id");
     const [comicTitle, setComicTitle] = useState<string | null>(null);
 
@@ -36,29 +36,30 @@ export default function AdminChapters() {
         }
     }, [comicId]);
 
-    const listOptions = useMemo(
-        () => ({
-            endpoints: {
-                list: adminEndpoints.chapters.list,
-                create: adminEndpoints.chapters.create,
-                update: (id: string | number) => adminEndpoints.chapters.update(id),
-                delete: (id: string | number) => adminEndpoints.chapters.delete(id),
-                show: (id: string | number) => adminEndpoints.chapters.show(id),
-            },
-            messages: {
-                createSuccess: "Đã tạo chương mới thành công",
-                updateSuccess: "Đã cập nhật chương thành công",
-                deleteSuccess: "Đã xóa chương thành công",
-            },
-            customModals: ["managePages"],
-            transformItem: (item: any) => item,
-        }),
-        []
-    );
-
-    const { data, modal, actions, ui } = useListPage(listOptions);
-    const { items, loading, pagination, filters, apiErrors, hasData } = data;
+    const { data, actions, ui } = useListPage({
+        endpoint: adminEndpoints.chapters.list,
+    });
+    
+    const { items, loading, pagination, filters, hasData } = data;
     const { getSerialNumber } = ui;
+    const { showSuccess, showError } = useToastContext();
+
+    const createModal = useModal<{ createApi: string }>();
+    const editModal = useModal<{ fetchApi?: string; initialData?: any; updateApi: string }>();
+    const deleteModal = useModal<{ id: number | string; title?: string; chapter_index?: number; deleteApi: string }>();
+    const managePagesModal = useModal<{ chapter: AdminChapter }>();
+
+    const handleDeleteConfirm = async () => {
+        if (!deleteModal.data?.deleteApi) return;
+        try {
+            await api.delete(deleteModal.data.deleteApi);
+            showSuccess("Đã xóa chương thành công");
+            deleteModal.close();
+            actions.refresh();
+        } catch (error: any) {
+            showError(error.response?.data?.message || "Có lỗi xảy ra khi xóa");
+        }
+    };
 
     return (
         <div className="admin-chapters">
@@ -85,7 +86,7 @@ export default function AdminChapters() {
                     </p>
                 </div>
                 <button
-                    onClick={() => modal.open("create")}
+                    onClick={() => createModal.open({ createApi: adminEndpoints.chapters.create })}
                     className="flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700 focus:outline-none"
                 >
                     <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -169,13 +170,21 @@ export default function AdminChapters() {
                                         <td className="whitespace-nowrap px-6 py-4 text-center text-sm font-medium">
                                             <Actions
                                                 item={chapter}
-                                                onEdit={() => modal.open("edit", chapter)}
-                                                onDelete={() => modal.open("delete", chapter)}
+                                                onEdit={() => editModal.open({
+                                                    fetchApi: adminEndpoints.chapters.show(chapter.id),
+                                                    updateApi: adminEndpoints.chapters.update(chapter.id)
+                                                })}
+                                                onDelete={() => deleteModal.open({
+                                                    id: chapter.id,
+                                                    title: chapter.title,
+                                                    chapter_index: chapter.chapter_index,
+                                                    deleteApi: adminEndpoints.chapters.delete(chapter.id)
+                                                })}
                                                 additionalActions={[
                                                     {
                                                         label: "Quản lý Trang",
                                                         icon: "photo",
-                                                        action: () => modal.open("managePages", chapter),
+                                                        action: () => managePagesModal.open({ chapter }),
                                                         className: "text-blue-600 hover:text-blue-700",
                                                     },
                                                 ]}
@@ -207,49 +216,52 @@ export default function AdminChapters() {
                 </div>
             )}
 
-            {/* Standardized Modals */}
-            {modal.state.create && (
+            {createModal.isOpen && createModal.data && (
                 <CreateChapter
-                    show={modal.state.create}
+                    show={createModal.isOpen}
                     comicId={comicId}
-                    apiErrors={apiErrors}
-                    onClose={() => modal.close("create")}
-                    onCreated={actions.create}
+                    createApi={createModal.data.createApi}
+                    onClose={createModal.close}
+                    onSuccess={() => {
+                        createModal.close();
+                        actions.refresh();
+                    }}
                 />
             )}
 
-            {modal.state.edit && modal.selected && (
+            {editModal.isOpen && editModal.data && (
                 <EditChapter
-                    show={modal.state.edit}
-                    chapter={modal.selected}
-                    apiErrors={apiErrors}
-                    onClose={() => modal.close("edit")}
-                    onUpdated={(data) => actions.update(modal.selected.id, data)}
+                    show={editModal.isOpen}
+                    target={editModal.data}
+                    onClose={editModal.close}
+                    onSuccess={() => {
+                        editModal.close();
+                        actions.refresh();
+                    }}
                 />
             )}
 
-            {/* Page Manager Modal */}
-            <Modal
-                show={modal.state.managePages}
-                onClose={() => modal.close("managePages")}
-                title={`Quản lý trang - ${modal.selected?.title}`}
-                size="xl"
-            >
-                {modal.selected && (
+            {managePagesModal.isOpen && managePagesModal.data && (
+                <Modal
+                    show={managePagesModal.isOpen}
+                    onClose={managePagesModal.close}
+                    title={`Quản lý trang - ${managePagesModal.data.chapter.title}`}
+                    size="xl"
+                >
                     <PageManager
-                        chapter={modal.selected}
-                        onClose={() => modal.close("managePages")}
+                        chapter={managePagesModal.data.chapter}
+                        onClose={managePagesModal.close}
                     />
-                )}
-            </Modal>
+                </Modal>
+            )}
 
-            {modal.selected && (
+            {deleteModal.isOpen && deleteModal.data && (
                 <ConfirmModal
-                    show={modal.state.delete}
+                    show={deleteModal.isOpen}
                     title="Xác nhận xóa chương"
-                    message={`Bạn có chắc chắn muốn xóa chương #${modal.selected.chapter_index}: ${modal.selected.title}?`}
-                    onClose={() => modal.close("delete")}
-                    onConfirm={() => actions.delete(modal.selected.id)}
+                    message={`Bạn có chắc chắn muốn xóa chương #${deleteModal.data.chapter_index}: ${deleteModal.data.title}?`}
+                    onClose={deleteModal.close}
+                    onConfirm={handleDeleteConfirm}
                     confirmText="Xác nhận xóa"
                 />
             )}

@@ -1,80 +1,80 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import BannerLocationForm from "./BannerLocationForm";
 import api from "@/lib/api/client";
-import { adminEndpoints } from "@/lib/api/endpoints";
-
-interface BannerLocation {
-  id?: number;
-  code?: string;
-  name?: string;
-  description?: string;
-  status?: string;
-}
+import { useToastContext } from "@/contexts/ToastContext";
 
 interface EditBannerLocationProps {
   show: boolean;
-  locationId: number;
+  target: { fetchApi?: string; initialData?: any; updateApi: string } | null;
   statusEnums?: Array<{ value: string; label?: string; name?: string }>;
-  apiErrors?: Record<string, string | string[]>;
-  onUpdated?: (data: any) => void;
+  onSuccess?: () => void;
   onClose?: () => void;
 }
 
 export default function EditBannerLocation({
   show,
-  locationId,
+  target,
   statusEnums,
-  apiErrors,
-  onUpdated,
+  onSuccess,
   onClose,
 }: EditBannerLocationProps) {
-  const [location, setLocation] = useState<BannerLocation | null>(null);
+  const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [apiErrors, setApiErrors] = useState<any>(null);
+  const { showError, showSuccess } = useToastContext();
 
-  const fetchLocationData = useCallback(async () => {
-    if (!locationId) return;
+  useEffect(() => {
+    if (show) {
+      if (target?.fetchApi) {
+        const fetchData = async () => {
+          setLoading(true);
+          try {
+            const response = await api.get(target.fetchApi!);
+            setData(response.data?.data || response.data);
+          } catch (error) {
+            showError("Không thể tải thông tin vị trí banner");
+            onClose?.();
+          } finally {
+            setLoading(false);
+          }
+        };
+        fetchData();
+      } else if (target?.initialData) {
+        setData(target.initialData);
+      }
+    } else {
+      setData(null);
+      setApiErrors(null);
+    }
+  }, [show, target, showError, onClose]);
 
+  const handleSubmit = async (formData: any) => {
+    if (!target?.updateApi) return;
+    
+    setApiErrors(null);
     setLoading(true);
     try {
-      const response = await api.get(adminEndpoints.bannerLocations.show(locationId));
-      const data = response.data?.data || response.data;
-      setLocation(data);
-    } catch (err: any) {
-      console.error("Error fetching location:", err);
+      await api.put(target.updateApi, formData);
+      showSuccess("Cập nhật vị trí banner thành công");
+      onSuccess?.();
+    } catch (error: any) {
+      const errors = error.response?.data?.errors || error.response?.data || error;
+      setApiErrors(errors);
+      showError(error.response?.data?.message || "Có lỗi xảy ra khi cập nhật");
     } finally {
       setLoading(false);
     }
-  }, [locationId]);
-
-  useEffect(() => {
-    if (show && locationId) {
-      fetchLocationData();
-    }
-  }, [show, locationId, fetchLocationData]);
-
-  const handleSubmit = (formData: any) => {
-    onUpdated?.(formData);
   };
-
-  if (loading) {
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white rounded-lg p-6 flex flex-col items-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mb-4"></div>
-          <p className="text-gray-700">Đang tải thông tin vị trí banner...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <BannerLocationForm
-      show={show && !loading}
-      location={location}
+      show={show}
+      location={data}
       statusEnums={statusEnums}
       apiErrors={apiErrors}
+      loading={loading}
       onSubmit={handleSubmit}
       onCancel={onClose}
     />

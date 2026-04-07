@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState, Fragment } from "react";
+import { useState, Fragment } from "react";
 import { useListPage } from "@/hooks";
+import useModal from "@/hooks/ui-ux/useModal";
 import { adminEndpoints } from "@/lib/api/endpoints";
 import SkeletonLoader from "@/components/UI/Feedback/SkeletonLoader";
 import ConfirmModal from "@/components/UI/Feedback/ConfirmModal";
@@ -25,24 +26,15 @@ const formatDate = (dateString?: string): string => {
 };
 
 export default function AdminComicComments() {
-    const listOptions = useMemo(
-        () => ({
-            endpoints: {
-                list: adminEndpoints.comicComments.list,
-                delete: (id: string | number) => adminEndpoints.comicComments.delete(id),
-            },
-            messages: {
-                deleteSuccess: "Bình luận đã được xóa thành công",
-            },
-        }),
-        []
-    );
-
-    const { data, modal, actions, ui } = useListPage(listOptions);
+    const { data, actions, ui } = useListPage({
+        endpoint: adminEndpoints.comicComments.list,
+    });
+    
     const { items, loading, pagination, filters, hasData } = data;
     const { getSerialNumber, toast } = ui;
 
     const [togglingId, setTogglingId] = useState<string | number | null>(null);
+    const deleteModal = useModal<Comment>();
 
     const handleToggleStatus = async (comment: any) => {
         const newStatus = comment.status === "visible" ? "hidden" : "visible";
@@ -57,6 +49,18 @@ export default function AdminComicComments() {
             toast.error("Không thể cập nhật trạng thái bình luận");
         } finally {
             setTogglingId(null);
+        }
+    };
+
+    const handleDeleteConfirm = async () => {
+        if (!deleteModal.data?.id) return;
+        try {
+            await api.delete(adminEndpoints.comicComments.delete(deleteModal.data.id));
+            toast.success("Bình luận đã được xóa thành công");
+            deleteModal.close();
+            actions.refresh();
+        } catch (error) {
+            toast.error("Không thể xóa bình luận");
         }
     };
 
@@ -158,7 +162,7 @@ export default function AdminComicComments() {
                             showView={false}
                             showEdit={false}
                             showDelete={true}
-                            onDelete={() => modal.open("delete", comment)}
+                            onDelete={() => deleteModal.open(comment)}
                             additionalActions={[
                                 {
                                     label: comment.status === 'visible' ? 'Ẩn bình luận' : 'Hiện bình luận',
@@ -243,11 +247,11 @@ export default function AdminComicComments() {
             )}
 
             <ConfirmModal
-                show={modal.state.delete}
+                show={deleteModal.isOpen}
                 title="Xác nhận xóa"
                 message="Bạn có chắc chắn muốn xóa bình luận này?"
-                onClose={() => modal.close("delete")}
-                onConfirm={() => actions.delete(modal.selected?.id)}
+                onClose={deleteModal.close}
+                onConfirm={handleDeleteConfirm}
                 confirmText="Xác nhận xóa"
                 confirmButtonClass="bg-red-600 hover:bg-red-700"
             />

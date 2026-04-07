@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
 import { useListPage } from "@/hooks";
+import useModal from "@/hooks/ui-ux/useModal";
 import { adminEndpoints } from "@/lib/api/endpoints";
 import SkeletonLoader from "@/components/UI/Feedback/SkeletonLoader";
 import ConfirmModal from "@/components/UI/Feedback/ConfirmModal";
@@ -10,6 +10,8 @@ import Pagination from "@/components/UI/DataDisplay/Pagination";
 import FAQsFilter from "./FAQsFilter";
 import CreateFAQ from "./CreateFAQ";
 import EditFAQ from "./EditFAQ";
+import { useToastContext } from "@/contexts/ToastContext";
+import api from "@/lib/api/client";
 
 const formatDate = (dateStr?: string): string => {
   if (!dateStr) return "-";
@@ -35,30 +37,36 @@ export default function AdminFAQs({
   title = "Quản lý câu hỏi thường gặp",
   createButtonText = "Thêm câu hỏi mới",
 }: AdminFAQsProps) {
-  const { data, modal, actions, ui } = useListPage(useMemo(() => ({
-    endpoints: {
-      list: adminEndpoints.faqs.list,
-      create: adminEndpoints.faqs.create,
-      update: (id: string | number) => adminEndpoints.faqs.update(id),
-      delete: (id: string | number) => adminEndpoints.faqs.delete(id),
-      show: (id: string | number) => adminEndpoints.faqs.show(id),
-    },
-    messages: {
-      createSuccess: "Đã tạo thành công",
-      updateSuccess: "Đã cập nhật thành công",
-      deleteSuccess: "Đã xóa thành công",
-    },
-    fetchDetailBeforeEdit: true,
-  }), []));
-  const { items, loading, pagination, filters, apiErrors, hasData } = data;
+  const { data, actions, ui } = useListPage({
+    endpoint: adminEndpoints.faqs.list,
+  });
+  
+  const { items, loading, pagination, filters, hasData } = data;
   const { getSerialNumber } = ui;
+  const { showSuccess, showError } = useToastContext();
+
+  const createModal = useModal<{ createApi: string }>();
+  const editModal = useModal<{ fetchApi?: string; initialData?: any; updateApi: string }>();
+  const deleteModal = useModal<{ id: number | string; question?: string; deleteApi: string }>();
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteModal.data?.deleteApi) return;
+    try {
+      await api.delete(deleteModal.data.deleteApi);
+      showSuccess("Đã xóa câu hỏi thành công");
+      deleteModal.close();
+      actions.refresh();
+    } catch (error: any) {
+      showError(error.response?.data?.message || "Có lỗi xảy ra khi xóa");
+    }
+  };
 
   return (
     <div className="admin-faqs">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">{title}</h1>
         <button
-          onClick={() => modal.open("create")}
+          onClick={() => createModal.open({ createApi: adminEndpoints.faqs.create })}
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none"
         >
           {createButtonText}
@@ -126,13 +134,20 @@ export default function AdminFAQs({
                     <td className="px-6 py-4 text-sm font-medium">
                       <Actions
                         item={item}
-                        onEdit={() => modal.open("edit", item)}
+                        onEdit={() => editModal.open({
+                          fetchApi: adminEndpoints.faqs.show(item.id),
+                          updateApi: adminEndpoints.faqs.update(item.id)
+                        })}
                         showView={false}
                         showDelete={false}
                         additionalActions={[
                           {
                             label: "Xóa",
-                            action: () => modal.open("delete", item),
+                            action: () => deleteModal.open({
+                              id: item.id,
+                              question: item.question,
+                              deleteApi: adminEndpoints.faqs.delete(item.id)
+                            }),
                             icon: "trash",
                           },
                         ]}
@@ -140,6 +155,13 @@ export default function AdminFAQs({
                     </td>
                   </tr>
                 ))}
+                {items.length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="px-6 py-10 text-center text-gray-500 italic">
+                      Không tìm thấy câu hỏi nào
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -155,32 +177,37 @@ export default function AdminFAQs({
         />
       )}
 
-      {modal.state.create && (
+      {createModal.isOpen && createModal.data && (
         <CreateFAQ
-          show={modal.state.create}
-          apiErrors={apiErrors}
-          onClose={() => modal.close("create")}
-          onCreated={actions.create}
+          show={createModal.isOpen}
+          createApi={createModal.data.createApi}
+          onClose={createModal.close}
+          onSuccess={() => {
+            createModal.close();
+            actions.refresh();
+          }}
         />
       )}
 
-      {modal.state.edit && modal.selected && (
+      {editModal.isOpen && editModal.data && (
         <EditFAQ
-          show={modal.state.edit}
-          faq={modal.selected}
-          apiErrors={apiErrors}
-          onClose={() => modal.close("edit")}
-          onUpdated={(data) => actions.update(modal.selected.id, data)}
+          show={editModal.isOpen}
+          target={editModal.data}
+          onClose={editModal.close}
+          onSuccess={() => {
+            editModal.close();
+            actions.refresh();
+          }}
         />
       )}
 
-      {modal.selected && (
+      {deleteModal.isOpen && deleteModal.data && (
         <ConfirmModal
-          show={modal.state.delete}
+          show={deleteModal.isOpen}
           title="Xác nhận xóa"
-          message="Bạn có chắc chắn muốn xóa câu hỏi này?"
-          onClose={() => modal.close("delete")}
-          onConfirm={() => actions.delete(modal.selected.id)}
+          message={`Bạn có chắc chắn muốn xóa câu hỏi "${deleteModal.data.question}"?`}
+          onClose={deleteModal.close}
+          onConfirm={handleDeleteConfirm}
         />
       )}
     </div>

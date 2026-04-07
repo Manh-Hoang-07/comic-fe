@@ -40,6 +40,7 @@ interface ProvinceFormProps {
   show: boolean;
   province?: AdminProvinceFormEntity | null;
   apiErrors?: Record<string, string | string[]>;
+  loading?: boolean;
   onSubmit?: (data: ProvinceFormValues) => void;
   onCancel?: () => void;
 }
@@ -53,6 +54,7 @@ export default function ProvinceForm({
   show,
   province,
   apiErrors = {},
+  loading = false,
   onSubmit,
   onCancel,
 }: ProvinceFormProps) {
@@ -124,7 +126,7 @@ export default function ProvinceForm({
       onClose={onCancel || (() => { })}
       title={formTitle}
       size="lg"
-      loading={isSubmitting}
+      loading={loading || isSubmitting}
     >
       <form
         onSubmit={handleSubmit(handleInternalSubmit)}

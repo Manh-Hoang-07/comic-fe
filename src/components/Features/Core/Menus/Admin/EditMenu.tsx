@@ -1,78 +1,83 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import MenuForm from "./MenuForm";
 import api from "@/lib/api/client";
-import { adminEndpoints } from "@/lib/api/endpoints";
+import { useToastContext } from "@/contexts/ToastContext";
 
 interface EditMenuProps {
   show: boolean;
-  menu?: any;
+  target: { fetchApi?: string; initialData?: any; updateApi: string } | null;
   statusEnums?: Array<{ value: string; label?: string; name?: string }>;
   parentMenus?: Array<any>;
   permissions?: Array<any>;
-  apiErrors?: Record<string, string | string[]>;
-  onUpdated?: (data: any) => void;
+  onSuccess?: () => void;
   onClose?: () => void;
 }
 
 export default function EditMenu({
   show,
-  menu,
+  target,
   statusEnums,
   parentMenus,
   permissions,
-  apiErrors,
-  onUpdated,
+  onSuccess,
   onClose,
 }: EditMenuProps) {
-  const [showModal, setShowModal] = useState(false);
   const [menuData, setMenuData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
-
-  const fetchMenuDetails = useCallback(async () => {
-    if (!menu?.id) return;
-
-    setLoading(true);
-    try {
-      const response = await api.get(adminEndpoints.menus.show(menu.id));
-      if (response.data?.success) {
-        setMenuData(response.data.data);
-      } else {
-        setMenuData(response.data.data || response.data);
-      }
-    } catch (error) {
-      setMenuData(menu);
-    } finally {
-      setLoading(false);
-    }
-  }, [menu]);
+  const [apiErrors, setApiErrors] = useState<any>(null);
+  const { showError, showSuccess } = useToastContext();
 
   useEffect(() => {
-    setShowModal(show);
-    if (show && menu?.id) {
-      setMenuData(menu);
-      fetchMenuDetails();
+    if (show) {
+      if (target?.fetchApi) {
+        const fetchMenuDetails = async () => {
+          setLoading(true);
+          try {
+            const response = await api.get(target.fetchApi!);
+            setMenuData(response.data?.data || response.data);
+          } catch (error) {
+            showError("Không thể tải thông tin menu");
+            onClose?.();
+          } finally {
+            setLoading(false);
+          }
+        };
+        fetchMenuDetails();
+      } else if (target?.initialData) {
+        setMenuData(target.initialData);
+      }
     } else {
       setMenuData(null);
-      setLoading(false);
+      setApiErrors(null);
     }
-  }, [show, menu, fetchMenuDetails]);
+  }, [show, target, showError, onClose]);
 
-  const handleSubmit = (formData: any) => {
-    onUpdated?.(formData);
+  const handleSubmit = async (formData: any) => {
+    if (!target?.updateApi) return;
+    
+    setApiErrors(null);
+    try {
+      await api.put(target.updateApi, formData);
+      showSuccess("Cập nhật menu thành công");
+      onSuccess?.();
+    } catch (error: any) {
+      const errors = error.response?.data?.errors || error.response?.data || error;
+      setApiErrors(errors);
+      showError(error.response?.data?.message || "Có lỗi xảy ra khi cập nhật");
+    }
   };
-
-  if (!showModal) return null;
 
   return (
     <MenuForm
-      show={showModal}
+      show={show}
       menu={menuData}
       statusEnums={statusEnums}
       parentMenus={parentMenus}
       permissions={permissions}
       apiErrors={apiErrors}
+      loading={loading}
       onSubmit={handleSubmit}
       onCancel={onClose}
     />

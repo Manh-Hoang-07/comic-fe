@@ -1,12 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import api from "@/lib/api/client";
 import { adminEndpoints } from "@/lib/api/endpoints";
 import { useListPage } from "@/hooks";
+import useModal from "@/hooks/ui-ux/useModal";
 import SkeletonLoader from "@/components/UI/Feedback/SkeletonLoader";
 import ConfirmModal from "@/components/UI/Feedback/ConfirmModal";
 import Actions from "@/components/UI/DataDisplay/Actions";
 import Pagination from "@/components/UI/DataDisplay/Pagination";
+import { useToastContext } from "@/contexts/ToastContext";
 import PermissionsFilter from "./PermissionsFilter";
 import CreatePermission from "./CreatePermission";
 import EditPermission from "./EditPermission";
@@ -38,30 +41,38 @@ export default function AdminPermissions({
   title = "Quản lý quyền",
   createButtonText = "Thêm quyền mới",
 }: AdminPermissionsProps) {
-  const { data, modal, actions, ui } = useListPage({
-    endpoints: {
-      list: adminEndpoints.permissions.list,
-      create: adminEndpoints.permissions.create,
-      update: (id) => adminEndpoints.permissions.update(id),
-      delete: (id) => adminEndpoints.permissions.delete(id),
-    },
-    messages: {
-      createSuccess: "Đã tạo quyền thành công",
-      updateSuccess: "Đã cập nhật quyền thành công",
-      deleteSuccess: "Đã xóa quyền thành công",
-    },
+  const { data, actions, ui } = useListPage({
+    endpoint: adminEndpoints.permissions.list,
   });
-  const { items, loading, pagination, filters, apiErrors, hasData } = data;
-  const { getSerialNumber, toast } = ui;
+  
+  const { items, loading, pagination, filters, hasData } = data;
+  const { getSerialNumber } = ui;
+  const { showSuccess, showError } = useToastContext();
 
   const [statusEnums] = useState(getBasicStatusArray());
+
+  const createModal = useModal<{ createApi: string }>();
+  const editModal = useModal<{ fetchApi?: string; initialData?: any; updateApi: string }>();
+  const deleteModal = useModal<{ id: number; name?: string; deleteApi: string }>();
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteModal.data?.deleteApi) return;
+    try {
+      await api.delete(deleteModal.data.deleteApi);
+      showSuccess("Đã xóa quyền thành công");
+      deleteModal.close();
+      actions.refresh();
+    } catch (error: any) {
+      showError(error.response?.data?.message || "Có lỗi xảy ra khi xóa");
+    }
+  };
 
   return (
     <div className="admin-permissions">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">{title}</h1>
         <button
-          onClick={() => modal.open("create")}
+          onClick={() => createModal.open({ createApi: adminEndpoints.permissions.create })}
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
         >
           {createButtonText}
@@ -116,8 +127,15 @@ export default function AdminPermissions({
                       {!permission.has_children ? (
                         <Actions
                           item={permission}
-                          onEdit={() => modal.open("edit", permission)}
-                          onDelete={() => modal.open("delete", permission)}
+                          onEdit={() => editModal.open({ 
+                            fetchApi: adminEndpoints.permissions.show(permission.id),
+                            updateApi: adminEndpoints.permissions.update(permission.id)
+                          })}
+                          onDelete={() => deleteModal.open({ 
+                            id: permission.id, 
+                            name: permission.name || permission.code, 
+                            deleteApi: adminEndpoints.permissions.delete(permission.id) 
+                          })}
                         />
                       ) : (
                         <span className="text-gray-400 text-xs italic">Có {permission.children_count} quyền con</span>
@@ -145,33 +163,40 @@ export default function AdminPermissions({
         />
       )}
 
-      <CreatePermission
-        show={modal.state.create}
-        statusEnums={statusEnums}
-        apiErrors={apiErrors}
-        onClose={() => modal.close("create")}
-        onCreated={actions.create}
-      />
+      {createModal.isOpen && createModal.data && (
+        <CreatePermission
+          show={createModal.isOpen}
+          createApi={createModal.data.createApi}
+          statusEnums={statusEnums}
+          onClose={createModal.close}
+          onSuccess={() => {
+            createModal.close();
+            actions.refresh();
+          }}
+        />
+      )}
 
-      {modal.selected && (
-        <>
-          <EditPermission
-            show={modal.state.edit}
-            permission={modal.selected}
-            statusEnums={statusEnums}
-            apiErrors={apiErrors}
-            onClose={() => modal.close("edit")}
-            onUpdated={(data) => actions.update(modal.selected.id, data)}
-          />
+      {editModal.isOpen && editModal.data && (
+        <EditPermission
+          show={editModal.isOpen}
+          target={editModal.data}
+          statusEnums={statusEnums}
+          onClose={editModal.close}
+          onSuccess={() => {
+            editModal.close();
+            actions.refresh();
+          }}
+        />
+      )}
 
-          <ConfirmModal
-            show={modal.state.delete}
-            title="Xác nhận xóa"
-            message={`Bạn có chắc chắn muốn xóa quyền "${modal.selected.name || modal.selected.code}"?`}
-            onClose={() => modal.close("delete")}
-            onConfirm={() => actions.delete(modal.selected.id)}
-          />
-        </>
+      {deleteModal.isOpen && deleteModal.data && (
+        <ConfirmModal
+          show={deleteModal.isOpen}
+          title="Xác nhận xóa"
+          message={`Bạn có chắc chắn muốn xóa quyền "${deleteModal.data.name}"?`}
+          onClose={deleteModal.close}
+          onConfirm={handleDeleteConfirm}
+        />
       )}
     </div>
   );

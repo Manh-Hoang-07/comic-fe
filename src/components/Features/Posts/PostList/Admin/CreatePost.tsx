@@ -1,51 +1,62 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import PostForm from "./PostForm";
+import api from "@/lib/api/client";
+import { useToastContext } from "@/contexts/ToastContext";
 
 interface CreatePostProps {
   show: boolean;
+  createApi: string;
   statusEnums?: Array<{ value: string; label?: string; name?: string }>;
   postTypeEnums?: Array<{ value: string; label?: string; name?: string }>;
   categoryEnums?: Array<{ value: number; label?: string; name?: string }>;
   tagEnums?: Array<{ value: number; label?: string; name?: string }>;
-  apiErrors?: Record<string, string | string[]>;
-  onCreated?: (data: any) => void;
+  onSuccess?: () => void;
   onClose?: () => void;
 }
 
 export default function CreatePost({
   show,
+  createApi,
   statusEnums,
   postTypeEnums,
   categoryEnums,
   tagEnums,
-  apiErrors,
-  onCreated,
+  onSuccess,
   onClose,
 }: CreatePostProps) {
-  const [showModal, setShowModal] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [apiErrors, setApiErrors] = useState<any>(null);
+  const { showSuccess, showError } = useToastContext();
 
-  useEffect(() => {
-    setShowModal(show);
-  }, [show]);
-
-  const handleSubmit = (formData: any) => {
-    onCreated?.(formData);
+  const handleSubmit = async (formData: any) => {
+    setLoading(true);
+    setApiErrors(null);
+    try {
+      await api.post(createApi, formData);
+      showSuccess("Tạo bài viết thành công");
+      onSuccess?.();
+    } catch (error: any) {
+      const errors = error.response?.data?.errors || error.response?.data || error;
+      setApiErrors(errors);
+      showError(error.response?.data?.message || "Có lỗi xảy ra khi tạo");
+    } finally {
+      setLoading(false);
+    }
   };
-
-  if (!showModal) return null;
 
   return (
     <PostForm
-      show={showModal}
+      show={show}
       statusEnums={statusEnums}
       postTypeEnums={postTypeEnums}
       categoryEnums={categoryEnums}
       tagEnums={tagEnums}
-      apiErrors={apiErrors}
       onSubmit={handleSubmit}
       onCancel={onClose}
+      loading={loading}
+      apiErrors={apiErrors}
     />
   );
 }

@@ -53,6 +53,7 @@ interface MenuFormProps {
   parentMenus?: Array<any>;
   permissions?: Array<{ id: number; name: string; code: string }>;
   apiErrors?: Record<string, string | string[]>;
+  loading?: boolean;
   onSubmit?: (data: any) => void;
   onCancel?: () => void;
 }
@@ -63,6 +64,7 @@ export default function MenuForm({
   statusEnums = [],
   parentMenus = [],
   apiErrors = {},
+  loading = false,
   onSubmit,
   onCancel,
 }: MenuFormProps) {
@@ -201,7 +203,7 @@ export default function MenuForm({
   if (!show) return null;
 
   return (
-    <Modal show={show} onClose={onCancel || (() => { })} title={formTitle} size="xl" loading={isSubmitting}>
+    <Modal show={show} onClose={onCancel || (() => { })} title={formTitle} size="xl" loading={loading || isSubmitting}>
       <form onSubmit={handleSubmit((data) => onSubmit?.(data))} className="space-y-8 p-1">
 
         {/* SECTION: THÔNG TIN CƠ BẢN */}

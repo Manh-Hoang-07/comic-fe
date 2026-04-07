@@ -8,6 +8,7 @@ import Modal from "@/components/UI/Feedback/Modal";
 import MultipleSelect from "@/components/UI/Forms/MultipleSelect";
 import api from "@/lib/api/client";
 import { adminEndpoints } from "@/lib/api/endpoints";
+import { useToastContext } from "@/contexts/ToastContext";
 
 const assignRoleSchema = z.object({
   role_ids: z.array(z.number()).min(1, "Vui lòng chọn ít nhất một vai trò"),
@@ -17,20 +18,20 @@ type AssignRoleValues = z.infer<typeof assignRoleSchema>;
 
 interface AssignRoleProps {
   show: boolean;
-  user?: any;
-  onRoleAssigned?: () => void;
+  target: { assignApi: string; user: any } | null;
+  onSuccess?: () => void;
   onClose?: () => void;
 }
 
 export default function AssignRole({
   show,
-  user,
-  onRoleAssigned,
+  target,
+  onSuccess,
   onClose,
 }: AssignRoleProps) {
-  const [userDetail, setUserDetail] = useState<any>(null);
   const [roles, setRoles] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const { showError, showSuccess } = useToastContext();
 
   const {
     handleSubmit,
@@ -45,62 +46,41 @@ export default function AssignRole({
     },
   });
 
-  const fetchUserDetail = useCallback(async () => {
-    if (!user?.id) return;
+  const loadInitialData = useCallback(async () => {
+    if (!target?.user?.id) return;
+    setLoading(true);
     try {
-      setLoading(true);
-      const response = await api.get(adminEndpoints.users.show(user.id));
-      if (response.data?.success && response.data?.data) {
-        const data = response.data.data;
-        setUserDetail(data);
-
-        // Extract role IDs
-        let roleIds: number[] = [];
-
-        // 1. Prioritize flat role_ids from API
-        if (Array.isArray(data.role_ids)) {
-          roleIds = data.role_ids.map((id: number | string) => Number(id));
-        }
-        // 2. Fallback to user_role_assignments
-        else if (Array.isArray(data.user_role_assignments)) {
-          roleIds = data.user_role_assignments
-            .map((a: any) => Number(a.role_id || a.role?.id))
-            .filter((id: number) => !isNaN(id));
-        }
-        // 3. Fallback to roles array
-        else if (Array.isArray(data.roles)) {
-          roleIds = data.roles.map((r: any) => Number(r.id)).filter((id: number) => !isNaN(id));
-        }
-
-        reset({ role_ids: roleIds });
+      // 1. Load detail to get current roles
+      const userResponse = await api.get(adminEndpoints.users.show(target.user.id));
+      const userData = userResponse.data?.data || userResponse.data;
+      
+      let roleIds: number[] = [];
+      if (Array.isArray(userData.role_ids)) {
+        roleIds = userData.role_ids.map((id: any) => Number(id));
+      } else if (Array.isArray(userData.user_role_assignments)) {
+        roleIds = userData.user_role_assignments.map((a: any) => Number(a.role_id || a.role?.id)).filter(Boolean);
+      } else if (Array.isArray(userData.roles)) {
+        roleIds = userData.roles.map((r: any) => Number(r.id)).filter(Boolean);
       }
+      reset({ role_ids: roleIds });
+
+      // 2. Load all available roles
+      const rolesResponse = await api.get(adminEndpoints.roles.simple || `${adminEndpoints.roles.list}?limit=1000`);
+      setRoles(rolesResponse.data?.data || rolesResponse.data || []);
     } catch (error) {
-      console.error("Failed to fetch user detail:", error);
+      showError("Không thể tải thông tin quyền");
     } finally {
       setLoading(false);
     }
-  }, [user, reset]);
-
-  const loadRoles = useCallback(async () => {
-    try {
-      const response = await api.get(adminEndpoints.roles.simple || `${adminEndpoints.roles.list}?limit=1000`);
-      if (response.data?.success) {
-        setRoles(response.data.data || []);
-      }
-    } catch (error) {
-      console.error("Failed to load roles:", error);
-    }
-  }, []);
+  }, [target?.user?.id, reset, showError]);
 
   useEffect(() => {
-    if (show && user?.id) {
-      fetchUserDetail();
-      loadRoles();
-    } else if (!show) {
-      setUserDetail(null);
+    if (show && target) {
+      loadInitialData();
+    } else {
       reset({ role_ids: [] });
     }
-  }, [show, user?.id, fetchUserDetail, loadRoles, reset]);
+  }, [show, target, loadInitialData, reset]);
 
   const roleOptions = useMemo(() => {
     return (roles || [])
@@ -112,14 +92,14 @@ export default function AssignRole({
   }, [roles]);
 
   const onFormSubmit = async (data: AssignRoleValues) => {
-    if (!user?.id) return;
+    if (!target?.assignApi) return;
 
     try {
-      await api.put(adminEndpoints.users.assignRoles(user.id), {
+      await api.put(target.assignApi, {
         role_ids: data.role_ids,
       });
-      onRoleAssigned?.();
-      onClose?.();
+      showSuccess("Vai trò đã được phân công thành công");
+      onSuccess?.();
     } catch (error: any) {
       const payload = error?.response?.data;
       if (payload?.errors) {
@@ -129,11 +109,13 @@ export default function AssignRole({
             message: Array.isArray(value) ? value[0] : String(value)
           });
         });
+      } else {
+        showError(payload?.message || "Có lỗi xảy ra khi phân quyền");
       }
     }
   };
 
-  if (!show) return null;
+  if (!show || !target) return null;
 
   return (
     <Modal
@@ -160,11 +142,11 @@ export default function AssignRole({
           <div className="text-sm text-gray-600 space-y-2">
             <div className="flex items-center">
               <span className="w-20 font-medium text-gray-500">Họ tên:</span>
-              <span className="text-gray-900 font-semibold">{userDetail?.name || userDetail?.username || "..."}</span>
+              <span className="text-gray-900 font-semibold">{target.user?.name || target.user?.username || "..."}</span>
             </div>
             <div className="flex items-center">
               <span className="w-20 font-medium text-gray-500">Email:</span>
-              <span className="text-gray-900">{userDetail?.email || "..."}</span>
+              <span className="text-gray-900">{target.user?.email || "..."}</span>
             </div>
           </div>
         </div>

@@ -11,16 +11,16 @@ export interface ModalOptions {
   beforeClose?: (data: any) => Promise<boolean> | boolean;
 }
 
-export interface ModalResult {
+export interface ModalResult<T = any> {
   isOpen: boolean;
   isLoading: boolean;
-  data: any;
+  data: T | null;
   isClosed: boolean;
-  open: (modalData?: any) => void;
+  open: (modalData?: T) => void;
   close: () => Promise<boolean>;
   toggle: () => void;
   setLoading: (loading: boolean) => void;
-  setData: (newData: any) => void;
+  setData: (newData: T | null) => void;
   reset: () => void;
   handleOverlayClick: (event: React.MouseEvent) => void;
 }
@@ -33,17 +33,21 @@ function shouldCloseModal(
     return (options.closeOnEscape ?? true) && event.key === "Escape";
   }
 
-  if (event instanceof MouseEvent || "target" in event) {
+  if (
+    event instanceof MouseEvent ||
+    (typeof event === "object" && event !== null && "target" in event)
+  ) {
     return (
-      (options.closeOnOverlay ?? true) &&
-      event.target === event.currentTarget
+      (options.closeOnOverlay ?? true) && event.target === event.currentTarget
     );
   }
 
   return false;
 }
 
-export default function useModal(options: ModalOptions = {}): ModalResult {
+export default function useModal<T = any>(
+  options: ModalOptions = {}
+): ModalResult<T> {
   const {
     initialState = false,
     closeOnEscape = true,
@@ -55,20 +59,20 @@ export default function useModal(options: ModalOptions = {}): ModalResult {
 
   const [isOpen, setIsOpen] = useState(initialState);
   const [isLoading, setIsLoading] = useState(false);
-  const [data, setDataState] = useState<any>(null);
+  const [data, setDataState] = useState<T | null>(null);
 
   const open = useCallback(
-    (modalData: any = null) => {
+    (modalData: T | null = null) => {
       if (modalData !== null) {
         setDataState(modalData);
       }
       setIsOpen(true);
 
       if (onOpen) {
-        onOpen(data);
+        onOpen(modalData);
       }
     },
-    [onOpen, data]
+    [onOpen]
   );
 
   const close = useCallback(async (): Promise<boolean> => {
@@ -106,7 +110,7 @@ export default function useModal(options: ModalOptions = {}): ModalResult {
     setIsLoading(loading);
   }, []);
 
-  const setData = useCallback((newData: any) => {
+  const setData = useCallback((newData: T | null) => {
     setDataState(newData);
   }, []);
 

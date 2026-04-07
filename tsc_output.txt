@@ -1,0 +1,101 @@
+src/components/Features/Comics/Categories/Admin/AdminComicCategories.tsx(4,10): error TS2305: Module '"@/hooks"' has no exported member 'useLegacyListPage'.
+src/components/Features/Comics/Categories/Admin/AdminComicCategories.tsx(34,42): error TS2304: Cannot find name 'useListPage'.
+src/components/Features/Comics/Categories/Admin/AdminComicCategories.tsx(81,75): error TS7006: Parameter 'index' implicitly has an 'any' type.
+src/components/Features/Comics/Chapters/Admin/AdminChapters.tsx(4,10): error TS2305: Module '"@/hooks"' has no exported member 'useLegacyListPage'.
+src/components/Features/Comics/Chapters/Admin/AdminChapters.tsx(59,42): error TS2304: Cannot find name 'useListPage'.
+src/components/Features/Comics/Chapters/Admin/AdminChapters.tsx(129,68): error TS7006: Parameter 'index' implicitly has an 'any' type.
+src/components/Features/Comics/ComicList/Admin/AdminComics.tsx(4,10): error TS2305: Module '"@/hooks"' has no exported member 'useLegacyListPage'.
+src/components/Features/Comics/ComicList/Admin/AdminComics.tsx(38,42): error TS2304: Cannot find name 'useListPage'.
+src/components/Features/Comics/ComicList/Admin/AdminComics.tsx(111,64): error TS7006: Parameter 'index' implicitly has an 'any' type.
+src/components/Features/Comics/Comments/Admin/AdminComicComments.tsx(4,10): error TS2305: Module '"@/hooks"' has no exported member 'useLegacyListPage'.
+src/components/Features/Comics/Comments/Admin/AdminComicComments.tsx(41,42): error TS2304: Cannot find name 'useListPage'.
+src/components/Features/Comics/Comments/Admin/AdminComicComments.tsx(220,59): error TS7006: Parameter 'index' implicitly has an 'any' type.
+src/components/Features/Core/ContentTemplates/Admin/AdminContentTemplates.tsx(3,10): error TS2305: Module '"@/hooks"' has no exported member 'useLegacyListPage'.
+src/components/Features/Core/ContentTemplates/Admin/AdminContentTemplates.tsx(22,42): error TS2304: Cannot find name 'useListPage'.
+src/components/Features/Core/ContentTemplates/Admin/AdminContentTemplates.tsx(26,22): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/components/Features/Core/ContentTemplates/Admin/AdminContentTemplates.tsx(27,22): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/components/Features/Core/ContentTemplates/Admin/AdminContentTemplates.tsx(28,20): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/components/Features/Core/ContentTemplates/Admin/AdminContentTemplates.tsx(94,71): error TS7006: Parameter 'index' implicitly has an 'any' type.
+src/components/Features/Core/Locations/Countries/Admin/AdminCountries.tsx(4,10): error TS2305: Module '"@/hooks"' has no exported member 'useLegacyListPage'.
+src/components/Features/Core/Locations/Countries/Admin/AdminCountries.tsx(16,40): error TS2304: Cannot find name 'useListPage'.
+src/components/Features/Core/Locations/Countries/Admin/AdminCountries.tsx(20,16): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/components/Features/Core/Locations/Countries/Admin/AdminCountries.tsx(21,16): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/components/Features/Core/Locations/Countries/Admin/AdminCountries.tsx(22,14): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/components/Features/Core/Locations/Wards/Admin/AdminWards.tsx(4,10): error TS2305: Module '"@/hooks"' has no exported member 'useLegacyListPage'.
+src/components/Features/Core/Locations/Wards/Admin/AdminWards.tsx(16,40): error TS2304: Cannot find name 'useListPage'.
+src/components/Features/Core/Locations/Wards/Admin/AdminWards.tsx(20,16): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/components/Features/Core/Locations/Wards/Admin/AdminWards.tsx(21,16): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/components/Features/Core/Locations/Wards/Admin/AdminWards.tsx(22,14): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/components/Features/Introduction/About/Admin/AdminAboutSections.tsx(4,10): error TS2305: Module '"@/hooks"' has no exported member 'useLegacyListPage'.
+src/components/Features/Introduction/About/Admin/AdminAboutSections.tsx(53,40): error TS2304: Cannot find name 'useListPage'.
+src/components/Features/Introduction/About/Admin/AdminAboutSections.tsx(123,49): error TS7006: Parameter 'index' implicitly has an 'any' type.
+src/components/Features/Introduction/Certificates/Admin/AdminCertificates.tsx(4,10): error TS2305: Module '"@/hooks"' has no exported member 'useLegacyListPage'.
+src/components/Features/Introduction/Certificates/Admin/AdminCertificates.tsx(54,40): error TS2304: Cannot find name 'useListPage'.
+src/components/Features/Introduction/Certificates/Admin/AdminCertificates.tsx(58,16): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/components/Features/Introduction/Certificates/Admin/AdminCertificates.tsx(59,16): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/components/Features/Introduction/Certificates/Admin/AdminCertificates.tsx(60,14): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/components/Features/Introduction/Certificates/Admin/AdminCertificates.tsx(127,48): error TS7006: Parameter 'index' implicitly has an 'any' type.
+src/components/Features/Introduction/Contacts/Admin/AdminContacts.tsx(3,10): error TS2305: Module '"@/hooks"' has no exported member 'useLegacyListPage'.
+src/components/Features/Introduction/Contacts/Admin/AdminContacts.tsx(17,42): error TS2304: Cannot find name 'useListPage'.
+src/components/Features/Introduction/Contacts/Admin/AdminContacts.tsx(20,22): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/components/Features/Introduction/Contacts/Admin/AdminContacts.tsx(80,45): error TS7006: Parameter 'contact' implicitly has an 'any' type.
+src/components/Features/Introduction/Contacts/Admin/AdminContacts.tsx(80,54): error TS7006: Parameter 'index' implicitly has an 'any' type.
+src/components/Features/Introduction/Faqs/Admin/AdminFAQs.tsx(4,10): error TS2305: Module '"@/hooks"' has no exported member 'useLegacyListPage'.
+src/components/Features/Introduction/Faqs/Admin/AdminFAQs.tsx(38,40): error TS2304: Cannot find name 'useListPage'.
+src/components/Features/Introduction/Faqs/Admin/AdminFAQs.tsx(102,40): error TS7006: Parameter 'index' implicitly has an 'any' type.
+src/components/Features/Introduction/Galleries/Admin/AdminGallery.tsx(5,10): error TS2305: Module '"@/hooks"' has no exported member 'useLegacyListPage'.
+src/components/Features/Introduction/Galleries/Admin/AdminGallery.tsx(43,40): error TS2304: Cannot find name 'useListPage'.
+src/components/Features/Introduction/Galleries/Admin/AdminGallery.tsx(116,44): error TS7006: Parameter 'index' implicitly has an 'any' type.
+src/components/Features/Introduction/Partners/Admin/AdminPartners.tsx(5,10): error TS2305: Module '"@/hooks"' has no exported member 'useLegacyListPage'.
+src/components/Features/Introduction/Partners/Admin/AdminPartners.tsx(45,40): error TS2304: Cannot find name 'useListPage'.
+src/components/Features/Introduction/Partners/Admin/AdminPartners.tsx(49,16): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/components/Features/Introduction/Partners/Admin/AdminPartners.tsx(50,16): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/components/Features/Introduction/Partners/Admin/AdminPartners.tsx(51,14): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/components/Features/Introduction/Partners/Admin/AdminPartners.tsx(115,44): error TS7006: Parameter 'index' implicitly has an 'any' type.
+src/components/Features/Introduction/Projects/Admin/AdminProjects.tsx(4,10): error TS2305: Module '"@/hooks"' has no exported member 'useLegacyListPage'.
+src/components/Features/Introduction/Projects/Admin/AdminProjects.tsx(62,40): error TS2304: Cannot find name 'useListPage'.
+src/components/Features/Introduction/Projects/Admin/AdminProjects.tsx(66,16): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/components/Features/Introduction/Projects/Admin/AdminProjects.tsx(67,16): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/components/Features/Introduction/Projects/Admin/AdminProjects.tsx(68,14): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/components/Features/Introduction/Projects/Admin/AdminProjects.tsx(136,47): error TS7006: Parameter 'index' implicitly has an 'any' type.
+src/components/Features/Introduction/Staff/Admin/AdminStaff.tsx(3,10): error TS2305: Module '"@/hooks"' has no exported member 'useLegacyListPage'.
+src/components/Features/Introduction/Staff/Admin/AdminStaff.tsx(33,40): error TS2304: Cannot find name 'useListPage'.
+src/components/Features/Introduction/Staff/Admin/AdminStaff.tsx(37,16): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/components/Features/Introduction/Staff/Admin/AdminStaff.tsx(38,16): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/components/Features/Introduction/Staff/Admin/AdminStaff.tsx(39,14): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/components/Features/Introduction/Staff/Admin/AdminStaff.tsx(103,42): error TS7006: Parameter 'index' implicitly has an 'any' type.
+src/components/Features/Introduction/Testimonials/Admin/AdminTestimonials.tsx(3,10): error TS2305: Module '"@/hooks"' has no exported member 'useLegacyListPage'.
+src/components/Features/Introduction/Testimonials/Admin/AdminTestimonials.tsx(40,40): error TS2304: Cannot find name 'useListPage'.
+src/components/Features/Introduction/Testimonials/Admin/AdminTestimonials.tsx(44,16): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/components/Features/Introduction/Testimonials/Admin/AdminTestimonials.tsx(45,16): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/components/Features/Introduction/Testimonials/Admin/AdminTestimonials.tsx(46,14): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/components/Features/Introduction/Testimonials/Admin/AdminTestimonials.tsx(113,48): error TS7006: Parameter 'index' implicitly has an 'any' type.
+src/components/Features/Marketing/Banners/Admin/AdminBanners.tsx(6,10): error TS2305: Module '"@/hooks"' has no exported member 'useLegacyListPage'.
+src/components/Features/Marketing/Banners/Admin/AdminBanners.tsx(63,40): error TS2304: Cannot find name 'useListPage'.
+src/components/Features/Marketing/Banners/Admin/AdminBanners.tsx(67,16): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/components/Features/Marketing/Banners/Admin/AdminBanners.tsx(68,16): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/components/Features/Marketing/Banners/Admin/AdminBanners.tsx(175,45): error TS7006: Parameter 'index' implicitly has an 'any' type.
+src/components/Features/Marketing/Locations/Admin/AdminBannerLocations.tsx(4,10): error TS2305: Module '"@/hooks"' has no exported member 'useLegacyListPage'.
+src/components/Features/Marketing/Locations/Admin/AdminBannerLocations.tsx(47,40): error TS2304: Cannot find name 'useListPage'.
+src/components/Features/Marketing/Locations/Admin/AdminBannerLocations.tsx(112,53): error TS7006: Parameter 'index' implicitly has an 'any' type.
+src/components/Features/Posts/Categories/Admin/AdminPostCategories.tsx(3,10): error TS2305: Module '"@/hooks"' has no exported member 'useLegacyListPage'.
+src/components/Features/Posts/Categories/Admin/AdminPostCategories.tsx(45,40): error TS2304: Cannot find name 'useListPage'.
+src/components/Features/Posts/Categories/Admin/AdminPostCategories.tsx(49,16): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/components/Features/Posts/Categories/Admin/AdminPostCategories.tsx(50,16): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/components/Features/Posts/Categories/Admin/AdminPostCategories.tsx(51,14): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/components/Features/Posts/Categories/Admin/AdminPostCategories.tsx(109,51): error TS7006: Parameter 'index' implicitly has an 'any' type.
+src/components/Features/Posts/Comments/Admin/AdminPostComments.tsx(7,10): error TS2305: Module '"@/hooks"' has no exported member 'useLegacyListPage'.
+src/components/Features/Posts/Comments/Admin/AdminPostComments.tsx(48,42): error TS2304: Cannot find name 'useListPage'.
+src/components/Features/Posts/Comments/Admin/AdminPostComments.tsx(206,67): error TS7006: Parameter 'index' implicitly has an 'any' type.
+src/components/Features/Posts/PostList/Admin/AdminPosts.tsx(6,10): error TS2305: Module '"@/hooks"' has no exported member 'useLegacyListPage'.
+src/components/Features/Posts/PostList/Admin/AdminPosts.tsx(40,40): error TS2304: Cannot find name 'useListPage'.
+src/components/Features/Posts/PostList/Admin/AdminPosts.tsx(44,16): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/components/Features/Posts/PostList/Admin/AdminPosts.tsx(45,16): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/components/Features/Posts/PostList/Admin/AdminPosts.tsx(143,29): error TS7006: Parameter 'post' implicitly has an 'any' type.
+src/components/Features/Posts/PostList/Admin/AdminPosts.tsx(143,35): error TS7006: Parameter 'index' implicitly has an 'any' type.
+src/components/Features/Posts/Tags/Admin/AdminPostTags.tsx(3,10): error TS2305: Module '"@/hooks"' has no exported member 'useLegacyListPage'.
+src/components/Features/Posts/Tags/Admin/AdminPostTags.tsx(45,40): error TS2304: Cannot find name 'useListPage'.
+src/components/Features/Posts/Tags/Admin/AdminPostTags.tsx(49,16): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/components/Features/Posts/Tags/Admin/AdminPostTags.tsx(50,16): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/components/Features/Posts/Tags/Admin/AdminPostTags.tsx(51,14): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/components/Features/Posts/Tags/Admin/AdminPostTags.tsx(109,37): error TS7006: Parameter 'index' implicitly has an 'any' type.

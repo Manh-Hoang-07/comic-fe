@@ -34,6 +34,7 @@ interface FAQFormProps {
   show: boolean;
   faq?: FAQ | null;
   apiErrors?: Record<string, string | string[]>;
+  loading?: boolean;
   onSubmit?: (data: any) => void;
   onCancel?: () => void;
 }
@@ -42,6 +43,7 @@ export default function FAQForm({
   show,
   faq,
   apiErrors = {},
+  loading = false,
   onSubmit,
   onCancel,
 }: FAQFormProps) {
@@ -100,7 +102,7 @@ export default function FAQForm({
   if (!show) return null;
 
   return (
-    <Modal show={show} onClose={onCancel || (() => { })} title={formTitle} size="lg" loading={isSubmitting}>
+    <Modal show={show} onClose={onCancel || (() => { })} title={formTitle} size="lg" loading={isSubmitting || loading}>
       <form onSubmit={handleSubmit((data) => onSubmit?.(data))} className="space-y-8 p-1">
 
         <section className="bg-gray-50/50 p-6 rounded-2xl border border-gray-100 space-y-6">
@@ -171,10 +173,10 @@ export default function FAQForm({
           </button>
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || loading}
             className="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:-translate-y-0.5 transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
           >
-            {isSubmitting ? "Đang xử lý..." : faq ? "Cập nhật FAQ" : "Thêm FAQ"}
+            {isSubmitting || loading ? "Đang xử lý..." : faq ? "Cập nhật FAQ" : "Thêm FAQ"}
           </button>
         </div>
       </form>

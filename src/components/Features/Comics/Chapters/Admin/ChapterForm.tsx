@@ -24,17 +24,19 @@ type ChapterFormValues = z.infer<typeof chapterSchema>;
 interface ChapterFormProps {
     chapter?: AdminChapter | null;
     comicId?: number | string | null;
-    onSuccess: (data: any) => Promise<any>;
-    onCancel: () => void;
     apiErrors?: any;
+    loading?: boolean;
+    onSubmit?: (data: any) => void;
+    onCancel: () => void;
 }
 
 export default function ChapterForm({
     chapter,
     comicId,
-    onSuccess,
+    apiErrors,
+    loading = false,
+    onSubmit,
     onCancel,
-    apiErrors: externalErrors,
 }: ChapterFormProps) {
     const [comics, setComics] = useState<AdminComic[]>([]);
     const [loadingComics, setLoadingComics] = useState(false);
@@ -95,22 +97,18 @@ export default function ChapterForm({
 
     // Handle external API errors
     useEffect(() => {
-        if (externalErrors) {
-            Object.keys(externalErrors).forEach((key) => {
-                const message = Array.isArray(externalErrors[key])
-                    ? externalErrors[key][0]
-                    : String(externalErrors[key]);
+        if (apiErrors) {
+            Object.keys(apiErrors).forEach((key) => {
+                const message = Array.isArray(apiErrors[key])
+                    ? apiErrors[key][0]
+                    : String(apiErrors[key]);
                 setError(key as any, { message });
             });
         }
-    }, [externalErrors, setError]);
+    }, [apiErrors, setError]);
 
     const handleFormSubmit = async (values: ChapterFormValues) => {
-        try {
-            await onSuccess(values);
-        } catch (error) {
-            // Error handled by hook
-        }
+        onSubmit?.(values);
     };
 
     const statusOptions = [
@@ -261,10 +259,10 @@ export default function ChapterForm({
                 </button>
                 <button
                     type="submit"
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || loading}
                     className="rounded-xl bg-blue-600 px-12 py-3 font-bold text-white shadow-lg shadow-blue-500/20 transition-all hover:bg-blue-700 active:scale-95 disabled:opacity-50"
                 >
-                    {isSubmitting ? "Đang xử lý..." : chapter ? "Cập nhật chương" : "Tạo chương mới"}
+                    {isSubmitting || loading ? "Đang xử lý..." : chapter ? "Cập nhật chương" : "Tạo chương mới"}
                 </button>
             </div>
         </form>

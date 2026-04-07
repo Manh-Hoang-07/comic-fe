@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import api from "@/lib/api/client";
 import { useListPage } from "@/hooks";
+import useModal from "@/hooks/ui-ux/useModal";
 import { adminEndpoints } from "@/lib/api/endpoints";
 import SkeletonLoader from "@/components/UI/Feedback/SkeletonLoader";
 import ConfirmModal from "@/components/UI/Feedback/ConfirmModal";
@@ -12,6 +13,7 @@ import Pagination from "@/components/UI/DataDisplay/Pagination";
 import BannersFilter from "./BannersFilter";
 import CreateBanner from "./CreateBanner";
 import EditBanner from "./EditBanner";
+import { useToastContext } from "@/contexts/ToastContext";
 
 const getStatusLabel = (status: string, statusEnums: any[]): string => {
   const found = statusEnums.find((s) => s.value === status);
@@ -60,21 +62,17 @@ interface AdminBannersProps {
 }
 
 export default function AdminBanners({ title = "Quản lý banner", createButtonText = "Thêm banner mới" }: AdminBannersProps) {
-  const { data, modal, actions, ui } = useListPage({
-    endpoints: {
-      list: adminEndpoints.banners.list,
-      create: adminEndpoints.banners.create,
-      update: (id) => adminEndpoints.banners.update(id),
-      delete: (id) => adminEndpoints.banners.delete(id),
-    },
-    messages: {
-      createSuccess: "Banner đã được tạo thành công",
-      updateSuccess: "Banner đã được cập nhật thành công",
-      deleteSuccess: "Banner đã được xóa thành công",
-    },
+  const { data, actions, ui } = useListPage({
+    endpoint: adminEndpoints.banners.list,
   });
-  const { items, loading, pagination, filters, apiErrors, hasData } = data;
-  const { getSerialNumber, toast } = ui;
+  
+  const { items, loading, pagination, filters, hasData } = data;
+  const { getSerialNumber } = ui;
+  const { showSuccess, showError } = useToastContext();
+
+  const createModal = useModal<{ createApi: string }>();
+  const editModal = useModal<{ fetchApi?: string; initialData?: any; updateApi: string }>();
+  const deleteModal = useModal<{ id: number | string; title?: string; deleteApi: string }>();
 
   const [statusEnums, setStatusEnums] = useState<any[]>([]);
   const [locationEnums, setLocationEnums] = useState<any[]>([]);
@@ -112,13 +110,13 @@ export default function AdminBanners({ title = "Quản lý banner", createButton
       const newStatus = banner.status === "active" ? "inactive" : "active";
       const response = await api.patch(adminEndpoints.banners.updateStatus(banner.id), { status: newStatus });
       if (response.data?.success) {
-        toast.success(`Đã ${newStatus === "active" ? "kích hoạt" : "vô hiệu hóa"} banner`);
+        showSuccess(`Đã ${newStatus === "active" ? "kích hoạt" : "vô hiệu hóa"} banner`);
         actions.refresh();
       } else {
-        toast.error("Không thể cập nhật trạng thái banner");
+        showError("Không thể cập nhật trạng thái banner");
       }
     } catch (error) {
-      toast.error("Không thể cập nhật trạng thái banner");
+      showError("Không thể cập nhật trạng thái banner");
     }
   };
 
@@ -126,13 +124,25 @@ export default function AdminBanners({ title = "Quản lý banner", createButton
     try {
       const response = await api.put(adminEndpoints.banners.restore(banner.id));
       if (response.data?.success) {
-        toast.success("Banner đã được khôi phục thành công");
+        showSuccess("Banner đã được khôi phục thành công");
         actions.refresh();
       } else {
-        toast.error("Không thể khôi phục banner");
+        showError("Không thể khôi phục banner");
       }
     } catch (error) {
-      toast.error("Không thể khôi phục banner");
+      showError("Không thể khôi phục banner");
+    }
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteModal.data?.deleteApi) return;
+    try {
+      await api.delete(deleteModal.data.deleteApi);
+      showSuccess("Đã xóa banner thành công");
+      deleteModal.close();
+      actions.refresh();
+    } catch (error: any) {
+      showError(error.response?.data?.message || "Có lỗi xảy ra khi xóa");
     }
   };
 
@@ -148,7 +158,10 @@ export default function AdminBanners({ title = "Quản lý banner", createButton
     <div className="admin-banners">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">{title}</h1>
-        <button onClick={() => modal.open("create")} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none">
+        <button
+          onClick={() => createModal.open({ createApi: adminEndpoints.banners.create })}
+          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none"
+        >
           {createButtonText}
         </button>
       </div>
@@ -213,7 +226,7 @@ export default function AdminBanners({ title = "Quản lý banner", createButton
                             {banner.end_date && <div>Kết thúc: {formatDate(banner.end_date)}</div>}
                           </div>
                         )}
-                        {banner.deleted_at && <div className="text-xs text-red-600">Đã xóa</div>}
+                        {banner.deleted_at && <div className="text-xs text-red-600 font-medium">Đã xóa</div>}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -221,7 +234,10 @@ export default function AdminBanners({ title = "Quản lý banner", createButton
                         item={banner}
                         showView={false}
                         showDelete={false}
-                        onEdit={() => modal.open("edit", banner)}
+                        onEdit={() => editModal.open({
+                          fetchApi: adminEndpoints.banners.show(banner.id),
+                          updateApi: adminEndpoints.banners.update(banner.id)
+                        })}
                         additionalActions={[
                           {
                             label: banner.status === "active" ? "Vô hiệu hóa" : "Kích hoạt",
@@ -230,7 +246,11 @@ export default function AdminBanners({ title = "Quản lý banner", createButton
                           },
                           {
                             label: banner.deleted_at ? "Khôi phục" : "Xóa",
-                            action: () => (banner.deleted_at ? restoreBanner(banner) : modal.open("delete", banner)),
+                            action: () => (banner.deleted_at ? restoreBanner(banner) : deleteModal.open({
+                              id: banner.id,
+                              title: banner.title,
+                              deleteApi: adminEndpoints.banners.delete(banner.id)
+                            })),
                             icon: banner.deleted_at ? "refresh" : "trash",
                           },
                         ]}
@@ -240,8 +260,8 @@ export default function AdminBanners({ title = "Quản lý banner", createButton
                 ))}
                 {items.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
-                      Không có dữ liệu
+                    <td colSpan={6} className="px-6 py-10 text-center text-gray-500 italic">
+                      Không tìm thấy banner nào
                     </td>
                   </tr>
                 )}
@@ -251,31 +271,50 @@ export default function AdminBanners({ title = "Quản lý banner", createButton
         )}
       </div>
 
-      {hasData && <Pagination currentPage={pagination.page} totalPages={pagination.totalPages} totalItems={pagination.totalItems} onPageChange={actions.changePage} />}
-
-      {modal.state.create && (
-        <CreateBanner show={modal.state.create} statusEnums={statusEnums} locationEnums={locationEnums} apiErrors={apiErrors} onClose={() => modal.close("create")} onCreated={actions.create} />
-      )}
-
-      {modal.state.edit && modal.selected && (
-        <EditBanner
-          show={modal.state.edit}
-          bannerId={modal.selected.id}
-          statusEnums={statusEnums}
-          locationEnums={locationEnums}
-          apiErrors={apiErrors}
-          onClose={() => modal.close("edit")}
-          onUpdated={(data) => actions.update(modal.selected.id, data)}
+      {hasData && (
+        <Pagination
+          currentPage={pagination.page}
+          totalPages={pagination.totalPages}
+          totalItems={pagination.totalItems}
+          onPageChange={actions.changePage}
         />
       )}
 
-      {modal.selected && (
+      {createModal.isOpen && createModal.data && (
+        <CreateBanner
+          show={createModal.isOpen}
+          createApi={createModal.data.createApi}
+          statusEnums={statusEnums}
+          locationEnums={locationEnums}
+          onClose={createModal.close}
+          onSuccess={() => {
+            createModal.close();
+            actions.refresh();
+          }}
+        />
+      )}
+
+      {editModal.isOpen && editModal.data && (
+        <EditBanner
+          show={editModal.isOpen}
+          target={editModal.data}
+          statusEnums={statusEnums}
+          locationEnums={locationEnums}
+          onClose={editModal.close}
+          onSuccess={() => {
+            editModal.close();
+            actions.refresh();
+          }}
+        />
+      )}
+
+      {deleteModal.isOpen && deleteModal.data && (
         <ConfirmModal
-          show={modal.state.delete}
+          show={deleteModal.isOpen}
           title="Xác nhận xóa"
-          message={`Bạn có chắc chắn muốn xóa banner ${(modal.selected as Banner).title || ""}?`}
-          onClose={() => modal.close("delete")}
-          onConfirm={() => actions.delete(modal.selected.id)}
+          message={`Bạn có chắc chắn muốn xóa banner "${deleteModal.data.title}"?`}
+          onClose={deleteModal.close}
+          onConfirm={handleDeleteConfirm}
         />
       )}
     </div>

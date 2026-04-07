@@ -1,42 +1,53 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import ProjectForm from "./ProjectForm";
+import api from "@/lib/api/client";
+import { useToastContext } from "@/contexts/ToastContext";
 
 interface CreateProjectProps {
   show: boolean;
+  createApi: string;
   statusEnums?: Array<{ value: string; label?: string; name?: string }>;
-  apiErrors?: Record<string, string | string[]>;
-  onCreated?: (data: any) => void;
+  onSuccess?: () => void;
   onClose?: () => void;
 }
 
 export default function CreateProject({
   show,
+  createApi,
   statusEnums,
-  apiErrors,
-  onCreated,
+  onSuccess,
   onClose,
 }: CreateProjectProps) {
-  const [showModal, setShowModal] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [apiErrors, setApiErrors] = useState<any>(null);
+  const { showSuccess, showError } = useToastContext();
 
-  useEffect(() => {
-    setShowModal(show);
-  }, [show]);
-
-  const handleSubmit = (formData: any) => {
-    onCreated?.(formData);
+  const handleSubmit = async (formData: any) => {
+    setLoading(true);
+    setApiErrors(null);
+    try {
+      await api.post(createApi, formData);
+      showSuccess("Tạo dự án thành công");
+      onSuccess?.();
+    } catch (error: any) {
+      const errors = error.response?.data?.errors || error.response?.data || error;
+      setApiErrors(errors);
+      showError(error.response?.data?.message || "Có lỗi xảy ra khi tạo");
+    } finally {
+      setLoading(false);
+    }
   };
-
-  if (!showModal) return null;
 
   return (
     <ProjectForm
-      show={showModal}
+      show={show}
       statusEnums={statusEnums}
-      apiErrors={apiErrors}
       onSubmit={handleSubmit}
       onCancel={onClose}
+      loading={loading}
+      apiErrors={apiErrors}
     />
   );
 }

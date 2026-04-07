@@ -1,6 +1,7 @@
 "use client";
 
 import { useListPage } from "@/hooks";
+import useModal from "@/hooks/ui-ux/useModal";
 import { adminEndpoints } from "@/lib/api/endpoints";
 import { ContentTemplate } from "@/types/api";
 import SkeletonLoader from "@/components/UI/Feedback/SkeletonLoader";
@@ -9,9 +10,12 @@ import Actions from "@/components/UI/DataDisplay/Actions";
 import Pagination from "@/components/UI/DataDisplay/Pagination";
 import ContentTemplateFilter from "./ContentTemplateFilter";
 import Modal from "@/components/UI/Feedback/Modal";
-import ContentTemplateForm from "./ContentTemplateForm";
+import CreateContentTemplate from "./CreateContentTemplate";
+import EditContentTemplate from "./EditContentTemplate";
 import ContentTemplateTestModal from "./ContentTemplateTestModal";
 import { useState } from "react";
+import { useToastContext } from "@/contexts/ToastContext";
+import api from "@/lib/api/client";
 
 export default function AdminContentTemplates() {
     const [testModal, setTestModal] = useState<{ show: boolean; template: ContentTemplate | null }>({
@@ -19,23 +23,29 @@ export default function AdminContentTemplates() {
         template: null,
     });
 
-    const { data, modal, actions, ui } = useListPage({
-        endpoints: {
-            list: adminEndpoints.contentTemplates.list,
-            create: adminEndpoints.contentTemplates.create,
-            update: (id) => adminEndpoints.contentTemplates.update(id),
-            delete: (id) => adminEndpoints.contentTemplates.delete(id),
-            show: (id) => adminEndpoints.contentTemplates.show(id),
-        },
-        messages: {
-            createSuccess: "Đã tạo mẫu thành công",
-            updateSuccess: "Đã cập nhật mẫu thành công",
-            deleteSuccess: "Đã xóa mẫu thành công",
-        },
-        fetchDetailBeforeEdit: true,
+    const { data, actions, ui } = useListPage({
+        endpoint: adminEndpoints.contentTemplates.list,
     });
-    const { items, loading, pagination, filters, apiErrors, hasData } = data;
+    
+    const { items, loading, pagination, filters, hasData } = data;
     const { getSerialNumber } = ui;
+    const { showSuccess, showError } = useToastContext();
+
+    const createModal = useModal<{ createApi: string }>();
+    const editModal = useModal<{ fetchApi?: string; initialData?: any; updateApi: string }>();
+    const deleteModal = useModal<{ id: number | string; name?: string; deleteApi: string }>();
+
+    const handleDeleteConfirm = async () => {
+        if (!deleteModal.data?.deleteApi) return;
+        try {
+            await api.delete(deleteModal.data.deleteApi);
+            showSuccess("Đã xóa mẫu nội dung thành công");
+            deleteModal.close();
+            actions.refresh();
+        } catch (error: any) {
+            showError(error.response?.data?.message || "Có lỗi xảy ra khi xóa");
+        }
+    };
 
     const handleOpenTest = (item: ContentTemplate) => {
         setTestModal({ show: true, template: item });
@@ -58,7 +68,7 @@ export default function AdminContentTemplates() {
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-2xl font-bold">Mẫu nội dung</h1>
                 <button
-                    onClick={() => modal.open("create")}
+                    onClick={() => createModal.open({ createApi: adminEndpoints.contentTemplates.create })}
                     className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center gap-2"
                 >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -121,7 +131,10 @@ export default function AdminContentTemplates() {
                                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                                 <Actions
                                                     item={item}
-                                                    onEdit={() => modal.open("edit", item)}
+                                                    onEdit={() => editModal.open({
+                                                        fetchApi: adminEndpoints.contentTemplates.show(item.id),
+                                                        updateApi: adminEndpoints.contentTemplates.update(item.id)
+                                                    })}
                                                     showDelete={false}
                                                     showView={false}
                                                     additionalActions={[
@@ -133,7 +146,11 @@ export default function AdminContentTemplates() {
                                                         {
                                                             label: "Xóa",
                                                             icon: "trash",
-                                                            action: () => modal.open("delete", item),
+                                                            action: () => deleteModal.open({
+                                                                id: item.id,
+                                                                name: item.name,
+                                                                deleteApi: adminEndpoints.contentTemplates.delete(item.id)
+                                                            }),
                                                         }
                                                     ]}
                                                 />
@@ -163,55 +180,58 @@ export default function AdminContentTemplates() {
                 />
             )}
 
-            {/* Create Modal */}
-            <Modal
-                show={modal.state.create}
-                onClose={() => modal.close("create")}
-                title="Thêm mẫu nội dung mới"
-                size="xl"
-            >
-                <div className="p-1">
-                    <ContentTemplateForm
-                        onSubmit={actions.create}
-                        loading={loading}
-                        apiErrors={apiErrors}
-                        onCancel={() => modal.close("create")}
-                    />
-                </div>
-            </Modal>
-
-            {/* Edit Modal */}
-            <Modal
-                show={modal.state.edit}
-                onClose={() => modal.close("edit")}
-                title="Chỉnh sửa mẫu nội dung"
-                size="xl"
-            >
-                <div className="p-1">
-                    {modal.selected && (
-                        <ContentTemplateForm
-                            initialData={modal.selected}
-                            onSubmit={(data) => actions.update(modal.selected.id, data)}
-                            loading={loading}
-                            apiErrors={apiErrors}
-                            onCancel={() => modal.close("edit")}
+            {createModal.isOpen && createModal.data && (
+                <Modal
+                    show={createModal.isOpen}
+                    onClose={createModal.close}
+                    title="Thêm mẫu nội dung mới"
+                    size="xl"
+                >
+                    <div className="p-1">
+                        <CreateContentTemplate
+                            show={createModal.isOpen}
+                            createApi={createModal.data.createApi}
+                            onClose={createModal.close}
+                            onSuccess={() => {
+                                createModal.close();
+                                actions.refresh();
+                            }}
                         />
-                    )}
-                </div>
-            </Modal>
+                    </div>
+                </Modal>
+            )}
 
-            {/* Delete Confirmation */}
-            {modal.selected && (
+            {editModal.isOpen && editModal.data && (
+                <Modal
+                    show={editModal.isOpen}
+                    onClose={editModal.close}
+                    title="Chỉnh sửa mẫu nội dung"
+                    size="xl"
+                >
+                    <div className="p-1">
+                        <EditContentTemplate
+                            show={editModal.isOpen}
+                            target={editModal.data}
+                            onClose={editModal.close}
+                            onSuccess={() => {
+                                editModal.close();
+                                actions.refresh();
+                            }}
+                        />
+                    </div>
+                </Modal>
+            )}
+
+            {deleteModal.isOpen && deleteModal.data && (
                 <ConfirmModal
-                    show={modal.state.delete}
+                    show={deleteModal.isOpen}
                     title="Xác nhận xóa"
-                    message={`Bạn có chắc chắn muốn xóa mẫu "${(modal.selected as ContentTemplate).name}"? Hành động này không thể hoàn tác.`}
-                    onClose={() => modal.close("delete")}
-                    onConfirm={() => actions.delete(modal.selected.id)}
+                    message={`Bạn có chắc chắn muốn xóa mẫu "${deleteModal.data.name}"? Hành động này không thể hoàn tác.`}
+                    onClose={deleteModal.close}
+                    onConfirm={handleDeleteConfirm}
                 />
             )}
 
-            {/* Test Modal */}
             {testModal.template && (
                 <ContentTemplateTestModal
                     show={testModal.show}

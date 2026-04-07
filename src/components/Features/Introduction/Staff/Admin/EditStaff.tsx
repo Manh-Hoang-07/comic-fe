@@ -1,51 +1,77 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import StaffForm from "./StaffForm";
-
-interface Staff {
-  id?: number;
-  name?: string;
-  position?: string;
-  department?: string;
-  bio?: string;
-  avatar?: string | null;
-  email?: string;
-  phone?: string;
-  social_links?: {
-    facebook?: string;
-    linkedin?: string;
-    twitter?: string;
-  };
-  experience?: number;
-  expertise?: string;
-  status?: string;
-  sort_order?: number;
-}
+import api from "@/lib/api/client";
+import { useToastContext } from "@/contexts/ToastContext";
 
 interface EditStaffProps {
   show: boolean;
-  staff?: Staff | null;
-  apiErrors?: Record<string, string | string[]>;
-  onUpdated?: (data: any) => void;
+  target: { fetchApi?: string; initialData?: any; updateApi: string } | null;
+  onSuccess?: () => void;
   onClose?: () => void;
 }
 
 export default function EditStaff({
   show,
-  staff,
-  apiErrors,
-  onUpdated,
+  target,
+  onSuccess,
   onClose,
 }: EditStaffProps) {
-  const handleSubmit = (formData: any) => {
-    onUpdated?.(formData);
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+  const [apiErrors, setApiErrors] = useState<any>(null);
+  const { showError, showSuccess } = useToastContext();
+
+  useEffect(() => {
+    if (show) {
+      if (target?.fetchApi) {
+        const fetchData = async () => {
+          setLoading(true);
+          try {
+            const response = await api.get(target.fetchApi!);
+            setData(response.data?.data || response.data);
+          } catch (error) {
+            showError("Không thể tải thông tin nhân viên");
+            onClose?.();
+          } finally {
+            setLoading(false);
+          }
+        };
+        fetchData();
+      } else if (target?.initialData) {
+        setData(target.initialData);
+      }
+    } else {
+      setData(null);
+      setApiErrors(null);
+    }
+  }, [show, target, showError, onClose]);
+
+  const handleSubmit = async (formData: any) => {
+    if (!target?.updateApi) return;
+    
+    setApiErrors(null);
+    setLoading(true);
+    try {
+      await api.put(target.updateApi, formData);
+      showSuccess("Cập nhật nhân viên thành công");
+      onSuccess?.();
+    } catch (error: any) {
+      const errors = error.response?.data?.errors || error.response?.data || error;
+      setApiErrors(errors);
+      showError(error.response?.data?.message || "Có lỗi xảy ra khi cập nhật");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <StaffForm
       show={show}
-      staff={staff}
+      staff={data}
       apiErrors={apiErrors}
+      loading={loading}
       onSubmit={handleSubmit}
       onCancel={onClose}
     />

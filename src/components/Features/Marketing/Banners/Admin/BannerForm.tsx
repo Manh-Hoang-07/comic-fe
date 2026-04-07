@@ -37,6 +37,7 @@ interface BannerFormProps {
   statusEnums?: Array<{ value: string; label?: string; name?: string }>;
   locationEnums?: Array<{ value: number; label?: string; name?: string }>;
   apiErrors?: Record<string, string | string[]>;
+  loading?: boolean;
   onSubmit?: (data: BannerFormValues) => void;
   onCancel?: () => void;
 }
@@ -47,6 +48,7 @@ export default function BannerForm({
   statusEnums = [],
   locationEnums = [],
   apiErrors = {},
+  loading = false,
   onSubmit,
   onCancel,
 }: BannerFormProps) {
@@ -143,7 +145,7 @@ export default function BannerForm({
   if (!show) return null;
 
   return (
-    <Modal show={show} onClose={onCancel || (() => { })} title={formTitle} size="xl" loading={isSubmitting}>
+    <Modal show={show} onClose={onCancel || (() => { })} title={formTitle} size="xl" loading={loading || isSubmitting}>
       <form onSubmit={handleSubmit((data) => onSubmit?.(data))} className="space-y-8 p-1">
 
         {/* SECTION: THÔNG TIN CƠ BẢN */}
@@ -386,10 +388,10 @@ export default function BannerForm({
           </button>
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={loading || isSubmitting}
             className="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:-translate-y-0.5 transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
           >
-            {isSubmitting ? "Đang xử lý..." : banner ? "Cập nhật Banner" : "Tạo Banner mới"}
+            {loading || isSubmitting ? "Đang xử lý..." : banner ? "Cập nhật Banner" : "Tạo Banner mới"}
           </button>
         </div>
       </form>

@@ -1,46 +1,49 @@
 "use client";
 
-import { useMemo } from "react";
 import { useListPage } from "@/hooks";
+import useModal from "@/hooks/ui-ux/useModal";
 import { adminEndpoints } from "@/lib/api/endpoints";
 import SkeletonLoader from "@/components/UI/Feedback/SkeletonLoader";
 import ConfirmModal from "@/components/UI/Feedback/ConfirmModal";
 import Actions from "@/components/UI/DataDisplay/Actions";
 import Pagination from "@/components/UI/DataDisplay/Pagination";
+import { useToastContext } from "@/contexts/ToastContext";
+import api from "@/lib/api/client";
 import ComicCategoryFilter from "./ComicCategoryFilter";
 import CreateComicCategory from "./CreateComicCategory";
 import EditComicCategory from "./EditComicCategory";
 import { AdminComicCategory } from "@/types/comic";
 
 export default function AdminComicCategories() {
-    const listOptions = useMemo(
-        () => ({
-            endpoints: {
-                list: adminEndpoints.comicCategories.list,
-                create: adminEndpoints.comicCategories.create,
-                update: (id: string | number) => adminEndpoints.comicCategories.update(id),
-                delete: (id: string | number) => adminEndpoints.comicCategories.delete(id),
-                show: (id: string | number) => adminEndpoints.comicCategories.show(id),
-            },
-            messages: {
-                createSuccess: "Đã tạo danh mục truyện thành công",
-                updateSuccess: "Đã cập nhật danh mục truyện thành công",
-                deleteSuccess: "Đã xóa danh mục truyện thành công",
-            },
-        }),
-        []
-    );
-
-    const { data, modal, actions, ui } = useListPage(listOptions);
-    const { items, loading, pagination, filters, apiErrors, hasData } = data;
+    const { data, actions, ui } = useListPage({
+        endpoint: adminEndpoints.comicCategories.list,
+    });
+    const { items, loading, pagination, filters, hasData } = data;
     const { getSerialNumber } = ui;
+    const { showSuccess, showError } = useToastContext();
+
+    const createModal = useModal<{ createApi: string }>();
+    const editModal = useModal<{ fetchApi?: string; initialData?: any; updateApi: string }>();
+    const deleteModal = useModal<{ id: number | string; name?: string; deleteApi: string }>();
+
+    const handleDeleteConfirm = async () => {
+        if (!deleteModal.data?.deleteApi) return;
+        try {
+            await api.delete(deleteModal.data.deleteApi);
+            showSuccess("Đã xóa danh mục truyện thành công");
+            deleteModal.close();
+            actions.refresh();
+        } catch (error: any) {
+            showError(error.response?.data?.message || "Có lỗi xảy ra khi xóa");
+        }
+    };
 
     return (
         <div className="admin-comic-categories">
             <div className="mb-6 flex items-center justify-between">
                 <h1 className="font-primary text-2xl font-bold text-gray-900 leading-none">Danh mục truyện</h1>
                 <button
-                    onClick={() => modal.open("create")}
+                    onClick={() => createModal.open({ createApi: adminEndpoints.comicCategories.create })}
                     className="flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700 focus:outline-none"
                 >
                     <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -97,8 +100,15 @@ export default function AdminComicCategories() {
                                         <td className="whitespace-nowrap px-6 py-4 text-center text-sm font-medium">
                                             <Actions
                                                 item={category}
-                                                onEdit={() => modal.open("edit", category)}
-                                                onDelete={() => modal.open("delete", category)}
+                                                onEdit={() => editModal.open({
+                                                    fetchApi: adminEndpoints.comicCategories.show(category.id),
+                                                    updateApi: adminEndpoints.comicCategories.update(category.id)
+                                                })}
+                                                onDelete={() => deleteModal.open({
+                                                    id: category.id,
+                                                    name: category.name,
+                                                    deleteApi: adminEndpoints.comicCategories.delete(category.id)
+                                                })}
                                             />
                                         </td>
                                     </tr>
@@ -127,33 +137,37 @@ export default function AdminComicCategories() {
                 </div>
             )}
 
-            {/* Standardized Modals */}
-            {modal.state.create && (
+            {createModal.isOpen && createModal.data && (
                 <CreateComicCategory
-                    show={modal.state.create}
-                    apiErrors={apiErrors}
-                    onClose={() => modal.close("create")}
-                    onCreated={actions.create}
+                    show={createModal.isOpen}
+                    createApi={createModal.data.createApi}
+                    onClose={createModal.close}
+                    onSuccess={() => {
+                        createModal.close();
+                        actions.refresh();
+                    }}
                 />
             )}
 
-            {modal.state.edit && modal.selected && (
+            {editModal.isOpen && editModal.data && (
                 <EditComicCategory
-                    show={modal.state.edit}
-                    category={modal.selected}
-                    apiErrors={apiErrors}
-                    onClose={() => modal.close("edit")}
-                    onUpdated={(data) => actions.update(modal.selected.id, data)}
+                    show={editModal.isOpen}
+                    target={editModal.data}
+                    onClose={editModal.close}
+                    onSuccess={() => {
+                        editModal.close();
+                        actions.refresh();
+                    }}
                 />
             )}
 
-            {modal.selected && (
+            {deleteModal.isOpen && deleteModal.data && (
                 <ConfirmModal
-                    show={modal.state.delete}
+                    show={deleteModal.isOpen}
                     title="Xác nhận xóa"
-                    message={`Bạn có chắc chắn muốn xóa danh mục "${modal.selected.name}"? Hành động này không thể hoàn tác.`}
-                    onClose={() => modal.close("delete")}
-                    onConfirm={() => actions.delete(modal.selected.id)}
+                    message={`Bạn có chắc chắn muốn xóa danh mục "${deleteModal.data.name}"? Hành động này không thể hoàn tác.`}
+                    onClose={deleteModal.close}
+                    onConfirm={handleDeleteConfirm}
                     confirmText="Xác nhận xóa"
                 />
             )}

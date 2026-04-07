@@ -1,24 +1,23 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import ComicCategoryForm from "./ComicCategoryForm";
-import Modal from "@/components/UI/Feedback/Modal";
+import ContentTemplateForm from "./ContentTemplateForm";
 import api from "@/lib/api/client";
 import { useToastContext } from "@/contexts/ToastContext";
 
-interface EditComicCategoryProps {
+interface EditContentTemplateProps {
     show: boolean;
     target: { fetchApi?: string; initialData?: any; updateApi: string } | null;
     onSuccess?: () => void;
     onClose?: () => void;
 }
 
-export default function EditComicCategory({
+export default function EditContentTemplate({
     show,
     target,
     onSuccess,
     onClose,
-}: EditComicCategoryProps) {
+}: EditContentTemplateProps) {
     const [data, setData] = useState<any>(null);
     const [loading, setLoading] = useState(false);
     const [apiErrors, setApiErrors] = useState<any>(null);
@@ -33,7 +32,7 @@ export default function EditComicCategory({
                         const response = await api.get(target.fetchApi!);
                         setData(response.data?.data || response.data);
                     } catch (error) {
-                        showError("Không thể tải thông tin danh mục");
+                        showError("Không thể tải thông tin mẫu nội dung");
                         onClose?.();
                     } finally {
                         setLoading(false);
@@ -55,7 +54,7 @@ export default function EditComicCategory({
         setApiErrors(null);
         try {
             await api.put(target.updateApi, formData);
-            showSuccess("Cập nhật danh mục thành công");
+            showSuccess("Cập nhật mẫu nội dung thành công");
             onSuccess?.();
         } catch (error: any) {
             const errors = error.response?.data?.errors || error.response?.data || error;
@@ -65,23 +64,12 @@ export default function EditComicCategory({
     };
 
     return (
-        <Modal
-            show={show}
-            onClose={onClose || (() => { })}
-            title="Chỉnh sửa danh mục"
-            size="lg"
+        <ContentTemplateForm
+            initialData={data}
+            apiErrors={apiErrors}
             loading={loading}
-        >
-            <ComicCategoryForm
-                category={data}
-                apiErrors={apiErrors}
-                loading={loading}
-                onCancel={onClose!}
-                onSubmit={handleSubmit}
-            />
-        </Modal>
+            onCancel={onClose}
+            onSubmit={handleSubmit}
+        />
     );
 }
-
-
-

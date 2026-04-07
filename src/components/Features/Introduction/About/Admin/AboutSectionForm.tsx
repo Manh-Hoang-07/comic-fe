@@ -55,6 +55,7 @@ interface AboutSectionFormProps {
   show: boolean;
   section?: AboutSection | null;
   apiErrors?: Record<string, string | string[]>;
+  loading?: boolean;
   onSubmit?: (data: any) => void;
   onCancel?: () => void;
 }
@@ -63,6 +64,7 @@ export default function AboutSectionForm({
   show,
   section,
   apiErrors = {},
+  loading = false,
   onSubmit,
   onCancel,
 }: AboutSectionFormProps) {
@@ -134,7 +136,7 @@ export default function AboutSectionForm({
   if (!show) return null;
 
   return (
-    <Modal show={show} onClose={onCancel || (() => { })} title={formTitle} size="xl" loading={isSubmitting}>
+    <Modal show={show} onClose={onCancel || (() => { })} title={formTitle} size="xl" loading={loading || isSubmitting}>
       <form onSubmit={handleSubmit((data) => onSubmit?.(data))} className="space-y-8 p-1">
 
         {/* SECTION: THÔNG TIN CHÍNH */}
@@ -287,10 +289,10 @@ export default function AboutSectionForm({
           </button>
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={loading || isSubmitting}
             className="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:-translate-y-0.5 transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
           >
-            {isSubmitting ? "Đang xử lý..." : section ? "Cập nhật Section" : "Thêm Section"}
+            {loading || isSubmitting ? "Đang xử lý..." : section ? "Cập nhật Section" : "Thêm Section"}
           </button>
         </div>
       </form>

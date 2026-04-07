@@ -7,6 +7,7 @@ import * as z from "zod";
 import Modal from "@/components/UI/Feedback/Modal";
 import FormField from "@/components/UI/Forms/FormField";
 import SingleSelectEnhanced from "@/components/UI/Forms/SingleSelectEnhanced";
+import SkeletonLoader from "@/components/UI/Feedback/SkeletonLoader";
 
 const contextSchema = z.object({
   type: z.string().min(1, "Loại context là bắt buộc").max(100, "Loại context tối đa 100 ký tự"),
@@ -33,6 +34,7 @@ interface Context {
 interface ContextFormProps {
   show: boolean;
   context?: Context | null;
+  loading?: boolean;
   statusEnums?: Array<{ value: string; label?: string; name?: string }>;
   apiErrors?: Record<string, string | string[]>;
   onSubmit?: (data: any) => void;
@@ -42,6 +44,7 @@ interface ContextFormProps {
 export default function ContextForm({
   show,
   context,
+  loading = false,
   statusEnums = [],
   apiErrors = {},
   onSubmit,
@@ -108,7 +111,7 @@ export default function ContextForm({
   if (!show) return null;
 
   return (
-    <Modal show={show} onClose={onCancel || (() => { })} title={formTitle} size="xl" loading={isSubmitting}>
+    <Modal show={show} onClose={onCancel || (() => { })} title={formTitle} size="xl" loading={loading || isSubmitting}>
       <form onSubmit={handleSubmit((data) => onSubmit?.(data))} className="space-y-8 p-1">
 
         {/* SECTION: THÔNG TIN CƠ BẢN */}

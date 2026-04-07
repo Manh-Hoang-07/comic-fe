@@ -1,16 +1,18 @@
 "use client";
 
+import { useState } from "react";
 import Modal from '@/components/UI/Feedback/Modal';
 
 interface ConfirmModalProps {
   show: boolean;
   onClose: () => void;
-  onConfirm: () => void;
+  onConfirm: () => void | Promise<any>;
   title?: string;
   message?: string;
   confirmText?: string;
   cancelText?: string;
   confirmButtonClass?: string;
+  loading?: boolean;
 }
 
 export default function ConfirmModal({
@@ -22,11 +24,29 @@ export default function ConfirmModal({
   confirmText = "Xác nhận",
   cancelText = "Hủy",
   confirmButtonClass = "bg-red-600 hover:bg-red-700",
+  loading = false,
 }: ConfirmModalProps) {
-  const handleConfirm = () => {
-    onConfirm();
-    onClose();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleConfirm = async () => {
+    try {
+      setIsSubmitting(true);
+      const result = onConfirm();
+      if (result instanceof Promise) {
+        await result;
+      }
+      // Note: Only call onClose automatically if the parent didn't already handle closing
+      // Often, the parent handles closing, but just in case we call it here.
+      onClose();
+    } catch (error) {
+      // If the promise rejects, we might not want to close
+      console.error("Confirmation error:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  const isLoading = loading || isSubmitting;
 
   return (
     <Modal show={show} onClose={onClose} title={title} size="sm">
@@ -36,16 +56,18 @@ export default function ConfirmModal({
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
+            disabled={isLoading}
+            className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none disabled:opacity-50"
           >
             {cancelText}
           </button>
           <button
             type="button"
             onClick={handleConfirm}
-            className={`px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white focus:outline-none ${confirmButtonClass}`}
+            disabled={isLoading}
+            className={`px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white focus:outline-none disabled:opacity-50 ${confirmButtonClass}`}
           >
-            {confirmText}
+            {isLoading ? "Đang xử lý..." : confirmText}
           </button>
         </div>
       </div>

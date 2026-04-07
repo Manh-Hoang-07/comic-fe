@@ -4,10 +4,12 @@ import { useState, useEffect } from "react";
 import api from "@/lib/api/client";
 import { adminEndpoints } from "@/lib/api/endpoints";
 import { useListPage } from "@/hooks";
+import useModal from "@/hooks/ui-ux/useModal";
 import SkeletonLoader from "@/components/UI/Feedback/SkeletonLoader";
 import ConfirmModal from "@/components/UI/Feedback/ConfirmModal";
 import Actions from "@/components/UI/DataDisplay/Actions";
 import Pagination from "@/components/UI/DataDisplay/Pagination";
+import { useToastContext } from "@/contexts/ToastContext";
 import UsersFilter from "./UsersFilter";
 import CreateUser from "./CreateUser";
 import EditUser from "./EditUser";
@@ -23,22 +25,13 @@ export default function AdminUsers({
   title = "Quản lý người dùng",
   createButtonText = "Thêm người dùng mới",
 }: AdminUsersProps) {
-  const { data, modal, actions, ui } = useListPage({
-    endpoints: {
-      list: adminEndpoints.users.list,
-      create: adminEndpoints.users.create,
-      update: (id) => adminEndpoints.users.update(id),
-      delete: (id) => adminEndpoints.users.delete(id),
-    },
-    customModals: ["assignRole", "changePassword"],
-    messages: {
-      createSuccess: "Người dùng đã được tạo thành công",
-      updateSuccess: "Người dùng đã được cập nhật thành công",
-      deleteSuccess: "Người dùng đã được xóa thành công",
-    },
+  const { data, actions, ui } = useListPage({
+    endpoint: adminEndpoints.users.list,
   });
-  const { items, loading, pagination, filters, apiErrors, hasData } = data;
-  const { getSerialNumber, toast } = ui;
+  
+  const { items, loading, pagination, filters, hasData } = data;
+  const { getSerialNumber } = ui;
+  const { showSuccess, showError } = useToastContext();
 
   const [statusEnums, setStatusEnums] = useState<any[]>([]);
   const [genderEnums, setGenderEnums] = useState<any[]>([]);
@@ -49,17 +42,13 @@ export default function AdminUsers({
       if (statusResponse.data?.success) {
         setStatusEnums(statusResponse.data.data || []);
       }
-    } catch (e) {
-      setStatusEnums([]);
-    }
-
-    try {
+      
       const genderResponse = await api.get(adminEndpoints.enums.byName("gender"));
       if (genderResponse.data?.success) {
         setGenderEnums(genderResponse.data.data || []);
       }
     } catch (e) {
-      setGenderEnums([]);
+      console.error("Failed to load enums", e);
     }
   };
 
@@ -72,12 +61,30 @@ export default function AdminUsers({
     return found?.label || found?.name || status || "Không xác định";
   };
 
+  const createModal = useModal<{ createApi: string }>();
+  const editModal = useModal<{ fetchApi?: string; initialData?: any; updateApi: string }>();
+  const deleteModal = useModal<{ id: number; name?: string; deleteApi: string }>();
+  const passwordModal = useModal<{ passApi: string; user: any }>();
+  const roleModal = useModal<{ assignApi: string; user: any }>();
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteModal.data?.deleteApi) return;
+    try {
+      await api.delete(deleteModal.data.deleteApi);
+      showSuccess("Người dùng đã được xóa thành công");
+      deleteModal.close();
+      actions.refresh();
+    } catch (error: any) {
+      showError(error.response?.data?.message || "Có lỗi xảy ra khi xóa");
+    }
+  };
+
   return (
     <div className="admin-users">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">{title}</h1>
         <button
-          onClick={() => modal.open("create")}
+          onClick={() => createModal.open({ createApi: adminEndpoints.users.create })}
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
         >
           {createButtonText}
@@ -122,11 +129,21 @@ export default function AdminUsers({
                       <div className="flex items-center space-x-2">
                         <Actions
                           item={user}
-                          onEdit={() => modal.open("edit", user)}
-                          onDelete={() => modal.open("delete", user)}
+                          onEdit={() => editModal.open({ 
+                            fetchApi: adminEndpoints.users.show(user.id),
+                            updateApi: adminEndpoints.users.update(user.id)
+                          })}
+                          onDelete={() => deleteModal.open({ 
+                            id: user.id, 
+                            name: user.username || user.email, 
+                            deleteApi: adminEndpoints.users.delete(user.id) 
+                          })}
                         />
                         <button
-                          onClick={() => modal.open("changePassword", user)}
+                          onClick={() => passwordModal.open({ 
+                            passApi: adminEndpoints.users.changePassword(user.id), 
+                            user 
+                          })}
                           className="p-2 rounded-full hover:bg-blue-100 transition-colors"
                           title="Đổi mật khẩu"
                         >
@@ -135,7 +152,10 @@ export default function AdminUsers({
                           </svg>
                         </button>
                         <button
-                          onClick={() => modal.open("assignRole", user)}
+                          onClick={() => roleModal.open({ 
+                            assignApi: adminEndpoints.users.assignRoles(user.id), 
+                            user 
+                          })}
                           className="p-2 rounded-full hover:bg-green-100 transition-colors"
                           title="Phân quyền"
                         >
@@ -167,60 +187,65 @@ export default function AdminUsers({
         />
       )}
 
-      <CreateUser
-        show={modal.state.create}
-        statusEnums={statusEnums}
-        genderEnums={genderEnums}
-        apiErrors={apiErrors}
-        onClose={() => modal.close("create")}
-        onCreated={actions.create}
-      />
+      {createModal.isOpen && createModal.data && (
+        <CreateUser
+          show={createModal.isOpen}
+          createApi={createModal.data.createApi}
+          statusEnums={statusEnums}
+          genderEnums={genderEnums}
+          onClose={createModal.close}
+          onSuccess={() => {
+            createModal.close();
+            actions.refresh();
+          }}
+        />
+      )}
 
-      {modal.selected && (
-        <>
-          <EditUser
-            show={modal.state.edit}
-            user={modal.selected}
-            statusEnums={statusEnums}
-            genderEnums={genderEnums}
-            apiErrors={apiErrors}
-            onClose={() => modal.close("edit")}
-            onUpdated={(data) => actions.update(modal.selected.id, data)}
-          />
+      {editModal.isOpen && editModal.data && (
+        <EditUser
+          show={editModal.isOpen}
+          target={editModal.data}
+          statusEnums={statusEnums}
+          genderEnums={genderEnums}
+          onClose={editModal.close}
+          onSuccess={() => {
+            editModal.close();
+            actions.refresh();
+          }}
+        />
+      )}
 
-          <ConfirmModal
-            show={modal.state.delete}
-            title="Xác nhận xóa"
-            message={`Bạn có chắc chắn muốn xóa người dùng "${modal.selected.username || modal.selected.email}"?`}
-            onClose={() => modal.close("delete")}
-            onConfirm={() => actions.delete(modal.selected.id)}
-          />
+      {deleteModal.isOpen && deleteModal.data && (
+        <ConfirmModal
+          show={deleteModal.isOpen}
+          title="Xác nhận xóa"
+          message={`Bạn có chắc chắn muốn xóa người dùng "${deleteModal.data.name}"?`}
+          onClose={deleteModal.close}
+          onConfirm={handleDeleteConfirm}
+        />
+      )}
 
-          {modal.state.changePassword && (
-            <ChangePassword
-              show={true}
-              user={modal.selected}
-              onClose={() => modal.close("changePassword")}
-              onPasswordChanged={() => {
-                modal.close("changePassword");
-                toast.success("Mật khẩu đã được thay đổi thành công");
-              }}
-            />
-          )}
+      {passwordModal.isOpen && passwordModal.data && (
+        <ChangePassword
+          show={passwordModal.isOpen}
+          target={passwordModal.data}
+          onClose={passwordModal.close}
+          onSuccess={() => {
+            passwordModal.close();
+          }}
+        />
+      )}
 
-          {modal.state.assignRole && (
-            <AssignRole
-              show={true}
-              user={modal.selected}
-              onClose={() => modal.close("assignRole")}
-              onRoleAssigned={() => {
-                modal.close("assignRole");
-                toast.success("Vai trò đã được phân công thành công");
-                actions.refresh();
-              }}
-            />
-          )}
-        </>
+      {roleModal.isOpen && roleModal.data && (
+        <AssignRole
+          show={roleModal.isOpen}
+          target={roleModal.data}
+          onClose={roleModal.close}
+          onSuccess={() => {
+            roleModal.close();
+            actions.refresh();
+          }}
+        />
       )}
     </div>
   );

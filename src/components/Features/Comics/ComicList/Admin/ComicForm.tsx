@@ -31,15 +31,17 @@ interface ComicFormProps {
     show: boolean;
     comic?: AdminComic | null;
     apiErrors?: any;
-    onSuccess: (data: any) => Promise<any>;
+    loading?: boolean;
+    onSubmit?: (data: any) => void;
     onCancel: () => void;
 }
 
 export default function ComicForm({
     show,
     comic,
-    apiErrors: externalErrors,
-    onSuccess,
+    apiErrors,
+    loading = false,
+    onSubmit,
     onCancel,
 }: ComicFormProps) {
     const [categories, setCategories] = useState<AdminComicCategory[]>([]);
@@ -102,15 +104,15 @@ export default function ComicForm({
 
     // Handle external API errors
     useEffect(() => {
-        if (externalErrors) {
-            Object.keys(externalErrors).forEach((key) => {
-                const message = Array.isArray(externalErrors[key])
-                    ? externalErrors[key][0]
-                    : String(externalErrors[key]);
+        if (apiErrors) {
+            Object.keys(apiErrors).forEach((key) => {
+                const message = Array.isArray(apiErrors[key])
+                    ? apiErrors[key][0]
+                    : String(apiErrors[key]);
                 setError(key as any, { message });
             });
         }
-    }, [externalErrors, setError]);
+    }, [apiErrors, setError]);
 
     const fetchCategories = async () => {
         try {
@@ -122,21 +124,12 @@ export default function ComicForm({
     };
 
     const handleFormSubmit = async (values: ComicFormValues) => {
-        try {
-            const dataToSubmit = {
-                ...values,
-                category_ids: values.category_ids.map(Number),
-            };
+        const dataToSubmit = {
+            ...values,
+            category_ids: values.category_ids.map(Number),
+        };
 
-            const savedItem = await onSuccess(dataToSubmit);
-
-            if (coverFile && savedItem?.id) {
-                await adminComicService.uploadCover(savedItem.id, coverFile);
-                showSuccess("Đã cập nhật ảnh bìa");
-            }
-        } catch (error) {
-            // Error handled by useListPage/ToastContext
-        }
+        onSubmit?.(dataToSubmit);
     };
 
     const categoryOptions = useMemo(
@@ -163,7 +156,7 @@ export default function ComicForm({
             onClose={onCancel}
             title={formTitle}
             size="xl"
-            loading={isSubmitting}
+            loading={isSubmitting || loading}
         >
             <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-8 p-1">
                 {/* SECTION: THÔNG TIN CHÍNH */}
@@ -361,10 +354,10 @@ export default function ComicForm({
                     </button>
                     <button
                         type="submit"
-                        disabled={isSubmitting}
+                        disabled={isSubmitting || loading}
                         className="rounded-xl bg-blue-600 px-12 py-3 font-bold text-white shadow-lg shadow-blue-500/20 transition-all hover:bg-blue-700 active:scale-95 disabled:opacity-50"
                     >
-                        {isSubmitting ? "Đang xử lý..." : comic ? "Cập nhật truyện" : "Tạo truyện mới"}
+                        {isSubmitting || loading ? "Đang xử lý..." : comic ? "Cập nhật truyện" : "Tạo truyện mới"}
                     </button>
                 </div>
             </form>

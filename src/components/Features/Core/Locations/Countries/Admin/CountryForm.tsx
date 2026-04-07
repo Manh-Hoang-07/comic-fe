@@ -39,6 +39,7 @@ interface CountryFormProps {
   show: boolean;
   country?: AdminCountryFormEntity | null;
   apiErrors?: Record<string, string | string[]>;
+  loading?: boolean;
   onSubmit?: (data: CountryFormValues) => void;
   onCancel?: () => void;
 }
@@ -47,6 +48,7 @@ export default function CountryForm({
   show,
   country,
   apiErrors = {},
+  loading = false,
   onSubmit,
   onCancel,
 }: CountryFormProps) {
@@ -122,7 +124,7 @@ export default function CountryForm({
       onClose={onCancel || (() => { })}
       title={formTitle}
       size="lg"
-      loading={isSubmitting}
+      loading={loading || isSubmitting}
     >
       <form
         onSubmit={handleSubmit(handleInternalSubmit)}
@@ -196,10 +198,10 @@ export default function CountryForm({
           </button>
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={loading || isSubmitting}
             className="px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-700 text-white text-sm font-semibold rounded-xl shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
           >
-            {isSubmitting
+            {loading || isSubmitting
               ? "Đang xử lý..."
               : country
                 ? "Cập nhật quốc gia"

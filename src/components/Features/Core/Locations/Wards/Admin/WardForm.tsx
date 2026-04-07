@@ -38,6 +38,7 @@ interface WardFormProps {
   show: boolean;
   ward?: AdminWardFormEntity | null;
   apiErrors?: Record<string, string | string[]>;
+  loading?: boolean;
   onSubmit?: (data: WardFormValues) => void;
   onCancel?: () => void;
 }
@@ -52,6 +53,7 @@ export default function WardForm({
   show,
   ward,
   apiErrors = {},
+  loading = false,
   onSubmit,
   onCancel,
 }: WardFormProps) {
@@ -120,7 +122,7 @@ export default function WardForm({
       onClose={onCancel || (() => { })}
       title={formTitle}
       size="lg"
-      loading={isSubmitting}
+      loading={loading || isSubmitting}
     >
       <form
         onSubmit={handleSubmit(handleInternalSubmit)}

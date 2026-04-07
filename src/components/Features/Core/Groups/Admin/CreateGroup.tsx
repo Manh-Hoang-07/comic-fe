@@ -1,36 +1,42 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import GroupForm from "./GroupForm";
+import api from "@/lib/api/client";
+import { useToastContext } from "@/contexts/ToastContext";
 
 interface CreateGroupProps {
   show: boolean;
-  apiErrors?: Record<string, string | string[]>;
-  onCreated?: (data: any) => void;
+  createApi: string;
+  onSuccess?: () => void;
   onClose?: () => void;
 }
 
 export default function CreateGroup({
   show,
-  apiErrors,
-  onCreated,
+  createApi,
+  onSuccess,
   onClose,
 }: CreateGroupProps) {
-  const [showModal, setShowModal] = useState(false);
+  const [apiErrors, setApiErrors] = useState<any>(null);
+  const { showError, showSuccess } = useToastContext();
 
-  useEffect(() => {
-    setShowModal(show);
-  }, [show]);
-
-  const handleSubmit = (formData: any) => {
-    onCreated?.(formData);
+  const handleSubmit = async (formData: any) => {
+    setApiErrors(null);
+    try {
+      await api.post(createApi, formData);
+      showSuccess("Tạo nhóm thành công");
+      onSuccess?.();
+    } catch (error: any) {
+      const errors = error.response?.data?.errors || error.response?.data || error;
+      setApiErrors(errors);
+      showError(error.response?.data?.message || "Có lỗi xảy ra khi tạo mới");
+    }
   };
-
-  if (!showModal) return null;
 
   return (
     <GroupForm
-      show={showModal}
+      show={show}
       apiErrors={apiErrors}
       onSubmit={handleSubmit}
       onCancel={onClose}

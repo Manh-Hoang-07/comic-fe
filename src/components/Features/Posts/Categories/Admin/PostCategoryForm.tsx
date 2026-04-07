@@ -51,6 +51,7 @@ interface PostCategoryFormProps {
   category?: PostCategory | null;
   statusEnums?: Array<{ value: string; label?: string; name?: string }>;
   apiErrors?: Record<string, string | string[]>;
+  loading?: boolean;
   onSubmit?: (data: any) => void;
   onCancel?: () => void;
 }
@@ -60,6 +61,7 @@ export default function PostCategoryForm({
   category,
   statusEnums = [],
   apiErrors = {},
+  loading = false,
   onSubmit,
   onCancel,
 }: PostCategoryFormProps) {
@@ -142,7 +144,7 @@ export default function PostCategoryForm({
   if (!show) return null;
 
   return (
-    <Modal show={show} onClose={onCancel || (() => { })} title={formTitle} size="xl" loading={isSubmitting}>
+    <Modal show={show} onClose={onCancel || (() => { })} title={formTitle} size="xl" loading={loading || isSubmitting}>
       <form onSubmit={handleSubmit((data) => onSubmit?.(data))} className="space-y-8 p-1">
 
         {/* SECTION 1: THÔNG TIN DANH MỤC */}
@@ -293,10 +295,10 @@ export default function PostCategoryForm({
           </button>
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={loading || isSubmitting}
             className="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:-translate-y-0.5 transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
           >
-            {isSubmitting ? "Đang xử lý..." : category ? "Cập nhật danh mục" : "Thêm danh mục"}
+            {loading || isSubmitting ? "Đang xử lý..." : category ? "Cập nhật danh mục" : "Thêm danh mục"}
           </button>
         </div>
       </form>

@@ -1,42 +1,48 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import MenuForm from "./MenuForm";
+import api from "@/lib/api/client";
+import { useToastContext } from "@/contexts/ToastContext";
 
 interface CreateMenuProps {
   show: boolean;
+  createApi: string;
   statusEnums?: Array<{ value: string; label?: string; name?: string }>;
   parentMenus?: Array<any>;
   permissions?: Array<any>;
-  apiErrors?: Record<string, string | string[]>;
-  onCreated?: (data: any) => void;
+  onSuccess?: () => void;
   onClose?: () => void;
 }
 
 export default function CreateMenu({
   show,
+  createApi,
   statusEnums,
   parentMenus,
   permissions,
-  apiErrors,
-  onCreated,
+  onSuccess,
   onClose,
 }: CreateMenuProps) {
-  const [showModal, setShowModal] = useState(false);
+  const [apiErrors, setApiErrors] = useState<any>(null);
+  const { showError, showSuccess } = useToastContext();
 
-  useEffect(() => {
-    setShowModal(show);
-  }, [show]);
-
-  const handleSubmit = (formData: any) => {
-    onCreated?.(formData);
+  const handleSubmit = async (formData: any) => {
+    setApiErrors(null);
+    try {
+      await api.post(createApi, formData);
+      showSuccess("Tạo menu thành công");
+      onSuccess?.();
+    } catch (error: any) {
+      const errors = error.response?.data?.errors || error.response?.data || error;
+      setApiErrors(errors);
+      showError(error.response?.data?.message || "Có lỗi xảy ra khi tạo mới");
+    }
   };
-
-  if (!showModal) return null;
 
   return (
     <MenuForm
-      show={showModal}
+      show={show}
       statusEnums={statusEnums}
       parentMenus={parentMenus}
       permissions={permissions}

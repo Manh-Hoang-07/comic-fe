@@ -1,30 +1,96 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import ComicForm from "./ComicForm";
-import { AdminComic } from "@/types/comic";
+import api from "@/lib/api/client";
+import { useToastContext } from "@/contexts/ToastContext";
+import { adminComicService } from "@/lib/api/admin/comic";
 
 interface EditComicProps {
     show: boolean;
-    comic: AdminComic;
-    apiErrors?: any;
-    onClose: () => void;
-    onUpdated: (data: any) => Promise<any>;
+    target: { fetchApi?: string; initialData?: any; updateApi: string } | null;
+    onSuccess?: () => void;
+    onClose?: () => void;
 }
 
 export default function EditComic({
     show,
-    comic,
-    apiErrors,
+    target,
+    onSuccess,
     onClose,
-    onUpdated,
 }: EditComicProps) {
+    const [data, setData] = useState<any>(null);
+    const [loading, setLoading] = useState(false);
+    const [apiErrors, setApiErrors] = useState<any>(null);
+    const { showError, showSuccess } = useToastContext();
+
+    useEffect(() => {
+        if (show) {
+            if (target?.fetchApi) {
+                const fetchData = async () => {
+                    setLoading(true);
+                    try {
+                        const response = await api.get(target.fetchApi!);
+                        setData(response.data?.data || response.data);
+                    } catch (error) {
+                        showError("Không thể tải thông tin truyện");
+                        onClose?.();
+                    } finally {
+                        setLoading(false);
+                    }
+                };
+                fetchData();
+            } else if (target?.initialData) {
+                setData(target.initialData);
+            }
+        } else {
+            setData(null);
+            setApiErrors(null);
+        }
+    }, [show, target, showError, onClose]);
+
+    const handleSubmit = async (formData: any) => {
+        if (!target?.updateApi) return;
+        
+        setApiErrors(null);
+        setLoading(true);
+        try {
+            // handle cover image separately if it's a file
+            const coverFile = formData.cover_image instanceof File ? formData.cover_image : null;
+            const submitData = { ...formData };
+            if (coverFile) delete submitData.cover_image;
+
+            const response = await api.put(target.updateApi, submitData);
+            const savedItem = response.data?.data || response.data;
+            
+            showSuccess("Cập nhật truyện thành công");
+
+            if (coverFile && savedItem?.id) {
+                try {
+                    await adminComicService.uploadCover(savedItem.id, coverFile);
+                } catch (err) {
+                    showError("Cập nhật truyện thành công nhưng không thể tải lên ảnh bìa");
+                }
+            }
+
+            onSuccess?.();
+        } catch (error: any) {
+            const errors = error.response?.data?.errors || error.response?.data || error;
+            setApiErrors(errors);
+            showError(error.response?.data?.message || "Có lỗi xảy ra khi cập nhật");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <ComicForm
             show={show}
-            comic={comic}
+            comic={data}
             apiErrors={apiErrors}
-            onCancel={onClose}
-            onSuccess={onUpdated}
+            loading={loading}
+            onCancel={onClose!}
+            onSubmit={handleSubmit}
         />
     );
 }

@@ -1,67 +1,83 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import BannerForm from "./BannerForm";
+import { useState, useEffect } from "react";
+import BannerForm, { BannerFormValues } from "./BannerForm";
 import api from "@/lib/api/client";
-import { adminEndpoints } from "@/lib/api/endpoints";
+import { useToastContext } from "@/contexts/ToastContext";
 
 interface EditBannerProps {
   show: boolean;
-  bannerId?: number;
+  target: { fetchApi?: string; initialData?: any; updateApi: string } | null;
   statusEnums?: Array<{ value: string; label?: string; name?: string }>;
   locationEnums?: Array<{ value: number; label?: string; name?: string }>;
-  apiErrors?: Record<string, string | string[]>;
-  onUpdated?: (data: any) => void;
+  onSuccess?: () => void;
   onClose?: () => void;
 }
 
 export default function EditBanner({
   show,
-  bannerId,
+  target,
   statusEnums,
   locationEnums,
-  apiErrors,
-  onUpdated,
+  onSuccess,
   onClose,
 }: EditBannerProps) {
-  const [showModal, setShowModal] = useState(false);
-  const [banner, setBanner] = useState<any>(null);
+  const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [apiErrors, setApiErrors] = useState<any>(null);
+  const { showError, showSuccess } = useToastContext();
 
-  const loadBanner = useCallback(async () => {
-    if (!bannerId) return;
+  useEffect(() => {
+    if (show) {
+      if (target?.fetchApi) {
+        const fetchData = async () => {
+          setLoading(true);
+          try {
+            const response = await api.get(target.fetchApi!);
+            setData(response.data?.data || response.data);
+          } catch (error) {
+            showError("Không thể tải thông tin banner");
+            onClose?.();
+          } finally {
+            setLoading(false);
+          }
+        };
+        fetchData();
+      } else if (target?.initialData) {
+        setData(target.initialData);
+      }
+    } else {
+      setData(null);
+      setApiErrors(null);
+    }
+  }, [show, target, showError, onClose]);
+
+  const handleSubmit = async (formData: BannerFormValues) => {
+    if (!target?.updateApi) return;
+    
+    setApiErrors(null);
     setLoading(true);
     try {
-      const response = await api.get(adminEndpoints.banners.show(bannerId));
-      const data = response.data?.data || response.data;
-      setBanner(data);
-    } catch (error) {
-      console.error("Error loading banner:", error);
+      await api.put(target.updateApi, formData);
+      showSuccess("Cập nhật banner thành công");
+      onSuccess?.();
+    } catch (error: any) {
+      const errors = error.response?.data?.errors || error.response?.data || error;
+      setApiErrors(errors);
+      showError(error.response?.data?.message || "Có lỗi xảy ra khi cập nhật");
     } finally {
       setLoading(false);
     }
-  }, [bannerId]);
-
-  useEffect(() => {
-    setShowModal(show);
-    if (show && bannerId) {
-      loadBanner();
-    }
-  }, [show, bannerId, loadBanner]);
-
-  const handleSubmit = (formData: any) => {
-    onUpdated?.(formData);
   };
-
-  if (!showModal) return null;
 
   return (
     <BannerForm
-      show={showModal}
-      banner={banner}
+      show={show}
+      banner={data}
       statusEnums={statusEnums}
       locationEnums={locationEnums}
       apiErrors={apiErrors}
+      loading={loading}
       onSubmit={handleSubmit}
       onCancel={onClose}
     />

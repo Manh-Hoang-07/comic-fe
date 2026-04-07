@@ -1,45 +1,34 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import ChangePasswordForm from "./ChangePasswordForm";
 import api from "@/lib/api/client";
-import { adminEndpoints } from "@/lib/api/endpoints";
+import { useToastContext } from "@/contexts/ToastContext";
 
 interface ChangePasswordProps {
   show: boolean;
-  user?: any;
-  onPasswordChanged?: () => void;
+  target: { passApi: string; user: any } | null;
+  onSuccess?: () => void;
   onClose?: () => void;
 }
 
 export default function ChangePassword({
   show,
-  user,
-  onPasswordChanged,
+  target,
+  onSuccess,
   onClose,
 }: ChangePasswordProps) {
-  const [showModal, setShowModal] = useState(false);
   const [apiErrors, setApiErrors] = useState<Record<string, string>>({});
-
-  useEffect(() => {
-    setShowModal(show);
-    if (!show) {
-      setApiErrors({});
-    }
-  }, [show]);
-
-  const resetErrors = () => {
-    setApiErrors({});
-  };
+  const { showError, showSuccess } = useToastContext();
 
   const handleSubmit = async (formData: Record<string, any>) => {
-    if (!user?.id) return;
+    if (!target?.passApi) return;
 
-    resetErrors();
+    setApiErrors({});
     try {
-      await api.patch(adminEndpoints.users.changePassword(user.id), formData);
-      onPasswordChanged?.();
-      onClose?.();
+      await api.patch(target.passApi, formData);
+      showSuccess("Mật khẩu đã được thay đổi thành công");
+      onSuccess?.();
     } catch (error: any) {
       const response = error?.response;
       const payload = response?.data;
@@ -51,20 +40,20 @@ export default function ChangePassword({
           errors[field] = Array.isArray(value) ? value[0] : value;
         });
         setApiErrors(errors);
-      } else if (Array.isArray(payload?.message) && payload.message.length) {
-        setApiErrors({ password: payload.message[0] });
-      } else if (typeof payload?.message === "string") {
-        setApiErrors({ password: payload.message });
+      } else {
+        const msg = payload?.message || "Có lỗi xảy ra khi đổi mật khẩu";
+        setApiErrors({ password: typeof msg === "string" ? msg : Array.isArray(msg) ? msg[0] : "Lỗi không xác định" });
+        showError(typeof msg === "string" ? msg : "Có lỗi xảy ra");
       }
     }
   };
 
-  if (!showModal) return null;
+  if (!show || !target) return null;
 
   return (
     <ChangePasswordForm
-      show={showModal}
-      user={user}
+      show={show}
+      user={target.user}
       apiErrors={apiErrors}
       onSubmit={handleSubmit}
       onCancel={onClose}

@@ -1,45 +1,56 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import BannerForm from "./BannerForm";
+import { useState } from "react";
+import BannerForm, { BannerFormValues } from "./BannerForm";
+import api from "@/lib/api/client";
+import { useToastContext } from "@/contexts/ToastContext";
 
 interface CreateBannerProps {
   show: boolean;
+  createApi: string;
   statusEnums?: Array<{ value: string; label?: string; name?: string }>;
   locationEnums?: Array<{ value: number; label?: string; name?: string }>;
-  apiErrors?: Record<string, string | string[]>;
-  onCreated?: (data: any) => void;
+  onSuccess?: () => void;
   onClose?: () => void;
 }
 
 export default function CreateBanner({
   show,
+  createApi,
   statusEnums,
   locationEnums,
-  apiErrors,
-  onCreated,
+  onSuccess,
   onClose,
 }: CreateBannerProps) {
-  const [showModal, setShowModal] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [apiErrors, setApiErrors] = useState<any>(null);
+  const { showSuccess, showError } = useToastContext();
 
-  useEffect(() => {
-    setShowModal(show);
-  }, [show]);
-
-  const handleSubmit = (formData: any) => {
-    onCreated?.(formData);
+  const handleSubmit = async (formData: BannerFormValues) => {
+    setLoading(true);
+    setApiErrors(null);
+    try {
+      await api.post(createApi, formData);
+      showSuccess("Tạo banner thành công");
+      onSuccess?.();
+    } catch (error: any) {
+      const errors = error.response?.data?.errors || error.response?.data || error;
+      setApiErrors(errors);
+      showError(error.response?.data?.message || "Có lỗi xảy ra khi tạo banner");
+    } finally {
+      setLoading(false);
+    }
   };
-
-  if (!showModal) return null;
 
   return (
     <BannerForm
-      show={showModal}
+      show={show}
       statusEnums={statusEnums}
       locationEnums={locationEnums}
-      apiErrors={apiErrors}
       onSubmit={handleSubmit}
       onCancel={onClose}
+      loading={loading}
+      apiErrors={apiErrors}
     />
   );
 }

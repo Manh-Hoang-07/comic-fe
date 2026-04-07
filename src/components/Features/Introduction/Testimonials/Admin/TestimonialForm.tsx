@@ -47,6 +47,7 @@ interface TestimonialFormProps {
   show: boolean;
   testimonial?: Testimonial | null;
   apiErrors?: Record<string, string | string[]>;
+  loading?: boolean;
   onSubmit?: (data: any) => void;
   onCancel?: () => void;
 }
@@ -55,6 +56,7 @@ export default function TestimonialForm({
   show,
   testimonial,
   apiErrors = {},
+  loading = false,
   onSubmit,
   onCancel,
 }: TestimonialFormProps) {
@@ -141,7 +143,7 @@ export default function TestimonialForm({
   if (!show) return null;
 
   return (
-    <Modal show={show} onClose={onCancel || (() => { })} title={formTitle} size="lg" loading={isSubmitting}>
+    <Modal show={show} onClose={onCancel || (() => { })} title={formTitle} size="lg" loading={isSubmitting || loading}>
       <form onSubmit={handleSubmit((data) => onSubmit?.(data))} className="space-y-8 p-1">
 
         <section className="bg-gray-50/50 p-6 rounded-2xl border border-gray-100 space-y-6">
@@ -263,10 +265,10 @@ export default function TestimonialForm({
           </button>
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || loading}
             className="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:-translate-y-0.5 transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
           >
-            {isSubmitting ? "Đang xử lý..." : testimonial ? "Cập nhật đánh giá" : "Thêm đánh giá"}
+            {isSubmitting || loading ? "Đang xử lý..." : testimonial ? "Cập nhật đánh giá" : "Thêm đánh giá"}
           </button>
         </div>
       </form>

@@ -18,16 +18,18 @@ type CategoryFormValues = z.infer<typeof categorySchema>;
 
 interface ComicCategoryFormProps {
     category?: AdminComicCategory | null;
-    onSuccess: (data: any) => Promise<any>;
-    onCancel: () => void;
     apiErrors?: any;
+    loading?: boolean;
+    onSubmit?: (data: any) => void;
+    onCancel: () => void;
 }
 
 export default function ComicCategoryForm({
     category,
-    onSuccess,
+    apiErrors,
+    loading = false,
+    onSubmit,
     onCancel,
-    apiErrors: externalErrors,
 }: ComicCategoryFormProps) {
     const {
         register,
@@ -60,22 +62,18 @@ export default function ComicCategoryForm({
 
     // Handle external API errors
     useEffect(() => {
-        if (externalErrors) {
-            Object.keys(externalErrors).forEach((key) => {
-                const message = Array.isArray(externalErrors[key])
-                    ? externalErrors[key][0]
-                    : String(externalErrors[key]);
+        if (apiErrors) {
+            Object.keys(apiErrors).forEach((key) => {
+                const message = Array.isArray(apiErrors[key])
+                    ? apiErrors[key][0]
+                    : String(apiErrors[key]);
                 setError(key as any, { message });
             });
         }
-    }, [externalErrors, setError]);
+    }, [apiErrors, setError]);
 
     const handleFormSubmit = async (values: CategoryFormValues) => {
-        try {
-            await onSuccess(values);
-        } catch (error) {
-            // Error handled by hook
-        }
+        onSubmit?.(values);
     };
 
     return (
@@ -121,10 +119,10 @@ export default function ComicCategoryForm({
                 </button>
                 <button
                     type="submit"
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || loading}
                     className="rounded-xl bg-blue-600 px-10 py-3 font-bold text-white shadow-lg shadow-blue-500/20 transition-all hover:bg-blue-700 active:scale-95 disabled:opacity-50"
                 >
-                    {isSubmitting ? "Đang xử lý..." : category ? "Cập nhật danh mục" : "Tạo danh mục mới"}
+                    {isSubmitting || loading ? "Đang xử lý..." : category ? "Cập nhật danh mục" : "Tạo danh mục mới"}
                 </button>
             </div>
         </form>

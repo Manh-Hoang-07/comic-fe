@@ -2,65 +2,79 @@
 
 import { useState, useEffect } from "react";
 import ProjectForm from "./ProjectForm";
-
-interface Project {
-  id?: number;
-  name?: string;
-  slug?: string;
-  description?: string;
-  short_description?: string;
-  cover_image?: string | null;
-  location?: string;
-  area?: number | null;
-  start_date?: string;
-  end_date?: string;
-  status?: string;
-  client_name?: string;
-  budget?: number | null;
-  images?: string[];
-  featured?: boolean;
-  sort_order?: number;
-  meta_title?: string;
-  meta_description?: string;
-  canonical_url?: string;
-  og_image?: string | null;
-}
+import api from "@/lib/api/client";
+import { useToastContext } from "@/contexts/ToastContext";
 
 interface EditProjectProps {
   show: boolean;
-  project?: Project | null;
+  target: { fetchApi?: string; initialData?: any; updateApi: string } | null;
   statusEnums?: Array<{ value: string; label?: string; name?: string }>;
-  apiErrors?: Record<string, string | string[]>;
-  onUpdated?: (data: any) => void;
+  onSuccess?: () => void;
   onClose?: () => void;
 }
 
 export default function EditProject({
   show,
-  project,
+  target,
   statusEnums,
-  apiErrors,
-  onUpdated,
+  onSuccess,
   onClose,
 }: EditProjectProps) {
-  const [showModal, setShowModal] = useState(false);
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+  const [apiErrors, setApiErrors] = useState<any>(null);
+  const { showError, showSuccess } = useToastContext();
 
   useEffect(() => {
-    setShowModal(show);
-  }, [show]);
+    if (show) {
+      if (target?.fetchApi) {
+        const fetchData = async () => {
+          setLoading(true);
+          try {
+            const response = await api.get(target.fetchApi!);
+            setData(response.data?.data || response.data);
+          } catch (error) {
+            showError("Không thể tải thông tin dự án");
+            onClose?.();
+          } finally {
+            setLoading(false);
+          }
+        };
+        fetchData();
+      } else if (target?.initialData) {
+        setData(target.initialData);
+      }
+    } else {
+      setData(null);
+      setApiErrors(null);
+    }
+  }, [show, target, showError, onClose]);
 
-  const handleSubmit = (formData: any) => {
-    onUpdated?.(formData);
+  const handleSubmit = async (formData: any) => {
+    if (!target?.updateApi) return;
+    
+    setApiErrors(null);
+    setLoading(true);
+    try {
+      await api.put(target.updateApi, formData);
+      showSuccess("Cập nhật dự án thành công");
+      onSuccess?.();
+    } catch (error: any) {
+      const errors = error.response?.data?.errors || error.response?.data || error;
+      setApiErrors(errors);
+      showError(error.response?.data?.message || "Có lỗi xảy ra khi cập nhật");
+    } finally {
+      setLoading(false);
+    }
   };
-
-  if (!showModal) return null;
 
   return (
     <ProjectForm
-      show={showModal}
-      project={project}
+      show={show}
+      project={data}
       statusEnums={statusEnums}
       apiErrors={apiErrors}
+      loading={loading}
       onSubmit={handleSubmit}
       onCancel={onClose}
     />

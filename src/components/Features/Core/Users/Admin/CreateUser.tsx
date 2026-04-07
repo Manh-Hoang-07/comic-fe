@@ -1,40 +1,36 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import UserForm from "./UserForm";
+import api from "@/lib/api/client";
+import { useToastContext } from "@/contexts/ToastContext";
 
 interface CreateUserProps {
   show: boolean;
+  createApi: string;
   statusEnums?: Array<{ value: string; label?: string; name?: string }>;
   genderEnums?: Array<{ value: string; label?: string; name?: string }>;
-  apiErrors?: Record<string, string | string[]>;
-  onCreated?: (data: any) => void;
+  onSuccess?: () => void;
   onClose?: () => void;
 }
 
 export default function CreateUser({
   show,
+  createApi,
   statusEnums,
   genderEnums,
-  apiErrors,
-  onCreated,
+  onSuccess,
   onClose,
 }: CreateUserProps) {
-  const [showModal, setShowModal] = useState(false);
+  const [apiErrors, setApiErrors] = useState<any>(null);
+  const { showError, showSuccess } = useToastContext();
 
-  useEffect(() => {
-    setShowModal(show);
-  }, [show]);
-
-  const handleSubmit = (formData: any) => {
+  const handleSubmit = async (formData: any) => {
     const data = formData || {};
-
-    // Chỉ giữ các trường được API chấp nhận
     const baseKeys = ["username", "email", "phone", "status", "password", "name", "image"] as const;
     const profileKeys = ["gender", "birthday", "address", "about", "country_id", "province_id", "ward_id"] as const;
 
     const payload: Record<string, any> = {};
-
     baseKeys.forEach((key) => {
       const value = (data as any)[key];
       if (value !== undefined && value !== null && value !== "") {
@@ -54,14 +50,21 @@ export default function CreateUser({
       payload.profile = profile;
     }
 
-    onCreated?.(payload);
+    setApiErrors(null);
+    try {
+      await api.post(createApi, payload);
+      showSuccess("Người dùng đã được tạo thành công");
+      onSuccess?.();
+    } catch (error: any) {
+      const errors = error.response?.data?.errors || error.response?.data || error;
+      setApiErrors(errors);
+      showError(error.response?.data?.message || "Có lỗi xảy ra khi tạo mới");
+    }
   };
-
-  if (!showModal) return null;
 
   return (
     <UserForm
-      show={showModal}
+      show={show}
       statusEnums={statusEnums}
       genderEnums={genderEnums}
       apiErrors={apiErrors}

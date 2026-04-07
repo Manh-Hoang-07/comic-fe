@@ -38,6 +38,7 @@ interface PermissionFormProps {
   permission?: Permission | null;
   statusEnums?: Array<{ value: string; label?: string; name?: string }>;
   apiErrors?: Record<string, string | string[]>;
+  loading?: boolean;
   onSubmit?: (data: any) => void;
   onCancel?: () => void;
 }
@@ -47,6 +48,7 @@ export default function PermissionForm({
   permission,
   statusEnums = [],
   apiErrors = {},
+  loading = false,
   onSubmit,
   onCancel,
 }: PermissionFormProps) {
@@ -119,7 +121,7 @@ export default function PermissionForm({
   if (!show) return null;
 
   return (
-    <Modal show={show} onClose={onCancel || (() => { })} title={formTitle} size="xl" loading={isSubmitting}>
+    <Modal show={show} onClose={onCancel || (() => { })} title={formTitle} size="xl" loading={loading || isSubmitting}>
       <form onSubmit={handleSubmit((data) => onSubmit?.(data))} className="space-y-8 p-1">
 
         {/* SECTION: THÔNG TIN QUYỀN */}
