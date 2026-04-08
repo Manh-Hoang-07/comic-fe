@@ -1,5 +1,7 @@
 ---
+workflow: feature-crud-list
 description: Workflow for implementing list/table CRUD page
+enabled: true
 ---
 
 # Get List Workflow

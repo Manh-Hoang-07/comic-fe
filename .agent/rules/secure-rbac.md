@@ -1,3 +1,9 @@
+---
+rule: secure-rbac
+description: Client-side RBAC and group context constraints
+enabled: true
+---
+
 # Secure RBAC and Context Rules (Client Side)
 
 The frontend must respect both auth identity and active group context.

@@ -1,5 +1,7 @@
 ---
+workflow: feature-crud-update
 description: Workflow for update operation in shared form-based modals
+enabled: true
 ---
 
 # Update Workflow

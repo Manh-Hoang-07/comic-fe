@@ -1,3 +1,9 @@
+---
+rule: architecture
+description: Frontend architecture and layering standards
+enabled: true
+---
+
 # Frontend Architecture Standards (Next.js + Feature Components)
 
 This document defines the expected frontend architecture. AI assistants should follow this structure when adding or updating features.

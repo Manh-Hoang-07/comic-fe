@@ -1,3 +1,9 @@
+---
+rule: error-handling
+description: Frontend error handling and fallback behavior
+enabled: true
+---
+
 # Error Handling Standards (Frontend)
 
 ## General Rules

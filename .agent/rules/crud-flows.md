@@ -1,3 +1,9 @@
+---
+rule: crud-flows
+description: Standard CRUD UI behavior and lifecycle
+enabled: true
+---
+
 # CRUD Flow Rules (Frontend)
 
 Follow these rules for standardized CRUD UI behavior.

@@ -22,6 +22,7 @@ Welcome. You are assisting in the development of a Next.js frontend for a comic/
 - See `rules/error-handling.md` for frontend error handling standards.
 - See `rules/secure-rbac.md` for permission and context behavior on the client.
 - See `rules/crud-flows.md` for standardized CRUD UI implementation.
+- See `rules/system-priority.md` for rule conflict resolution order.
 - Detailed workflows:
   - `workflows/feature-crud-list.md`
   - `workflows/feature-crud-detail.md`
@@ -29,7 +30,13 @@ Welcome. You are assisting in the development of a Next.js frontend for a comic/
   - `workflows/feature-crud-update.md`
   - `workflows/feature-crud-delete.md`
   - `workflows/create-module.md`
+  - `workflows/quality-gate.md`
 - Use `knowledge/schema.md` to align with API response and pagination assumptions.
+
+## Rule and Workflow Toggle
+- Rules in `rules/*.md` support `enabled: true/false` in frontmatter.
+- Workflows in `workflows/*.md` support `enabled: true/false` in frontmatter.
+- Keep files in place and toggle the flag instead of deleting guidance.
 
 ## Communication Style
 - Be concise and technical.

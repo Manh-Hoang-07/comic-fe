@@ -1,5 +1,7 @@
 ---
+workflow: feature-crud-delete
 description: Workflow for delete operation with confirmation modal
+enabled: true
 ---
 
 # Delete Workflow

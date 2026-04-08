@@ -1,3 +1,9 @@
+---
+rule: naming
+description: Naming conventions for frontend codebase
+enabled: true
+---
+
 # Naming Conventions
 
 Follow these naming rules to keep the codebase predictable.

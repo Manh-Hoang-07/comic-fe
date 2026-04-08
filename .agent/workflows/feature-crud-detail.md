@@ -1,5 +1,7 @@
 ---
+workflow: feature-crud-detail
 description: Workflow for loading and handling detail/edit data
+enabled: true
 ---
 
 # Get One (Detail) Workflow

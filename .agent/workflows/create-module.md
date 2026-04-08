@@ -1,5 +1,7 @@
 ---
+workflow: create-module
 description: Create a new frontend feature module with consistent CRUD structure
+enabled: true
 ---
 
 # Create New Module Workflow

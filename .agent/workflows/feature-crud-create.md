@@ -1,5 +1,7 @@
 ---
+workflow: feature-crud-create
 description: Workflow for create operation in admin-style forms
+enabled: true
 ---
 
 # Create Workflow
