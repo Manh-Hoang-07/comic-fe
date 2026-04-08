@@ -30,14 +30,16 @@ export default function BaseSlider({
   const sliderContainerRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [totalSlides, setTotalSlides] = useState(0);
+  const rafIdRef = useRef<number | null>(null);
 
   const checkScrollability = useCallback(() => {
     if (sliderContainerRef.current) {
       const { scrollLeft, scrollWidth, clientWidth } = sliderContainerRef.current;
-      setCanScrollLeft(scrollLeft > 0);
-      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
+      const nextCanLeft = scrollLeft > 0;
+      const nextCanRight = scrollLeft < scrollWidth - clientWidth - 10;
+
+      setCanScrollLeft((prev) => (prev === nextCanLeft ? prev : nextCanLeft));
+      setCanScrollRight((prev) => (prev === nextCanRight ? prev : nextCanRight));
     }
   }, []);
 
@@ -54,21 +56,36 @@ export default function BaseSlider({
   }, []);
 
   const handleScroll = useCallback(() => {
-    checkScrollability();
+    if (rafIdRef.current != null) return;
+    rafIdRef.current = window.requestAnimationFrame(() => {
+      rafIdRef.current = null;
+      checkScrollability();
+    });
   }, [checkScrollability]);
 
   useEffect(() => {
     checkScrollability();
     const container = sliderContainerRef.current;
     if (container) {
-      container.addEventListener("scroll", handleScroll);
+      container.addEventListener("scroll", handleScroll, { passive: true });
+
+      const ro = new ResizeObserver(() => {
+        handleScroll();
+      });
+      ro.observe(container);
+
       return () => {
         container.removeEventListener("scroll", handleScroll);
+        ro.disconnect();
+        if (rafIdRef.current != null) {
+          window.cancelAnimationFrame(rafIdRef.current);
+          rafIdRef.current = null;
+        }
       };
     }
-  }, [children, checkScrollability, handleScroll]);
+  }, [checkScrollability, handleScroll]);
 
-  const progressDots = Array.from({ length: Math.max(totalSlides, 5) });
+  const progressDots = Array.from({ length: 5 });
 
   return (
     <div className="w-full bg-white rounded-xl shadow-sm border border-gray-100 p-6">
@@ -239,8 +256,7 @@ export default function BaseSlider({
           {progressDots.map((_, index) => (
             <div
               key={index}
-              className={`w-2 h-2 rounded-full transition-colors ${index === currentSlide ? "bg-blue-600" : "bg-gray-300"
-                }`}
+              className="w-2 h-2 rounded-full transition-colors bg-gray-300"
             />
           ))}
         </div>

@@ -24,6 +24,8 @@ export default function BirthdayContent() {
 
     const heroRef = useRef<HTMLDivElement>(null);
     const modalImgRef = useRef<HTMLImageElement>(null);
+    const rafRef = useRef<number | null>(null);
+    const latestScrollYRef = useRef(0);
 
     // Gallery images list
     const images = [
@@ -54,35 +56,52 @@ export default function BirthdayContent() {
     ];
 
     useEffect(() => {
-        const revealOnScroll = () => {
-            const reveals = document.querySelectorAll(".reveal, .reveal-left, .reveal-right");
-            const triggerBottom = window.innerHeight * 0.85;
+        const heroFadeUps = Array.from(document.querySelectorAll(".hero .fade-up"));
+        heroFadeUps.forEach((el) => el.classList.add("active"));
 
-            reveals.forEach((el) => {
-                const elTop = el.getBoundingClientRect().top;
-                if (elTop < triggerBottom) {
-                    el.classList.add("active");
+        const revealTargets = Array.from(document.querySelectorAll(".reveal, .reveal-left, .reveal-right"));
+        const observer = new IntersectionObserver(
+            (entries) => {
+                for (const entry of entries) {
+                    if (entry.isIntersecting) {
+                        (entry.target as HTMLElement).classList.add("active");
+                        observer.unobserve(entry.target);
+                    }
                 }
-            });
-        };
+            },
+            {
+                root: null,
+                rootMargin: "0px 0px -15% 0px",
+                threshold: 0.01,
+            }
+        );
 
-        const handleScroll = () => {
-            revealOnScroll();
+        revealTargets.forEach((el) => observer.observe(el));
+
+        const updateParallax = () => {
+            rafRef.current = null;
             if (heroRef.current) {
-                const scrolled = window.pageYOffset;
-                heroRef.current.style.transform = `translateY(${scrolled * -0.2}px)`;
+                heroRef.current.style.transform = `translateY(${latestScrollYRef.current * -0.2}px)`;
             }
         };
 
-        window.addEventListener("scroll", handleScroll);
+        const onScroll = () => {
+            latestScrollYRef.current = window.scrollY || window.pageYOffset || 0;
+            if (rafRef.current == null) {
+                rafRef.current = window.requestAnimationFrame(updateParallax);
+            }
+        };
 
-        // Chạy animation ngay lập tức khi vào trang
-        revealOnScroll();
-        document.querySelectorAll(".hero .fade-up").forEach((el) => {
-            el.classList.add("active");
-        });
+        window.addEventListener("scroll", onScroll, { passive: true });
+        onScroll();
 
-        return () => window.removeEventListener("scroll", handleScroll);
+        return () => {
+            observer.disconnect();
+            window.removeEventListener("scroll", onScroll);
+            if (rafRef.current != null) {
+                window.cancelAnimationFrame(rafRef.current);
+            }
+        };
     }, []);
 
     const openModal = (index: number) => {

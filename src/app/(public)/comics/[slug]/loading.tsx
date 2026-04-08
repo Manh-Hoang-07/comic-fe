@@ -1,5 +1,3 @@
-import "@/styles/comic.css";
-
 export default function Loading() {
     return (
         <main className="bg-[#f8f9fa] min-h-screen py-8">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
 
@@ -25,24 +25,22 @@ export default function UserDropdown({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const router = useRouter();
+  const rafIdRef = useRef<number | null>(null);
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
+  const closeDropdown = useCallback(() => {
+    setIsOpen(false);
+  }, []);
+
   const toggleDropdown = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setIsOpen(!isOpen);
-    if (!isOpen) {
-      calculateDropdownPosition();
-    }
+    setIsOpen((prev) => !prev);
   };
 
-  const closeDropdown = () => {
-    setIsOpen(false);
-  };
-
-  const calculateDropdownPosition = () => {
+  const calculateDropdownPosition = useCallback(() => {
     if (!buttonRef.current) return;
 
     const rect = buttonRef.current.getBoundingClientRect();
@@ -74,7 +72,32 @@ export default function UserDropdown({
       top: `${top}px`,
       width: `${dropdownWidth}px`,
     });
-  };
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!isOpen) return;
+
+    const schedule = () => {
+      if (rafIdRef.current != null) return;
+      rafIdRef.current = window.requestAnimationFrame(() => {
+        rafIdRef.current = null;
+        calculateDropdownPosition();
+      });
+    };
+
+    schedule();
+    window.addEventListener("resize", schedule, { passive: true });
+    window.addEventListener("scroll", schedule, { passive: true, capture: true });
+
+    return () => {
+      window.removeEventListener("resize", schedule);
+      window.removeEventListener("scroll", schedule, true);
+      if (rafIdRef.current != null) {
+        window.cancelAnimationFrame(rafIdRef.current);
+        rafIdRef.current = null;
+      }
+    };
+  }, [isOpen, calculateDropdownPosition]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -101,7 +124,7 @@ export default function UserDropdown({
       document.removeEventListener("click", handleClickOutside);
       document.removeEventListener("keydown", handleEscape);
     };
-  }, [isOpen]);
+  }, [isOpen, closeDropdown]);
 
   const handleProfile = () => {
     closeDropdown();

@@ -1,6 +1,5 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import "@/styles/comic.css";
 import InfiniteScrollReader from "@/components/Features/Comics/Chapters/Public/InfiniteScrollReader";
 import { fetchChapterFullData } from "@/app/(public)/chapters/actions";
 

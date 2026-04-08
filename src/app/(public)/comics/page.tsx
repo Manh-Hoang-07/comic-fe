@@ -5,7 +5,6 @@ import { ComicCard } from "@/components/Features/Comics/ComicList/Public/ComicCa
 import { Pagination } from "@/components/UI/Navigation/Pagination";
 import { CategorySelect } from "@/components/Features/Comics/Categories/Public/CategorySelect";
 import { ContentWrapper } from "@/components/UI/Loading/ContentWrapper";
-import "@/styles/comic.css";
 
 
 interface Props {
@@ -81,7 +80,7 @@ export default async function ComicListPage({ searchParams }: Props) {
                         <div className="flex-1">
                             {comicsData && comicsData.data && comicsData.data.length > 0 ? (
                                 <>
-                                    <div className="comic-grid mb-12">
+                                    <div className="mb-12 grid grid-cols-2 gap-4 md:grid-cols-[repeat(auto-fill,minmax(220px,1fr))] md:gap-6">
                                         {comicsData.data.map((comic, index) => (
                                             <ComicCard key={comic.id} comic={comic} priority={index < 8} />
                                         ))}

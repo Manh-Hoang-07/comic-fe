@@ -15,15 +15,15 @@ export const ComicSection: React.FC<ComicSectionProps> = ({ title, comics, viewA
 
     return (
         <section className={`mb-12 ${className}`}>
-            <div className="section-title">
-                <h2>{title}</h2>
+            <div className="mb-6 flex items-center justify-between border-l-4 border-red-500 pl-4">
+                <h2 className="text-2xl font-extrabold uppercase tracking-wide text-gray-800">{title}</h2>
                 {viewAllLink && (
-                    <Link href={viewAllLink} className="view-all">
+                    <Link href={viewAllLink} className="text-sm font-semibold text-red-500 transition-colors hover:text-red-600">
                         Xem tất cả
                     </Link>
                 )}
             </div>
-            <div className="comic-grid">
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-[repeat(auto-fill,minmax(220px,1fr))] md:gap-6">
                 {comics.map((comic) => (
                     <ComicCard key={comic.id} comic={comic} />
                 ))}

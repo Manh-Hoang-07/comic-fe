@@ -8,7 +8,7 @@ interface CategorySidebarProps {
 
 export const CategorySidebar: React.FC<CategorySidebarProps> = ({ categories }) => {
     return (
-        <div className="category-sidebar">
+        <div className="rounded-2xl border border-gray-200 bg-white p-6">
             <h3 className="text-xl font-extrabold mb-6 border-b pb-2 text-gray-800 uppercase tracking-tighter">
                 Thể loại
             </h3>
@@ -17,7 +17,7 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({ categories }) 
                     <Link
                         key={category.id}
                         href={`/comics?comic_category_id=${category.id}`}
-                        className="category-item text-sm"
+                        className="mb-1 block rounded-lg px-3 py-2 text-sm font-medium text-[#4b4b4b] transition-all hover:translate-x-1 hover:bg-red-500 hover:text-white"
                     >
                         {category.name}
                     </Link>

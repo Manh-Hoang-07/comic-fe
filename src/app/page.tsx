@@ -6,7 +6,6 @@ import { ComicSection } from "@/components/Features/Comics/ComicList/Public/Comi
 import { CategorySidebar } from "@/components/Features/Comics/Categories/Public/CategorySidebar";
 import Link from "next/link";
 import { formatNumber } from "@/utils/formatters";
-import "@/styles/comic.css";
 import { PublicHeader, PublicFooter, PublicLayoutWrapper } from "@/components/Layouts/Public";
 import { getSystemConfig } from "@/lib/api/public/general";
 import { getPublicMenus } from "@/lib/api/public/menu";

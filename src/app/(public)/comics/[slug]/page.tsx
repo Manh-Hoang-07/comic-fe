@@ -9,7 +9,6 @@ import { CommentSection } from "@/components/Features/Comics/Comments/Public/Com
 import { FollowButton } from "@/components/Features/Comics/Shared/FollowButton";
 import { Star, Clock, User, Info } from "lucide-react";
 import { formatNumber } from "@/utils/formatters";
-import "@/styles/comic.css";
 
 interface Props {
     params: Promise<{ slug: string }>;
