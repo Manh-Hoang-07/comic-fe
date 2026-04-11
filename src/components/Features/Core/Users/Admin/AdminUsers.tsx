@@ -65,7 +65,7 @@ export default function AdminUsers({
   const editModal = useModal<{ fetchApi?: string; initialData?: any; updateApi: string }>();
   const deleteModal = useModal<{ id: number; name?: string; deleteApi: string }>();
   const passwordModal = useModal<{ passApi: string; user: any }>();
-  const roleModal = useModal<{ assignApi: string; user: any }>();
+  const roleModal = useModal<{ user: any }>();
 
   const handleDeleteConfirm = async () => {
     if (!deleteModal.data?.deleteApi) return;
@@ -152,10 +152,7 @@ export default function AdminUsers({
                           </svg>
                         </button>
                         <button
-                          onClick={() => roleModal.open({ 
-                            assignApi: adminEndpoints.users.assignRoles(user.id), 
-                            user 
-                          })}
+                          onClick={() => roleModal.open({ user })}
                           className="p-2 rounded-full hover:bg-green-100 transition-colors"
                           title="Phân quyền"
                         >
@@ -242,7 +239,6 @@ export default function AdminUsers({
           target={roleModal.data}
           onClose={roleModal.close}
           onSuccess={() => {
-            roleModal.close();
             actions.refresh();
           }}
         />

@@ -279,7 +279,7 @@ export default function UserForm({
                 errors={errors}
                 watch={watch}
                 setValue={setValue}
-                isAdmin={true}
+                isAdmin={false}
                 required={false}
               />
             </div>
