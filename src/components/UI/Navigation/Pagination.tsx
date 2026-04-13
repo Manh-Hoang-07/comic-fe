@@ -25,13 +25,14 @@ export const Pagination: React.FC<PaginationProps> = ({
     const createPageUrl = (pageNumber: number) => {
         const params = new URLSearchParams(searchParams.toString());
         params.set('page', pageNumber.toString());
-        return `${pathname}?${params.toString()}`;
+        const qs = params.toString();
+        return qs ? `${pathname}?${qs}` : pathname;
     };
 
     const handlePageChange = (page: number) => {
         setLoadingPage(page);
         startTransition(() => {
-            router.push(createPageUrl(page));
+            router.push(createPageUrl(page), { scroll: false });
         });
     };
 

@@ -83,16 +83,39 @@ export function useUrlListSync<T extends { id: any } = any>(config: {
       setItems(transformedData);
 
       if (metaData) {
+        const params = getUrlParams();
+        const toNumber = (val: any): number | undefined => {
+          if (val === null || val === undefined || val === "") return undefined;
+          const n = typeof val === "number" ? val : parseInt(String(val), 10);
+          return Number.isFinite(n) ? n : undefined;
+        };
+
+        const urlPage = toNumber(params.page) ?? 1;
+        const urlLimit = toNumber(params.limit ?? params.per_page) ?? 10;
+
         setPagination((prev) => ({
-          page: metaData.page ?? metaData.current_page ?? prev.page,
+          page:
+            toNumber(
+              metaData.page ??
+                metaData.current_page ??
+                metaData.currentPage ??
+                metaData.page_index ??
+                metaData.pageIndex
+            ) ??
+            urlPage ??
+            prev.page,
           totalPages:
-            metaData.totalPages ??
-            metaData.pageCount ??
-            metaData.lastPage ??
-            metaData.last_page ??
-            prev.totalPages,
-          limit: metaData.limit ?? metaData.per_page ?? prev.limit,
-          totalItems: metaData.totalItems ?? metaData.total ?? prev.totalItems,
+            toNumber(
+              metaData.totalPages ??
+                metaData.pageCount ??
+                metaData.total_pages ??
+                metaData.lastPage ??
+                metaData.last_page
+            ) ?? prev.totalPages,
+          limit: toNumber(metaData.limit ?? metaData.per_page ?? metaData.perPage) ?? urlLimit ?? prev.limit,
+          totalItems:
+            toNumber(metaData.totalItems ?? metaData.total ?? metaData.total_items) ??
+            prev.totalItems,
         }));
       }
     } catch (err: any) {
@@ -118,7 +141,9 @@ export function useUrlListSync<T extends { id: any } = any>(config: {
       if (!params.has("limit") && !params.has("per_page")) {
         params.set("limit", "10");
       }
-      router.push(`${pathname}?${params.toString()}`);
+      const qs = params.toString();
+      const url = qs ? `${pathname}?${qs}` : pathname;
+      router.push(url, { scroll: false });
     },
     [router, pathname, searchParams]
   );
@@ -144,7 +169,9 @@ export function useUrlListSync<T extends { id: any } = any>(config: {
       // Remove page when filtering
       params.delete("page");
 
-      router.push(`${pathname}?${params.toString()}`);
+      const qs = params.toString();
+      const url = qs ? `${pathname}?${qs}` : pathname;
+      router.push(url, { scroll: false });
     },
     [router, pathname, searchParams]
   );
@@ -155,7 +182,9 @@ export function useUrlListSync<T extends { id: any } = any>(config: {
       params.set("sort_by", sortBy);
       params.set("sort_order", sortOrder);
       params.delete("page");
-      router.push(`${pathname}?${params.toString()}`);
+      const qs = params.toString();
+      const url = qs ? `${pathname}?${qs}` : pathname;
+      router.push(url, { scroll: false });
     },
     [router, pathname, searchParams]
   );
@@ -166,11 +195,13 @@ export function useUrlListSync<T extends { id: any } = any>(config: {
     const limit = searchParams.get("limit") || searchParams.get("per_page");
     if (page) params.set("page", page);
     if (limit) params.set("limit", limit);
-    router.push(`${pathname}?${params.toString()}`);
+    const qs = params.toString();
+    const url = qs ? `${pathname}?${qs}` : pathname;
+    router.push(url, { scroll: false });
   }, [router, pathname, searchParams]);
 
   const resetAll = useCallback(() => {
-    router.push(pathname);
+    router.push(pathname, { scroll: false });
   }, [router, pathname]);
 
   const filters = useMemo(() => getUrlParams(), [getUrlParams]);
