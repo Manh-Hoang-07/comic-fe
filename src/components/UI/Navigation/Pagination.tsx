@@ -41,7 +41,6 @@ export const Pagination: React.FC<PaginationProps> = ({
     const renderPageNumbers = () => {
         const pages = [];
         const maxVisiblePages = 5;
-        // Logic remains same, just update button states
         let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
         let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
 
@@ -75,46 +74,48 @@ export const Pagination: React.FC<PaginationProps> = ({
     };
 
     return (
-        <div className="flex justify-center items-center gap-2 mt-12 pb-8" data-pagination>
-            <button
-                disabled={!hasPreviousPage || isPending}
-                onClick={() => handlePageChange(currentPage - 1)}
-                className={`px-4 py-2 rounded-xl font-bold border transition-all relative ${hasPreviousPage && !isPending
-                    ? 'bg-white text-gray-700 border-gray-100 hover:border-red-500 hover:text-red-500'
-                    : 'bg-gray-50 text-gray-300 border-gray-50 cursor-not-allowed'
-                    }`}
-            >
-                {isPending && loadingPage === currentPage - 1 ? (
-                    <span className="flex items-center gap-2">
-                        <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
-                        Trước
-                    </span>
-                ) : (
-                    'Trước'
-                )}
-            </button>
+        <>
+            <div className="flex justify-center items-center gap-2 mt-12 pb-8" data-pagination>
+                <button
+                    disabled={!hasPreviousPage || isPending}
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    className={`px-4 py-2 rounded-xl font-bold border transition-all relative ${hasPreviousPage && !isPending
+                        ? 'bg-white text-gray-700 border-gray-100 hover:border-red-500 hover:text-red-500'
+                        : 'bg-gray-50 text-gray-300 border-gray-50 cursor-not-allowed'
+                        }`}
+                >
+                    {isPending && loadingPage === currentPage - 1 ? (
+                        <span className="flex items-center gap-2">
+                            <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                            Trước
+                        </span>
+                    ) : (
+                        'Trước'
+                    )}
+                </button>
 
-            <div className="flex items-center gap-2 mx-2">
-                {renderPageNumbers()}
+                <div className="flex items-center gap-2 mx-2">
+                    {renderPageNumbers()}
+                </div>
+
+                <button
+                    disabled={!hasNextPage || isPending}
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    className={`px-4 py-2 rounded-xl font-bold border transition-all relative ${hasNextPage && !isPending
+                        ? 'bg-white text-gray-700 border-gray-100 hover:border-red-500 hover:text-red-500'
+                        : 'bg-gray-50 text-gray-300 border-gray-50 cursor-not-allowed'
+                        }`}
+                >
+                    {isPending && loadingPage === currentPage + 1 ? (
+                        <span className="flex items-center gap-2">
+                            <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                            Sau
+                        </span>
+                    ) : (
+                        'Sau'
+                    )}
+                </button>
             </div>
-
-            <button
-                disabled={!hasNextPage || isPending}
-                onClick={() => handlePageChange(currentPage + 1)}
-                className={`px-4 py-2 rounded-xl font-bold border transition-all relative ${hasNextPage && !isPending
-                    ? 'bg-white text-gray-700 border-gray-100 hover:border-red-500 hover:text-red-500'
-                    : 'bg-gray-50 text-gray-300 border-gray-50 cursor-not-allowed'
-                    }`}
-            >
-                {isPending && loadingPage === currentPage + 1 ? (
-                    <span className="flex items-center gap-2">
-                        <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
-                        Sau
-                    </span>
-                ) : (
-                    'Sau'
-                )}
-            </button>
-        </div>
+        </>
     );
 };

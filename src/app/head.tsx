@@ -18,6 +18,8 @@ export default function Head() {
           <link rel="dns-prefetch" href={apiOrigin} />
         </>
       ) : null}
+      {/* Preconnect cho image CDN nếu dùng domain khác */}
+      <link rel="preconnect" href="/_next/image" />
     </>
   );
 }

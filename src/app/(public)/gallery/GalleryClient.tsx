@@ -5,8 +5,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/UI/Navigation/Button";
 import { Breadcrumbs } from "@/components/UI/Navigation/Breadcrumbs";
-import api from "@/lib/api/client";
-import { publicEndpoints } from "@/lib/api/endpoints";
 import HeroBanner from "@/components/Features/Marketing/Banners/Public/HeroBanner";
 
 interface GalleryItem {
@@ -22,40 +20,22 @@ interface GalleryItem {
     date?: string;
 }
 
-export default function GalleryClient() {
-    const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
-    const [filteredItems, setFilteredItems] = useState<GalleryItem[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+interface GalleryClientProps {
+    initialItems: GalleryItem[];
+}
+
+export default function GalleryClient({ initialItems }: GalleryClientProps) {
+    const [galleryItems] = useState<GalleryItem[]>(initialItems);
+    const [filteredItems, setFilteredItems] = useState<GalleryItem[]>(initialItems);
     const [filters, setFilters] = useState({
         search: "",
     });
     const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
-    // Fetch gallery from API
-    useEffect(() => {
-        const fetchGallery = async () => {
-            try {
-                const response = await api.get(publicEndpoints.gallery.list);
-                if (response.data?.success) {
-                    const galleryData = response.data.data || [];
-                    setGalleryItems(galleryData);
-                    setFilteredItems(galleryData);
-                }
-            } catch (error) {
-                console.error("Error fetching gallery:", error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchGallery();
-    }, []);
-
     // Apply filters
     useEffect(() => {
         let filtered = [...galleryItems];
 
-        // Filter by search
         if (filters.search) {
             const searchLower = filters.search.toLowerCase();
             filtered = filtered.filter(item =>
@@ -66,19 +46,6 @@ export default function GalleryClient() {
 
         setFilteredItems(filtered);
     }, [galleryItems, filters]);
-
-    if (isLoading) {
-        return (
-            <div className="min-h-screen bg-[#f8f9fa] pb-20 transition-colors duration-300">
-                <div className="container mx-auto px-4 mt-8">
-                    <div className="flex justify-center items-center py-20">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                        <p className="ml-3 text-gray-600 font-medium">Đang tải thư viện...</p>
-                    </div>
-                </div>
-            </div>
-        );
-    }
 
     return (
         <div className="min-h-screen bg-[#f8f9fa] pb-20 transition-colors duration-300">

@@ -1,8 +1,5 @@
-"use client";
-
 import Link from "next/link";
 import Image from "next/image";
-import { useState, useEffect } from "react";
 import { SystemConfig } from "@/types/api";
 
 interface PublicFooterProps {
@@ -10,12 +7,6 @@ interface PublicFooterProps {
 }
 
 export function PublicFooter({ systemConfig }: PublicFooterProps) {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   const systemInfo = {
     name: systemConfig?.site_name || "Hệ thống",
     version: (systemConfig as any)?.version || "1.0.0",
@@ -24,36 +15,11 @@ export function PublicFooter({ systemConfig }: PublicFooterProps) {
 
   const siteCopyright = systemConfig?.site_copyright || null;
   const siteDescription = systemConfig?.site_description || null;
-  const siteLogo = systemConfig?.site_logo || null;
   const siteEmail = systemConfig?.site_email || null;
   const sitePhone = systemConfig?.site_phone || null;
   const siteAddress = systemConfig?.site_address || null;
 
   const currentYear = new Date().getFullYear();
-
-  // Tránh hydration mismatch bằng cách render nội dung tĩnh trước khi mounted
-  if (!mounted) {
-    return (
-      <footer className="bg-gray-900 text-white py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center mb-4">
-                <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center mr-3">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
-                  </svg>
-                </div>
-                <h3 className="text-lg font-semibold">Công Ty Xây Dựng</h3>
-              </div>
-              <p className="text-gray-400 mb-4">Chuyên nghiệp - Chất lượng - Uy tín. Dịch vụ xây dựng toàn diện với nhiều năm kinh nghiệm.</p>
-            </div>
-            {/* ... other parts are mostly static or can be empty ... */}
-          </div>
-        </div>
-      </footer>
-    );
-  }
 
   return (
     <footer className="bg-gray-900 text-white py-16">

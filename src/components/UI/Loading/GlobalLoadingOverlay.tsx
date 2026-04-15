@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 
 /**
- * Global loading overlay - hiệu ứng nhẹ khi chuyển trang
- * Chỉ làm mờ nhẹ content hiện tại, không che toàn bộ màn hình
+ * Global loading overlay - hiệu ứng khi chuyển trang
+ * Hiển thị overlay + spinner để người dùng biết trang đang chuyển
  */
 export function GlobalLoadingOverlay() {
     const [isLoading, setIsLoading] = useState(false);
@@ -17,36 +17,35 @@ export function GlobalLoadingOverlay() {
         setIsLoading(false);
     }, [pathname, searchParams]);
 
-    // Lắng nghe click vào link nội bộ
+    // Lắng nghe click vào link nội bộ - tối ưu: early return nhanh, cache origin
     useEffect(() => {
+        const currentOrigin = window.location.origin;
+
         const handleClick = (e: MouseEvent) => {
             const target = e.target as HTMLElement;
-            const link = target.closest('a');
 
-            if (link && link.href) {
-                try {
-                    const url = new URL(link.href);
-                    const currentUrl = new URL(window.location.href);
+            // Early return: chỉ xử lý khi click vào <a>
+            const link = target.closest('a') as HTMLAnchorElement | null;
+            if (!link?.href || link.target === '_blank' || link.download) return;
 
-                    // Chỉ hiện loading cho navigation nội bộ (khác path hoặc search)
-                    if (url.origin === currentUrl.origin &&
-                        (url.pathname !== currentUrl.pathname || url.search !== currentUrl.search)) {
-                        setIsLoading(true);
-                    }
-                } catch {
-                    // URL không hợp lệ, bỏ qua
-                }
+            // Dùng link.pathname trực tiếp (không cần new URL) cho link cùng origin
+            if (link.origin === currentOrigin && link.pathname !== pathname) {
+                setIsLoading(true);
             }
         };
 
         document.addEventListener('click', handleClick);
         return () => document.removeEventListener('click', handleClick);
-    }, []);
+    }, [pathname]);
 
     if (!isLoading) return null;
 
-    // Overlay nhẹ - chỉ làm mờ content, không che toàn bộ
     return (
-        <div className="fixed inset-0 z-[99] bg-white/40 backdrop-blur-[1px] pointer-events-none transition-opacity duration-200" />
+        <div className="fixed inset-0 z-[99] bg-white/60 backdrop-blur-[2px] transition-opacity duration-200 flex items-center justify-center">
+            <div className="flex flex-col items-center gap-3">
+                <div className="w-10 h-10 border-3 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+                <p className="text-sm font-medium text-gray-500">Đang chuyển trang...</p>
+            </div>
+        </div>
     );
 }

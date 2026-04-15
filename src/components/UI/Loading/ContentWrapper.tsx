@@ -1,8 +1,7 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { LoadingSpinner } from '@/components/UI/Loading/LoadingSpinner';
+import { useEffect, useRef, useState } from 'react';
 
 interface ContentWrapperProps {
     children: React.ReactNode;
@@ -10,35 +9,31 @@ interface ContentWrapperProps {
 }
 
 /**
- * Wrapper component that shows loading overlay when pagination or filtering happens
- * Detects clicks on pagination buttons or filter links
+ * Wrapper component hiển thị skeleton/dim effect khi pagination hoặc filter thay đổi
+ * Detect click trên pagination buttons và filter links
  */
 export function ContentWrapper({ children, className = '' }: ContentWrapperProps) {
     const searchParams = useSearchParams();
     const [isLoading, setIsLoading] = useState(false);
-    const [previousParams, setPreviousParams] = useState(searchParams.toString());
+    const previousParamsRef = useRef(searchParams.toString());
 
     useEffect(() => {
         const currentParams = searchParams.toString();
 
-        // Check if params changed (navigation happened)
-        if (currentParams !== previousParams) {
+        if (currentParams !== previousParamsRef.current) {
             setIsLoading(false);
-            setPreviousParams(currentParams);
+            previousParamsRef.current = currentParams;
         }
-    }, [searchParams, previousParams]);
+    }, [searchParams]);
 
     // Listen for navigation start
     useEffect(() => {
         const handleNavigation = (e: Event) => {
             const target = e.target as HTMLElement;
 
-            // Check if clicked/changed element is a pagination trigger
             const isTrigger = target.closest('[data-pagination]') || target.closest('a[href*="page="]');
 
             if (isTrigger) {
-                // If it's a click on select or option, don't show loading yet 
-                // (wait for the 'change' event or actual navigation)
                 if (e.type === 'click' && (target.tagName === 'SELECT' || target.tagName === 'OPTION')) {
                     return;
                 }
@@ -55,11 +50,19 @@ export function ContentWrapper({ children, className = '' }: ContentWrapperProps
         };
     }, []);
 
-
     return (
         <div className={`relative ${className}`}>
-            {isLoading && <LoadingSpinner variant="local" />}
-            {children}
+            <div className={`transition-opacity duration-200 ${isLoading ? 'opacity-40 pointer-events-none' : 'opacity-100'}`}>
+                {children}
+            </div>
+            {isLoading && (
+                <div className="absolute inset-0 flex items-center justify-center z-10">
+                    <div className="flex flex-col items-center gap-3 bg-white/90 rounded-2xl px-8 py-6 shadow-lg">
+                        <div className="w-8 h-8 border-3 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+                        <p className="text-sm font-medium text-gray-500">Đang tải...</p>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

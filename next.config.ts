@@ -3,6 +3,7 @@ const nextConfig = {
   compress: true,
   transpilePackages: [],
   experimental: {
+    optimizeCss: true,
     optimizePackageImports: [
       "lucide-react",
       "date-fns",
@@ -10,9 +11,12 @@ const nextConfig = {
       "react-hook-form",
       "@heroicons/react",
       "chart.js",
+      "react-chartjs-2",
       "zod",
       "axios",
       "swiper",
+      "swiper/modules",
+      "@tinymce/tinymce-react",
     ],
   },
   images: {
@@ -100,13 +104,19 @@ const nextConfig = {
   // Suppress deprecation warnings from dependencies
   webpack: (config: any, { isServer }: { isServer: boolean }) => {
     if (isServer) {
-      // Suppress Node.js deprecation warnings in server builds
       const originalEntry = config.entry;
       config.entry = async () => {
         const entries = await originalEntry();
         return entries;
       };
     }
+
+    // Minimize JS bundle - loại bỏ comments và tối ưu tree-shaking
+    if (!isServer && config.optimization) {
+      config.optimization.usedExports = true;
+      config.optimization.sideEffects = true;
+    }
+
     return config;
   },
 };

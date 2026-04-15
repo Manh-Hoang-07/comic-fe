@@ -20,9 +20,11 @@ export const ComicCard = memo<ComicCardProps>(function ComicCard({ comic, priori
                     src={comic.cover_image || '/images/no-cover.svg'}
                     alt={comic.title}
                     fill
+                    quality={60}
                     className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
                     sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 20vw"
                     priority={priority}
+                    loading={priority ? "eager" : "lazy"}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                 {comic.status === 'completed' && (

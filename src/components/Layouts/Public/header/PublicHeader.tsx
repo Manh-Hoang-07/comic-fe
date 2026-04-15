@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   Bars3Icon,
   XMarkIcon,
-  PhoneIcon,
   ChevronDownIcon,
   UserCircleIcon,
   MagnifyingGlassIcon,
@@ -14,7 +13,6 @@ import {
 } from "@heroicons/react/24/outline";
 import { useAuthStore } from "@/lib/store/authStore";
 import Image from "next/image";
-import { useSystemConfig } from "@/hooks";
 import { Suspense } from "react";
 import SearchInput from "@/components/Features/Comics/Search/Public/SearchInput";
 import apiClient from "@/lib/api/client";
@@ -94,26 +92,32 @@ export function PublicHeader({
   const siteName = systemConfig?.site_name || "Comic Haven";
 
   const [isVisible, setIsVisible] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
+  const lastScrollYRef = useRef(0);
+  const rafRef = useRef<number | null>(null);
 
-  // Scroll effect
+  // Scroll effect - tối ưu: dùng useRef thay vì useState cho lastScrollY,
+  // requestAnimationFrame để batch updates
   useEffect(() => {
     const handleScroll = () => {
-      const currentScrollY = window.scrollY;
+      if (rafRef.current) return; // skip nếu đang có rAF pending
+      rafRef.current = requestAnimationFrame(() => {
+        const currentScrollY = window.scrollY;
+        const shouldHide = currentScrollY > lastScrollYRef.current && currentScrollY > 100;
+        const isScrolled = currentScrollY > 20;
 
-      if (currentScrollY > lastScrollY && currentScrollY > 100) {
-        setIsVisible(false);
-      } else {
-        setIsVisible(true);
-      }
-
-      setScrolled(currentScrollY > 20);
-      setLastScrollY(currentScrollY);
+        setIsVisible(!shouldHide);
+        setScrolled(isScrolled);
+        lastScrollYRef.current = currentScrollY;
+        rafRef.current = null;
+      });
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [lastScrollY]);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, []);
 
 
   const isActive = (path: string) => {

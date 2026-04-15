@@ -3,8 +3,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/UI/Navigation/Button";
 import { Breadcrumbs } from "@/components/UI/Navigation/Breadcrumbs";
-import api from "@/lib/api/client";
-import { publicEndpoints } from "@/lib/api/endpoints";
 
 interface FAQ {
     id: string;
@@ -14,46 +12,27 @@ interface FAQ {
     sort_order?: number;
 }
 
-export default function FAQsClient() {
-    const [faqs, setFaqs] = useState<FAQ[]>([]);
-    const [filteredFAQs, setFilteredFAQs] = useState<FAQ[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+interface FAQsClientProps {
+    initialFaqs: FAQ[];
+}
+
+export default function FAQsClient({ initialFaqs }: FAQsClientProps) {
+    const [faqs] = useState<FAQ[]>(initialFaqs);
+    const [filteredFAQs, setFilteredFAQs] = useState<FAQ[]>(initialFaqs);
     const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
     const [filters, setFilters] = useState({
         category: "all",
         search: "",
     });
 
-    // Fetch FAQs from API
-    useEffect(() => {
-        const fetchFaqs = async () => {
-            try {
-                const response = await api.get(publicEndpoints.faqs.list);
-                if (response.data?.success) {
-                    const faqData = response.data.data || [];
-                    setFaqs(faqData);
-                    setFilteredFAQs(faqData);
-                }
-            } catch (error) {
-                console.error("Error fetching FAQs:", error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchFaqs();
-    }, []);
-
     // Apply filters
     useEffect(() => {
         let filtered = [...faqs];
 
-        // Filter by category
         if (filters.category !== "all") {
             filtered = filtered.filter(faq => faq.category === filters.category);
         }
 
-        // Filter by search
         if (filters.search) {
             const searchLower = filters.search.toLowerCase();
             filtered = filtered.filter(faq =>
@@ -62,7 +41,6 @@ export default function FAQsClient() {
             );
         }
 
-        // Sort by order if available
         filtered.sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
 
         setFilteredFAQs(filtered);
@@ -79,19 +57,6 @@ export default function FAQsClient() {
     };
 
     const categories = Array.from(new Set(faqs.map(faq => String(faq.category)))).filter(cat => cat && cat !== "all");
-
-    if (isLoading) {
-        return (
-            <div className="min-h-screen bg-[#f8f9fa] pb-20 transition-colors duration-300">
-                <div className="container mx-auto px-4 mt-8">
-                    <div className="flex justify-center items-center py-20">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                        <p className="ml-3 text-gray-600 font-medium">Đang tải câu hỏi...</p>
-                    </div>
-                </div>
-            </div>
-        );
-    }
 
     return (
         <div className="min-h-screen bg-[#f8f9fa] pb-20 transition-colors duration-300">

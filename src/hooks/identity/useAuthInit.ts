@@ -27,10 +27,9 @@ export function useAuthInit(): AuthInitResult {
     // Đánh dấu client đã sẵn sàng
     setIsClientReady(true);
 
-    // Kiểm tra session thực tế với server khi khởi chạy app
+    // Defer auth check để không block main thread trong quá trình hydration
     const initializeAuth = async () => {
       try {
-        // Chỉ chạy checkAuth nếu chưa được khởi tạo
         if (!authStore.isInitialized) {
           await authStore.checkAuth();
         }
@@ -39,7 +38,12 @@ export function useAuthInit(): AuthInitResult {
       }
     };
 
-    initializeAuth();
+    // Dùng requestIdleCallback để chạy khi browser rảnh, fallback setTimeout
+    if (typeof requestIdleCallback !== "undefined") {
+      requestIdleCallback(() => initializeAuth());
+    } else {
+      setTimeout(() => initializeAuth(), 100);
+    }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Computed để kiểm tra xem có nên render auth-dependent content không

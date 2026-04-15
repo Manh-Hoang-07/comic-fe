@@ -1,5 +1,3 @@
-"use client";
-
 export default function PostCategoriesPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -10,6 +8,3 @@ export default function PostCategoriesPage() {
     </div>
   );
 }
-
-
-

@@ -1,10 +1,9 @@
-"use client";
+interface Props {
+  params: Promise<{ slug: string }>;
+}
 
-import { useParams } from "next/navigation";
-
-export default function PostTagDetailPage() {
-  const params = useParams();
-  const slug = params.slug as string;
+export default async function PostTagDetailPage({ params }: Props) {
+  const { slug } = await params;
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -15,4 +14,3 @@ export default function PostTagDetailPage() {
     </div>
   );
 }
-

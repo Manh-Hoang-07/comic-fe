@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { adminStatsService } from "@/lib/api/admin/analytics";
 import {
     AdminDashboardAnalytics,
@@ -13,26 +14,12 @@ import SkeletonLoader from "@/components/UI/Feedback/SkeletonLoader";
 import DateRangeFilter from "@/components/UI/Filters/DateRangeFilter";
 import SelectFilter from "@/components/UI/Filters/SelectFilter";
 import Image from "next/image";
-import {
-    Chart as ChartJS,
-    CategoryScale,
-    LinearScale,
-    BarElement,
-    Title,
-    Tooltip,
-    Legend,
-} from 'chart.js';
-import { Bar } from 'react-chartjs-2';
 import { format, subDays } from "date-fns";
 
-ChartJS.register(
-    CategoryScale,
-    LinearScale,
-    BarElement,
-    Title,
-    Tooltip,
-    Legend
-);
+const StatsChart = dynamic(() => import("./StatsChart"), {
+    ssr: false,
+    loading: () => <div className="h-64 bg-gray-50 rounded animate-pulse"></div>,
+});
 
 export default function ComicStatsPage() {
     const { showError } = useToastContext();
@@ -109,46 +96,6 @@ export default function ComicStatsPage() {
         fetchTop();
     }, [topFilter, showError]);
 
-    // Chart Data
-    const chartData = useMemo(() => ({
-        labels: viewHistory.map(item => format(new Date(item.date), "dd/MM")),
-        datasets: [
-            {
-                label: 'Lượt xem',
-                data: viewHistory.map(item => item.count),
-                backgroundColor: 'rgba(59, 130, 246, 0.6)',
-                borderColor: 'rgb(59, 130, 246)',
-                borderWidth: 1,
-                borderRadius: 4,
-            },
-        ],
-    }), [viewHistory]);
-
-    const chartOptions = {
-        responsive: true,
-        plugins: {
-            legend: {
-                display: false,
-            },
-            title: {
-                display: false,
-            },
-        },
-        scales: {
-            y: {
-                beginAtZero: true,
-                grid: {
-                    color: '#f3f4f6',
-                }
-            },
-            x: {
-                grid: {
-                    display: false,
-                }
-            }
-        },
-    };
-
     return (
         <div className="w-full p-4 space-y-6">
             <PageMeta
@@ -212,7 +159,7 @@ export default function ComicStatsPage() {
                                 <div className="h-64 bg-gray-50 rounded animate-pulse"></div>
                             </div>
                         ) : viewHistory.length > 0 ? (
-                            <Bar data={chartData} options={chartOptions} />
+                            <StatsChart viewHistory={viewHistory} />
                         ) : (
                             <p className="text-gray-500 italic">Không có dữ liệu trong khoảng thời gian này</p>
                         )}
