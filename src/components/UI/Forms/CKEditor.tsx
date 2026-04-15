@@ -1,7 +1,7 @@
 "use client";
 
 import { Editor } from "@tinymce/tinymce-react";
-import { useEffect, useState, useRef } from "react";
+import { useRef } from "react";
 
 interface CKEditorProps {
   value?: string;
@@ -30,15 +30,7 @@ export default function CKEditor({
   onChange,
   onReady,
 }: CKEditorProps) {
-  const [isMounted, setIsMounted] = useState(false);
-  const [wordCount, setWordCount] = useState(0);
   const editorRef = useRef<any>(null);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  if (!isMounted) return <div style={{ minHeight: height }} className="bg-gray-50 border border-gray-200 rounded animate-pulse" />;
 
   const handleImageUpload = (blobInfo: any, progress: any): Promise<string> => {
     return new Promise((resolve, reject) => {

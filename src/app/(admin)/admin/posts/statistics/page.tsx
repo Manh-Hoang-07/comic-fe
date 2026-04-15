@@ -1,5 +1,20 @@
 import { Metadata } from 'next';
-import AdminPostStatistics from '@/components/Features/Posts/PostList/Admin/AdminPostStatistics';
+import dynamic from 'next/dynamic';
+
+const AdminPostStatistics = dynamic(
+    () => import('@/components/Features/Posts/PostList/Admin/AdminPostStatistics'),
+    {
+        loading: () => (
+            <div className="p-6 animate-pulse space-y-6">
+                <div className="h-8 w-64 bg-gray-200 rounded" />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {[...Array(3)].map((_, i) => <div key={i} className="h-32 bg-gray-200 rounded-xl" />)}
+                </div>
+                <div className="h-64 bg-gray-200 rounded-xl" />
+            </div>
+        ),
+    }
+);
 
 export const metadata: Metadata = {
     title: 'Thống kê bài viết | Admin',

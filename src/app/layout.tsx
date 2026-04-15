@@ -6,6 +6,8 @@ import { ToastProvider } from "@/contexts/ToastContext";
 import ToastContainer from "@/components/UI/Feedback/ToastContainer";
 import { AuthInitializer } from "@/components/Providers/AuthInitializer";
 import { GlobalLoadingOverlay } from "@/components/UI/Loading/GlobalLoadingOverlay";
+import { NavigationProgress } from "@/components/UI/Navigation/NavigationProgress";
+import { QueryProvider } from "@/components/Providers/QueryProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -58,14 +60,17 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}
       >
+        <NavigationProgress />
         <Suspense fallback={null}>
           <GlobalLoadingOverlay />
         </Suspense>
-        <ToastProvider>
-          <AuthInitializer />
-          <ToastContainer />
-          {children}
-        </ToastProvider>
+        <QueryProvider>
+          <ToastProvider>
+            <AuthInitializer />
+            <ToastContainer />
+            {children}
+          </ToastProvider>
+        </QueryProvider>
       </body>
     </html>
   );

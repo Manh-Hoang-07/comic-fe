@@ -53,6 +53,7 @@ export async function getComics(params: {
 
 export async function getComicDetail(slug: string): Promise<Comic | null> {
     const { data, error } = await serverFetch<Comic>(publicEndpoints.comics.detail(slug), {
+        revalidate: 300, // Cache 5 phut
         skipCookies: true,
     });
     if (error) return null;
@@ -61,6 +62,7 @@ export async function getComicDetail(slug: string): Promise<Comic | null> {
 
 export async function getComicChapters(slug: string, page: number = 1): Promise<PaginatedResponse<ComicChapter> | null> {
     const { data, meta: responseMeta, error } = await serverFetch<any>(`${publicEndpoints.comics.chapters(slug)}?page=${page}`, {
+        revalidate: 120, // Cache 2 phut
         skipCookies: true,
     });
     if (error || !data) return null;

@@ -99,7 +99,7 @@ export const TrendingHero: React.FC<TrendingHeroProps> = ({ comics }) => {
                 }}
                 className="w-full h-[320px] md:h-[360px] lg:h-[380px] rounded-xl overflow-hidden shadow-xl bg-white border border-gray-100"
             >
-                {featuredComics.map((comic) => (
+                {featuredComics.map((comic, index) => (
                     <SwiperSlide key={comic.id} className="relative w-full h-full group/slide cursor-pointer">
                         <Link href={`/comics/${comic.slug}`} className="block w-full h-full">
                             {/* 1. Dynamic Background Layer */}
@@ -110,7 +110,7 @@ export const TrendingHero: React.FC<TrendingHeroProps> = ({ comics }) => {
                                         src={comic.cover_image}
                                         alt="Background"
                                         fill
-                                        priority={true}
+                                        priority={index === 0}
                                         quality={10}
                                         className="object-cover blur-[60px] opacity-20 scale-110"
                                     />
@@ -131,7 +131,7 @@ export const TrendingHero: React.FC<TrendingHeroProps> = ({ comics }) => {
                                             alt={comic.title}
                                             width={200}
                                             height={300}
-                                            priority={true}
+                                            priority={index === 0}
                                             className="w-full h-full object-cover"
                                             sizes="(max-width: 1024px) 160px, 200px"
                                         />

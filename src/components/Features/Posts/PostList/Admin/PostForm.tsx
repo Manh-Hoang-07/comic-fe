@@ -7,7 +7,11 @@ import * as z from "zod";
 import Modal from "@/components/UI/Feedback/Modal";
 import FormField from "@/components/UI/Forms/FormField";
 import ImageUploader from "@/components/UI/Forms/ImageUploader";
-import CKEditor from "@/components/UI/Forms/CKEditor";
+import dynamic from "next/dynamic";
+const CKEditor = dynamic(() => import("@/components/UI/Forms/CKEditor"), {
+  ssr: false,
+  loading: () => <div className="h-[400px] bg-gray-50 border border-gray-200 rounded animate-pulse" />,
+});
 import SingleSelectEnhanced from "@/components/UI/Forms/SingleSelectEnhanced";
 import SearchableSelect from "@/components/UI/Forms/SearchableSelect";
 import MultipleSelect from "@/components/UI/Forms/MultipleSelect";

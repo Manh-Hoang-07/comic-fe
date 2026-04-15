@@ -1,9 +1,9 @@
 "use client";
 
+import { memo } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { formatNumber } from "@/utils/formatters";
-import { useEffect, useState } from "react";
 
 interface ComicCardProps {
   comic: {
@@ -19,18 +19,11 @@ interface ComicCardProps {
   };
 }
 
-export default function ComicCard({ comic }: ComicCardProps) {
-  const router = useRouter();
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
+const ComicCard = memo(function ComicCard({ comic }: ComicCardProps) {
   return (
-    <div
-      className="bg-white rounded-lg shadow-md overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
-      onClick={() => router.push(`/comics/${comic.slug}`)}
+    <Link
+      href={`/comics/${comic.slug}`}
+      className="bg-white rounded-lg shadow-md overflow-hidden cursor-pointer hover:shadow-lg transition-shadow block"
     >
       <div className="aspect-[3/4] relative">
         {comic.cover_image ? (
@@ -74,14 +67,12 @@ export default function ComicCard({ comic }: ComicCardProps) {
           ))}
         </div>
         <div className="flex items-center justify-between text-xs text-gray-500">
-          <span>{isMounted ? formatNumber(comic.stats?.view_count || 0) : (comic.stats?.view_count || 0)} lượt xem</span>
+          <span>{formatNumber(comic.stats?.view_count || 0)} lượt xem</span>
           <span>{comic.stats?.chapter_count || 0} chương</span>
         </div>
       </div>
-    </div>
+    </Link>
   );
-}
+});
 
-
-
-
+export default ComicCard;

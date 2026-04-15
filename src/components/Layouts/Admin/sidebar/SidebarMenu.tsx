@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
@@ -35,17 +35,9 @@ export default function SidebarMenu({
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [isMounted, setIsMounted] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState<string[]>([]);
 
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  const menuItemsArray = useMemo(() => {
-    if (!isMounted) return [];
-    return Array.isArray(menuItems) ? menuItems : (menuItems as any).value || [];
-  }, [menuItems, isMounted]);
+  const menuItemsArray = Array.isArray(menuItems) ? menuItems : (menuItems as any).value || [];
 
   const isActivePath = useCallback((path: string): boolean => {
     if (path.includes("?")) {

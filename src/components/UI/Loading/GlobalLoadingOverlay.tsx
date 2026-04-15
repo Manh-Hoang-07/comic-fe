@@ -1,36 +1,40 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { LoadingSpinner } from './LoadingSpinner';
 
 /**
- * Global loading overlay that shows during all navigation
+ * Global loading overlay - hiệu ứng nhẹ khi chuyển trang
+ * Chỉ làm mờ nhẹ content hiện tại, không che toàn bộ màn hình
  */
 export function GlobalLoadingOverlay() {
     const [isLoading, setIsLoading] = useState(false);
     const pathname = usePathname();
     const searchParams = useSearchParams();
 
-    // Track navigation completion
+    // Khi pathname/searchParams thay đổi => navigation hoàn tất
     useEffect(() => {
         setIsLoading(false);
     }, [pathname, searchParams]);
 
-    // Listen for link clicks
+    // Lắng nghe click vào link nội bộ
     useEffect(() => {
         const handleClick = (e: MouseEvent) => {
             const target = e.target as HTMLElement;
             const link = target.closest('a');
 
             if (link && link.href) {
-                const url = new URL(link.href);
-                const currentUrl = new URL(window.location.href);
+                try {
+                    const url = new URL(link.href);
+                    const currentUrl = new URL(window.location.href);
 
-                // Check if it's an internal navigation (same origin, different path or search params)
-                if (url.origin === currentUrl.origin &&
-                    (url.pathname !== currentUrl.pathname || url.search !== currentUrl.search)) {
-                    setIsLoading(true);
+                    // Chỉ hiện loading cho navigation nội bộ (khác path hoặc search)
+                    if (url.origin === currentUrl.origin &&
+                        (url.pathname !== currentUrl.pathname || url.search !== currentUrl.search)) {
+                        setIsLoading(true);
+                    }
+                } catch {
+                    // URL không hợp lệ, bỏ qua
                 }
             }
         };
@@ -41,5 +45,8 @@ export function GlobalLoadingOverlay() {
 
     if (!isLoading) return null;
 
-    return <LoadingSpinner />;
+    // Overlay nhẹ - chỉ làm mờ content, không che toàn bộ
+    return (
+        <div className="fixed inset-0 z-[99] bg-white/40 backdrop-blur-[1px] pointer-events-none transition-opacity duration-200" />
+    );
 }

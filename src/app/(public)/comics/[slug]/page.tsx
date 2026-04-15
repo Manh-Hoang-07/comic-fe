@@ -30,14 +30,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ComicDetailPage({ params }: Props) {
     const { slug } = await params;
-    const [comic, chaptersData] = await Promise.all([
-        getComicDetail(slug),
-        getComicChapters(slug)
-    ]);
+    const comic = await getComicDetail(slug);
 
     if (!comic) notFound();
 
-    const commentsData = await getComicComments(comic.id, 1);
+    // Fetch chapters va comments SONG SONG (truoc day comments phai doi comic xong moi goi)
+    const [chaptersData, commentsData] = await Promise.all([
+        getComicChapters(slug),
+        getComicComments(comic.id, 1)
+    ]);
 
     return (
         <main className="bg-[#f8f9fa] min-h-screen py-8">

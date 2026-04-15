@@ -52,7 +52,7 @@ export async function serverFetch<T = any>(
         const { revalidate, tags, ...restOptions } = options;
 
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout (giam tu 10s)
 
         try {
             const response = await fetch(url, {

@@ -19,21 +19,23 @@ export function FollowButton({ comicId, className = "" }: FollowButtonProps) {
     const { showSuccess, showError } = useToastContext();
 
     const checkStatus = useCallback(async () => {
+        // Kiem tra token thuc su ton tai truoc khi goi API
+        const hasToken = typeof window !== 'undefined' && document.cookie.includes('auth_token');
+        if (!hasToken) return;
+
         try {
             const res = await userComicService.checkFollowStatus(comicId);
             setIsFollowing(res.is_following);
-        } catch (error: any) {
-            if (error.response?.status !== 401 && error.response?.status !== 403) {
-                console.error("Failed to check follow status", error);
-            }
+        } catch {
+            // Silent fail - khong log loi vi co the user chua dang nhap
         }
     }, [comicId]);
 
     useEffect(() => {
-        if (isAuthenticated && typeof window !== 'undefined' && document.cookie.includes('auth_token')) {
+        if (isAuthenticated) {
             checkStatus();
         }
-    }, [isAuthenticated, comicId, checkStatus]);
+    }, [isAuthenticated, checkStatus]);
 
     const handleToggleFollow = async () => {
         if (!isAuthenticated) {
@@ -52,7 +54,7 @@ export function FollowButton({ comicId, className = "" }: FollowButtonProps) {
                 setIsFollowing(true);
                 showSuccess("Đã theo dõi truyện thành công");
             }
-        } catch (error) {
+        } catch {
             showError("Có lỗi xảy ra, vui lòng thử lại sau");
         } finally {
             setIsLoading(false);
@@ -82,4 +84,3 @@ export function FollowButton({ comicId, className = "" }: FollowButtonProps) {
         </button>
     );
 }
-

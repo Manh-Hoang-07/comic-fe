@@ -1,9 +1,19 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   compress: true,
-  transpilePackages: ["ckeditor5", "@ckeditor/ckeditor5-react"],
+  transpilePackages: [],
   experimental: {
-    optimizePackageImports: ["lucide-react", "date-fns", "lodash", "react-hook-form"],
+    optimizePackageImports: [
+      "lucide-react",
+      "date-fns",
+      "lodash",
+      "react-hook-form",
+      "@heroicons/react",
+      "chart.js",
+      "zod",
+      "axios",
+      "swiper",
+    ],
   },
   images: {
     qualities: [10, 25, 50, 75, 90, 95, 100],
@@ -64,6 +74,16 @@ const nextConfig = {
         headers: [
           ...securityHeaders,
           { key: "X-Robots-Tag", value: "noindex, nofollow" },
+        ],
+      },
+      {
+        source: "/_next/static/:path*",
+        headers: [
+          ...securityHeaders,
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
         ],
       },
     ];

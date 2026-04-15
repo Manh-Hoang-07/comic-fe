@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Comic } from '@/types/comic';
@@ -9,7 +9,7 @@ interface ComicCardProps {
     priority?: boolean;
 }
 
-export const ComicCard: React.FC<ComicCardProps> = ({ comic, priority = false }) => {
+export const ComicCard = memo<ComicCardProps>(function ComicCard({ comic, priority = false }) {
     return (
         <Link
             href={`/comics/${comic.slug}`}
@@ -17,7 +17,7 @@ export const ComicCard: React.FC<ComicCardProps> = ({ comic, priority = false })
         >
             <div className="relative aspect-[2/3] overflow-hidden">
                 <Image
-                    src={comic.cover_image || 'https://placehold.co/300x450?text=No+Cover'}
+                    src={comic.cover_image || '/images/no-cover.svg'}
                     alt={comic.title}
                     fill
                     className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
@@ -54,7 +54,7 @@ export const ComicCard: React.FC<ComicCardProps> = ({ comic, priority = false })
             </div>
         </Link>
     );
-};
+});
 
 
 

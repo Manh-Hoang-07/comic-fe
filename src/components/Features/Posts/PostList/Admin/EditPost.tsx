@@ -1,7 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import PostForm from "./PostForm";
+import dynamic from "next/dynamic";
+const PostForm = dynamic(() => import("./PostForm"), {
+  ssr: false,
+  loading: () => <div className="p-6 animate-pulse"><div className="h-8 w-48 bg-gray-200 rounded mb-4" /><div className="space-y-3">{[...Array(5)].map((_, i) => <div key={i} className="h-10 bg-gray-200 rounded" />)}</div></div>,
+});
 import api from "@/lib/api/client";
 import { useToastContext } from "@/contexts/ToastContext";
 
