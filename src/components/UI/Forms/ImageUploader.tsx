@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from "react";
 import Image from "next/image";
 import { useUpload } from "@/hooks";
+import { env } from "@/config/env";
 
 interface ImageUploaderProps {
   value?: File | string | null;
@@ -45,7 +46,7 @@ const ImageUploader = forwardRef<any, ImageUploaderProps>(
         return path;
       }
       if (typeof path === "string" && path.startsWith("/")) {
-        const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000";
+        const apiBase = env.apiUrl;
         return `${apiBase}${path}`;
       }
       return path || null;

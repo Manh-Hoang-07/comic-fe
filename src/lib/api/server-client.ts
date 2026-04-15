@@ -1,7 +1,8 @@
 import { cookies } from "next/headers";
+import { env } from "@/config/env";
 
 const getBaseUrl = () => {
-    let baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+    let baseUrl = env.apiUrl;
     if (!baseUrl.endsWith("/api")) {
         baseUrl = `${baseUrl.replace(/\/$/, "")}/api`;
     }

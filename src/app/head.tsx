@@ -1,3 +1,5 @@
+import { env } from "@/config/env";
+
 function toOrigin(url: string): string | null {
   try {
     return new URL(url).origin;
@@ -7,8 +9,7 @@ function toOrigin(url: string): string | null {
 }
 
 export default function Head() {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
-  const apiOrigin = toOrigin(apiUrl);
+  const apiOrigin = toOrigin(env.apiUrl);
 
   return (
     <>

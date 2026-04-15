@@ -1,5 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Expose env vars to client-side (replaces NEXT_PUBLIC_ prefix)
+  env: {
+    API_URL: process.env.API_URL,
+    SITE_URL: process.env.SITE_URL,
+    SITE_NAME: process.env.SITE_NAME,
+    SITE_DESCRIPTION: process.env.SITE_DESCRIPTION,
+    OG_IMAGE: process.env.OG_IMAGE,
+  },
   compress: true,
   transpilePackages: [],
   experimental: {
@@ -20,7 +28,7 @@ const nextConfig = {
     ],
   },
   images: {
-    qualities: [10, 25, 50, 75, 90, 95, 100],
+    qualities: [10, 25, 50, 75, 80, 90, 95, 100],
     remotePatterns: [
       {
         protocol: "http",
@@ -93,7 +101,7 @@ const nextConfig = {
     ];
   },
   async rewrites() {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+    const apiUrl = process.env.API_URL || "http://127.0.0.1:8000";
     return [
       {
         source: "/uploads/:path*",

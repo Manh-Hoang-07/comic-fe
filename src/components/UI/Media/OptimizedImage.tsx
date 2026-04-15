@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
+import { env } from "@/config/env";
 
 interface OptimizedImageProps {
   src: string;
@@ -44,7 +45,7 @@ export default function OptimizedImage({
         setImageSrc(src);
       } else if (src.startsWith("/")) {
         // If it's a path, prepend API base URL
-        const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000";
+        const apiBase = env.apiUrl;
         setImageSrc(`${apiBase}${src}`);
       } else {
         setImageSrc(src);

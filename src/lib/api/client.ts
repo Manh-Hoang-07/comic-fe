@@ -1,4 +1,5 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } from "axios";
+import { env } from "@/config/env";
 
 /**
  * Get token from cookie or localStorage
@@ -45,7 +46,7 @@ function getGroupId(): string | null {
 
 // Create axios instance with default configuration
 const apiClient: AxiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000",
+  baseURL: env.apiUrl,
   timeout: 5000, // Giam tu 10s xuong 5s - fail nhanh hon thay vi doi lau
   withCredentials: true,
   headers: {

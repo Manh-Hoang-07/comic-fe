@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { env } from "@/config/env";
 import api from "@/lib/api/client";
 import { publicEndpoints } from "@/lib/api/endpoints";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
@@ -59,7 +60,7 @@ export default function HeroBanner({
     const [isPaused, setIsPaused] = useState(false);
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-    const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000";
+    const apiBase = env.apiUrl;
 
     const getImageUrl = (path: string | null | undefined): string => {
         if (!path) return "/placeholder-banner.jpg";

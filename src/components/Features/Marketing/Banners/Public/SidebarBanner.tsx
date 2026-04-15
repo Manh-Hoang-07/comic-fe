@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import api from "@/lib/api/client";
+import { env } from "@/config/env";
 import { publicEndpoints } from "@/lib/api/endpoints";
 
 interface Banner {
@@ -28,7 +29,7 @@ export default function SidebarBanner({ locationCode, limit = 3 }: SidebarBanner
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000";
+  const apiBase = env.apiUrl;
 
   const getImageUrl = (path: string | null | undefined): string | null => {
     if (!path) return null;

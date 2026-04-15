@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import api from "@/lib/api/client";
+import { env } from "@/config/env";
 import { useListPage } from "@/hooks";
 import useModal from "@/hooks/ui-ux/useModal";
 import { adminEndpoints } from "@/lib/api/endpoints";
@@ -37,7 +38,7 @@ const getImageUrl = (path: string | null): string | null => {
     return path;
   }
   if (typeof path === "string" && path.startsWith("/")) {
-    return `${process.env.NEXT_PUBLIC_API_BASE_URL || ""}${path}`;
+    return `${env.apiUrl}${path}`;
   }
   return path;
 };

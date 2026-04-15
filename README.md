@@ -119,12 +119,12 @@ npm run build
 
 ## Môi trường
 
-Biến môi trường cần cấu hình trong .env.local:
+Biến môi trường cần cấu hình trong .env:
 
 ```
-NEXT_PUBLIC_API_URL=http://localhost:3000/api
-NEXTAUTH_SECRET=your-secret-key
-NEXTAUTH_URL=http://localhost:3000
+API_URL=http://localhost:8000
+SITE_URL=http://localhost:3000
+APP_SECRET=your-secret-key
 ```
 
 ## Đóng góp

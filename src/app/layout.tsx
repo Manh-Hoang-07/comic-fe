@@ -15,11 +15,12 @@ const geistSans = Geist({
 });
 
 import { getSystemConfig } from "@/lib/api/public/general";
+import { env } from "@/config/env";
 
 export async function generateMetadata(): Promise<Metadata> {
   const systemConfig = await getSystemConfig("general");
-  const siteName = systemConfig?.site_name || process.env.NEXT_PUBLIC_SITE_NAME || "Shop Online";
-  const siteDescription = systemConfig?.site_description || process.env.NEXT_PUBLIC_SITE_DESCRIPTION || "";
+  const siteName = systemConfig?.site_name || env.siteName;
+  const siteDescription = systemConfig?.site_description || env.siteDescription;
   const favicon = systemConfig?.site_favicon;
 
   return {
@@ -39,9 +40,7 @@ export async function generateMetadata(): Promise<Metadata> {
       description: systemConfig?.og_description || siteDescription,
       images: systemConfig?.og_image ? [{ url: systemConfig.og_image }] : [],
     },
-    metadataBase: process.env.NEXT_PUBLIC_SITE_URL
-      ? new URL(process.env.NEXT_PUBLIC_SITE_URL)
-      : undefined,
+    metadataBase: env.siteUrl ? new URL(env.siteUrl) : undefined,
   };
 }
 

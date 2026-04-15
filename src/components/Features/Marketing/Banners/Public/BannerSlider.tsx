@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import api from "@/lib/api/client";
+import { env } from "@/config/env";
 import { publicEndpoints } from "@/lib/api/endpoints";
 
 interface Banner {
@@ -44,7 +45,7 @@ export default function BannerSlider({
   const [isTransitioning, setIsTransitioning] = useState(false);
   const autoplayIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000";
+  const apiBase = env.apiUrl;
 
   const getImageUrl = (path: string | null | undefined): string | null => {
     if (!path) return null;

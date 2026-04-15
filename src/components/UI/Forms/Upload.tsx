@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import { useUpload, UploadResponse } from "@/hooks";
+import { env } from "@/config/env";
 
 interface UploadProps {
   value?: string | string[] | null;
@@ -38,7 +39,7 @@ export default function Upload({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { uploadFile, uploadFiles, uploading, error, progress } = useUpload();
 
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000";
+  const apiBase = env.apiUrl;
 
   const getFileUrl = (path: string | undefined): string | null => {
     if (!path) return null;

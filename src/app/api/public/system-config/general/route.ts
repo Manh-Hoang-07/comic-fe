@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { env } from "@/config/env";
 
 /**
  * Public API: Lấy cấu hình chung (có cache 1 giờ)
@@ -33,7 +34,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Gọi backend API
-    const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000";
+    const apiBase = env.apiUrl;
     const response = await fetch(`${apiBase}/api/public/SystemConfig/general`, {
       method: "GET",
       headers: {
@@ -71,8 +72,8 @@ export async function GET(request: NextRequest) {
 
     // Nếu không có cache và backend lỗi, trả về config mặc định
     const defaultConfig = {
-      site_name: process.env.NEXT_PUBLIC_SITE_NAME || "Cửa hàng",
-      site_description: process.env.NEXT_PUBLIC_SITE_DESCRIPTION || "",
+      site_name: env.siteName,
+      site_description: env.siteDescription,
       site_logo: null,
       site_favicon: null,
       site_email: null,

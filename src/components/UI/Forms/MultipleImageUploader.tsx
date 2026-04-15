@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { useUpload, UploadResponse } from "@/hooks";
+import { env } from "@/config/env";
 
 interface MultipleImageUploaderProps {
   value?: string[];
@@ -80,7 +81,7 @@ export default function MultipleImageUploader({
       return url;
     }
     if (url.startsWith("/")) {
-      const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000";
+      const apiBase = env.apiUrl;
       return `${apiBase}${url}`;
     }
     return url;

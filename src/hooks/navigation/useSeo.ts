@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { usePathname } from "next/navigation";
 import { useSystemConfig } from "../data/useSystemConfig";
+import { env } from "@/config/env";
 
 export interface SeoOptions {
   title?: string;
@@ -68,7 +69,7 @@ export function useSeo(options: SeoOptions = {}): SeoResult {
   const siteUrl = useMemo(() => {
     const canonical = getConfigValue("canonical_url");
     if (hasValue(canonical)) return canonical as string;
-    return process.env.NEXT_PUBLIC_SITE_URL || "";
+    return env.siteUrl;
   }, [getConfigValue]);
 
   // Tính toán các giá trị SEO từ options
@@ -77,7 +78,7 @@ export function useSeo(options: SeoOptions = {}): SeoResult {
       const siteName =
         (getConfigValue("og_title") as string) ||
         (getConfigValue("site_name") as string) ||
-        process.env.NEXT_PUBLIC_SITE_NAME ||
+        env.siteName ||
         "";
       return options.title.includes(siteName)
         ? options.title
@@ -87,7 +88,7 @@ export function useSeo(options: SeoOptions = {}): SeoResult {
       (getConfigValue("og_title") as string) ||
       (getConfigValue("meta_title") as string) ||
       (getConfigValue("site_name") as string) ||
-      process.env.NEXT_PUBLIC_SITE_NAME ||
+      env.siteName ||
       ""
     );
   }, [options.title, getConfigValue]);
@@ -98,7 +99,7 @@ export function useSeo(options: SeoOptions = {}): SeoResult {
       (getConfigValue("meta_description") as string) ||
       (getConfigValue("og_description") as string);
     if (hasValue(seoDesc)) return seoDesc;
-    return process.env.NEXT_PUBLIC_SITE_DESCRIPTION || "";
+    return env.siteDescription || "";
   }, [options.description, getConfigValue]);
 
   const seoImage = useMemo(() => {
@@ -110,7 +111,7 @@ export function useSeo(options: SeoOptions = {}): SeoResult {
     const ogImg = getConfigValue("og_image") as string;
     const image = hasValue(ogImg)
       ? ogImg
-      : process.env.NEXT_PUBLIC_OG_IMAGE || "/default.svg";
+      : env.ogImage || "/default.svg";
     return image.startsWith("http") ? image : `${siteUrl}${image}`;
   }, [options.image, siteUrl, getConfigValue]);
 
@@ -149,7 +150,7 @@ export function useSeo(options: SeoOptions = {}): SeoResult {
     const ogSiteName =
       canonicalUrlValue ||
       (getConfigValue("site_name") as string) ||
-      process.env.NEXT_PUBLIC_SITE_NAME ||
+      env.siteName ||
       "";
 
     // Twitter site
@@ -226,7 +227,7 @@ export function useSeo(options: SeoOptions = {}): SeoResult {
   const structuredData = useMemo(() => {
     const siteName =
       (getConfigValue("site_name") as string) ||
-      process.env.NEXT_PUBLIC_SITE_NAME ||
+      env.siteName ||
       "Cửa hàng";
 
     const baseData: any = {

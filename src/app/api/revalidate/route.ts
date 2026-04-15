@@ -1,5 +1,6 @@
 import { revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
+import { env } from "@/config/env";
 
 /**
  * API Route để revalidate cache của system config
@@ -13,7 +14,7 @@ export async function POST(request: NextRequest) {
     try {
         // Kiểm tra secret key để bảo mật
         const secret = request.headers.get("x-revalidate-secret");
-        const expectedSecret = process.env.REVALIDATE_SECRET || "your-secret-key-here";
+        const expectedSecret = env.revalidateSecret;
 
         if (secret !== expectedSecret) {
             return NextResponse.json(
