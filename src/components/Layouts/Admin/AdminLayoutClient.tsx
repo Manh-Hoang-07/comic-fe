@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { AdminSidebar } from "./sidebar";
 import { AdminHeader } from "./header";
 
@@ -19,18 +19,31 @@ export function AdminLayoutClient({
         setSidebarOpen(false);
     }, []);
 
-    return (
-        <div className="flex h-screen overflow-hidden bg-gray-50 relative">
-            {/* Sidebar */}
-            <AdminSidebar isOpen={sidebarOpen} onClose={closeSidebar} />
+    // Lock body scroll on mobile when sidebar is open
+    useEffect(() => {
+        if (sidebarOpen) {
+            document.body.style.overflow = "hidden";
+        } else {
+            document.body.style.overflow = "";
+        }
+        return () => {
+            document.body.style.overflow = "";
+        };
+    }, [sidebarOpen]);
 
-            {/* Mobile Overlay */}
+    return (
+        <div className="flex h-screen overflow-hidden bg-gray-50">
+            {/* Mobile Overlay - rendered before sidebar so sidebar is on top */}
             {sidebarOpen && (
                 <div
-                    className="fixed inset-0 z-30 bg-black/50 lg:hidden backdrop-blur-sm"
+                    className="fixed inset-0 z-40 bg-black/50 lg:hidden"
                     onClick={closeSidebar}
+                    aria-hidden="true"
                 />
             )}
+
+            {/* Sidebar */}
+            <AdminSidebar isOpen={sidebarOpen} onClose={closeSidebar} />
 
             <div className="flex-1 flex flex-col min-w-0 h-full">
                 {/* Fixed Header */}
