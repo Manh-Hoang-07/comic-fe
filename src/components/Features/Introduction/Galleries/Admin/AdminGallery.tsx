@@ -141,7 +141,6 @@ export default function AdminGallery({
                             width={100}
                             height={60}
                             className="h-14 w-24 object-cover rounded shadow-sm border border-gray-100"
-                            unoptimized
                           />
                         </div>
                       ) : (

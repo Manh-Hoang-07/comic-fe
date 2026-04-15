@@ -27,23 +27,26 @@ export default function InfiniteScrollReader({ initialData }: { initialData: Cha
     const observerTarget = useRef<HTMLDivElement>(null);
     const router = useRouter();
     const chapterRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+    const loadingRef = useRef(false);
+    const chaptersRef = useRef(chapters);
+    chaptersRef.current = chapters;
 
-    // Load next chapter function
+    // Load next chapter function - dùng ref để tránh recreate observer
     const loadNextChapter = useCallback(async () => {
-        if (loading || !hasMore) return;
+        if (loadingRef.current) return;
 
-        const lastChapter = chapters[chapters.length - 1];
-        if (!lastChapter.nextChapter) {
+        const lastChapter = chaptersRef.current[chaptersRef.current.length - 1];
+        if (!lastChapter?.nextChapter) {
             setHasMore(false);
             return;
         }
 
+        loadingRef.current = true;
         setLoading(true);
         try {
             const nextData = await fetchChapterFullData(lastChapter.nextChapter.id);
             if (nextData) {
                 setChapters(prev => [...prev, nextData as ChapterData]);
-                // If the new chapter doesn't have a next chapter, stop loading more
                 if (!nextData.nextChapter) {
                     setHasMore(false);
                 }
@@ -53,27 +56,28 @@ export default function InfiniteScrollReader({ initialData }: { initialData: Cha
         } catch (error) {
             console.error("Failed to load next chapter", error);
         } finally {
+            loadingRef.current = false;
             setLoading(false);
         }
-    }, [chapters, loading, hasMore]);
+    }, []);
 
-    // Intersection Observer for Infinite Scroll Trigger
+    // Intersection Observer for Infinite Scroll Trigger - stable, không recreate
     useEffect(() => {
+        const target = observerTarget.current;
+        if (!target) return;
+
         const observer = new IntersectionObserver(
             (entries) => {
-                if (entries[0].isIntersecting && hasMore && !loading) {
+                if (entries[0].isIntersecting && !loadingRef.current) {
                     loadNextChapter();
                 }
             },
-            { threshold: 0.1, rootMargin: '200px' } // Load slightly before reaching bottom
+            { threshold: 0.1, rootMargin: '200px' }
         );
 
-        if (observerTarget.current) {
-            observer.observe(observerTarget.current);
-        }
-
+        observer.observe(target);
         return () => observer.disconnect();
-    }, [loadNextChapter, hasMore, loading]);
+    }, [loadNextChapter]);
 
     // Intersection Observer for URL Update
     useEffect(() => {
@@ -152,7 +156,6 @@ export default function InfiniteScrollReader({ initialData }: { initialData: Cha
                                         alt={`Page ${page.page_number}`}
                                         width={800}
                                         height={1200}
-                                        unoptimized
                                         className="w-full h-auto object-contain select-none"
                                         loading="lazy" // Always lazy except maybe first few of first chapter
                                     />

@@ -36,15 +36,9 @@ export async function getChapterComments(chapterId: string, page: number = 1): P
         }
     );
 
-    // CHỈNH SỬA: Log chi tiết hơn để debug
-    const items = Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : []);
-    console.log(`[Comments Debug] Chapter ${chapterId}:`, {
-        count: items.length,
-        rawType: typeof data,
-        isArray: Array.isArray(data)
-    });
-
     if (error || !data) return null;
+
+    const items = Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : []);
     const meta = responseMeta || data.meta || {
         page: page,
         limit: 20,

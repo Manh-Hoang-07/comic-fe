@@ -1,5 +1,3 @@
-"use client";
-
 export default function BannerSkeleton() {
   return (
     <div className="relative w-full overflow-hidden">

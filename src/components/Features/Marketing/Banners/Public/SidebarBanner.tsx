@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
-import api from "@/lib/api/client";
 import { env } from "@/config/env";
 import { publicEndpoints } from "@/lib/api/endpoints";
+import { useApiQuery } from "@/hooks/data/useApiQuery";
 
 interface Banner {
   id: number;
@@ -25,10 +24,6 @@ interface SidebarBannerProps {
 }
 
 export default function SidebarBanner({ locationCode, limit = 3 }: SidebarBannerProps) {
-  const [banners, setBanners] = useState<Banner[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
   const apiBase = env.apiUrl;
 
   const getImageUrl = (path: string | null | undefined): string | null => {
@@ -42,35 +37,16 @@ export default function SidebarBanner({ locationCode, limit = 3 }: SidebarBanner
     return path;
   };
 
-  const fetchBanners = useCallback(async () => {
-    if (!locationCode) return;
+  const { data: rawData, isLoading: loading, error: queryError } = useApiQuery<any>(
+    ["banners", "sidebar", locationCode],
+    publicEndpoints.banners.getByLocation(locationCode),
+    undefined,
+    { enabled: !!locationCode, staleTime: 5 * 60 * 1000 }
+  );
 
-    setLoading(true);
-    setError(null);
-
-    try {
-      const response = await api.get(publicEndpoints.banners.getByLocation(locationCode));
-      let bannersData: Banner[] = [];
-
-      if (response.data?.success && response.data?.data) {
-        bannersData = Array.isArray(response.data.data) ? response.data.data : [];
-      } else if (Array.isArray(response.data)) {
-        bannersData = response.data;
-      }
-
-      setBanners(bannersData.slice(0, limit));
-    } catch (err: any) {
-      console.error("Error fetching banners:", err);
-      setError("Không thể tải banner");
-      setBanners([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [locationCode, limit]);
-
-  useEffect(() => {
-    fetchBanners();
-  }, [fetchBanners]);
+  const allBanners: Banner[] = Array.isArray(rawData) ? rawData : (rawData?.data ? (Array.isArray(rawData.data) ? rawData.data : []) : []);
+  const banners = allBanners.slice(0, limit);
+  const error = queryError ? "Không thể tải banner" : null;
 
   if (loading) {
     return (
@@ -121,7 +97,6 @@ export default function SidebarBanner({ locationCode, limit = 3 }: SidebarBanner
                 width={300}
                 height={128}
                 className="w-full h-32 object-cover"
-                unoptimized
               />
             )}
 

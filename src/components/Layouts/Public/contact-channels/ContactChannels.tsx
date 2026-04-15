@@ -112,7 +112,6 @@ export default function ContactChannels({
                 onError={() => {
                   setFailedIcons(prev => ({ ...prev, [index]: true }));
                 }}
-                unoptimized
               />
             ) : (
               <span className="flex-shrink-0">

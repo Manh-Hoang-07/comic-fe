@@ -95,7 +95,6 @@ export default function OptimizedImage({
           onLoad={handleLoad}
           onError={handleError}
           onClick={onClick}
-          unoptimized
         />
       </div>
     );
@@ -119,7 +118,6 @@ export default function OptimizedImage({
         onLoad={handleLoad}
         onError={handleError}
         onClick={onClick}
-        unoptimized
       />
     </div>
   );

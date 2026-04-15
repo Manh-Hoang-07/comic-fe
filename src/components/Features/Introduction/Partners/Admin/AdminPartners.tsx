@@ -140,7 +140,6 @@ export default function AdminPartners({
                             width={100}
                             height={48}
                             className="h-10 w-auto object-contain grayscale hover:grayscale-0 transition-all"
-                            unoptimized
                           />
                         </div>
                       ) : (

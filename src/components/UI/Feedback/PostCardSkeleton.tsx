@@ -1,5 +1,3 @@
-"use client";
-
 export default function PostCardSkeleton() {
   return (
     <div className="bg-white rounded-lg shadow-lg overflow-hidden animate-pulse cursor-pointer">

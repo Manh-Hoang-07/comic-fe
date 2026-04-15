@@ -1,5 +1,3 @@
-"use client";
-
 interface SkeletonLoaderProps {
   type?: "table" | "card" | "form" | "list" | "default";
   rows?: number;

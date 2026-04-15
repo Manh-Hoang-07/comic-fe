@@ -264,7 +264,6 @@ export default function GalleryForm({
                               alt={`Gallery ${idx}`}
                               fill
                               className="object-cover"
-                              unoptimized
                             />
                             <button
                               type="button"

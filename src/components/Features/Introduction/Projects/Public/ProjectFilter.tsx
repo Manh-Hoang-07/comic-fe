@@ -113,7 +113,6 @@ export function ProjectFilter({ initialProjects }: ProjectFilterProps) {
                                 width={400}
                                 height={200}
                                 className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                unoptimized
                             />
                         </div>
                         <div className="p-5">

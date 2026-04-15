@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { env } from "@/config/env";
-import api from "@/lib/api/client";
 import { publicEndpoints } from "@/lib/api/endpoints";
+import { useApiQuery } from "@/hooks/data/useApiQuery";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 
 export interface HeroBannerData {
@@ -54,9 +54,7 @@ export default function HeroBanner({
     autoPlay = true,
     interval = 5000,
 }: HeroBannerProps) {
-    const [banners, setBanners] = useState<HeroBannerData[]>([]);
     const [activeIndex, setActiveIndex] = useState(0);
-    const [loading, setLoading] = useState(false);
     const [isPaused, setIsPaused] = useState(false);
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -95,56 +93,42 @@ export default function HeroBanner({
         };
     };
 
-    const fetchBannerData = useCallback(async () => {
-        if (data) {
-            setBanners(Array.isArray(data) ? data : [data]);
-            return;
+    const needsFetch = !data && (!!locationCode || !!bannerId);
+    const apiUrl = bannerId
+        ? publicEndpoints.banners.show(bannerId)
+        : locationCode
+            ? `${publicEndpoints.banners.list}?locationCode=${locationCode}`
+            : "";
+
+    const { data: rawData, isLoading } = useApiQuery<any>(
+        ["banners", "hero", locationCode || "", String(bannerId || "")],
+        apiUrl,
+        undefined,
+        { enabled: needsFetch, staleTime: 5 * 60 * 1000 }
+    );
+
+    const loading = needsFetch && isLoading;
+
+    const banners = useMemo<HeroBannerData[]>(() => {
+        if (data) return Array.isArray(data) ? data : [data];
+        if (!rawData) return [];
+
+        if (bannerId) {
+            const transformed = transformApiBanner(rawData);
+            return transformed ? [transformed] : [];
         }
 
-        if (!locationCode && !bannerId) {
-            setBanners([]);
-            return;
+        let bannersData: any[] = [];
+        if (rawData?.success && rawData?.data) {
+            bannersData = Array.isArray(rawData.data) ? rawData.data : [];
+        } else if (Array.isArray(rawData)) {
+            bannersData = rawData;
         }
 
-        setLoading(true);
-
-        try {
-            let response;
-
-            if (bannerId) {
-                response = await api.get(publicEndpoints.banners.show(bannerId));
-                if (response.data?.success && response.data?.data) {
-                    const transformed = transformApiBanner(response.data.data);
-                    setBanners(transformed ? [transformed] : []);
-                }
-            } else if (locationCode) {
-                // Fetch theo location code - Sử dụng query param theo API của bạn
-                response = await api.get(`${publicEndpoints.banners.list}?locationCode=${locationCode}`);
-                let bannersData: any[] = [];
-
-                if (response.data?.success && response.data?.data) {
-                    bannersData = Array.isArray(response.data.data) ? response.data.data : [];
-                } else if (Array.isArray(response.data)) {
-                    bannersData = response.data;
-                }
-
-                const transformedBanners = bannersData
-                    .map(transformApiBanner)
-                    .filter((b): b is HeroBannerData => b !== null);
-
-                setBanners(transformedBanners);
-            }
-        } catch (err: any) {
-            console.error("Error fetching banner:", err);
-            setBanners([]);
-        } finally {
-            setLoading(false);
-        }
-    }, [data, locationCode, bannerId]);
-
-    useEffect(() => {
-        fetchBannerData();
-    }, [fetchBannerData]);
+        return bannersData
+            .map(transformApiBanner)
+            .filter((b): b is HeroBannerData => b !== null);
+    }, [data, rawData, bannerId]);
 
     // Auto play logic
     useEffect(() => {
@@ -284,7 +268,6 @@ export default function HeroBanner({
                                             fill
                                             className="object-cover"
                                             priority={index === 0}
-                                            unoptimized
                                         />
                                     </picture>
                                 </div>
@@ -341,7 +324,6 @@ export default function HeroBanner({
                                                     fill
                                                     className="object-cover"
                                                     priority={index === 0}
-                                                    unoptimized
                                                 />
                                                 {/* Subtle overlay */}
                                                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none"></div>

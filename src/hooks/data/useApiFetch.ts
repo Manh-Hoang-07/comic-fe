@@ -33,14 +33,14 @@ export default function useApiFetch<T = any>(
     setLoading(true);
     setError(null);
     try {
-      const res = await apiClient.get<T>(url, { params });
+      const res = await apiClient.get<T>(url, { params: JSON.parse(paramsString) });
       setData(res.data);
     } catch (e) {
       setError(e);
     } finally {
       setLoading(false);
     }
-  }, [url, params]);
+  }, [url, paramsString]);
 
   useEffect(() => {
     if (immediate) {

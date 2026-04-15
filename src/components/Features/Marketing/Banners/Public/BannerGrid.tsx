@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
-import api from "@/lib/api/client";
 import { env } from "@/config/env";
 import { publicEndpoints } from "@/lib/api/endpoints";
+import { useApiQuery } from "@/hooks/data/useApiQuery";
 
 interface Banner {
   id: number;
@@ -25,10 +24,6 @@ interface BannerGridProps {
 }
 
 export default function BannerGrid({ locationCode, containerClass = "" }: BannerGridProps) {
-  const [banners, setBanners] = useState<Banner[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
   const apiBase = env.apiUrl;
 
   const getImageUrl = (path: string | null | undefined): string | null => {
@@ -42,35 +37,15 @@ export default function BannerGrid({ locationCode, containerClass = "" }: Banner
     return path;
   };
 
-  const fetchBanners = useCallback(async () => {
-    if (!locationCode) return;
+  const { data: rawData, isLoading: loading, error: queryError } = useApiQuery<any>(
+    ["banners", "grid", locationCode],
+    publicEndpoints.banners.getByLocation(locationCode),
+    undefined,
+    { enabled: !!locationCode, staleTime: 5 * 60 * 1000 }
+  );
 
-    setLoading(true);
-    setError(null);
-
-    try {
-      const response = await api.get(publicEndpoints.banners.getByLocation(locationCode));
-      let bannersData: Banner[] = [];
-
-      if (response.data?.success && response.data?.data) {
-        bannersData = Array.isArray(response.data.data) ? response.data.data : [];
-      } else if (Array.isArray(response.data)) {
-        bannersData = response.data;
-      }
-
-      setBanners(bannersData);
-    } catch (err: any) {
-      console.error("Error fetching banners:", err);
-      setError("Không thể tải banner");
-      setBanners([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [locationCode]);
-
-  useEffect(() => {
-    fetchBanners();
-  }, [fetchBanners]);
+  const banners: Banner[] = Array.isArray(rawData) ? rawData : (rawData?.data ? (Array.isArray(rawData.data) ? rawData.data : []) : []);
+  const error = queryError ? "Không thể tải banner" : null;
 
   if (loading) {
     return (
@@ -129,7 +104,6 @@ export default function BannerGrid({ locationCode, containerClass = "" }: Banner
                   alt={banner.title || "Banner"}
                   fill
                   className="object-cover transition-transform duration-300 group-hover:scale-110"
-                  unoptimized
                 />
               )}
 

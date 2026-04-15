@@ -57,7 +57,6 @@ export function StaffCarousel({ staff }: StaffCarouselProps) {
                                             width={192}
                                             height={192}
                                             className="w-full h-full object-cover"
-                                            unoptimized
                                         />
                                     </div>
                                     <h3 className="text-lg font-bold text-gray-900">{person.name}</h3>

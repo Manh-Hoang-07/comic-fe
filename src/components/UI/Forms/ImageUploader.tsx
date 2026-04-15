@@ -133,7 +133,6 @@ const ImageUploader = forwardRef<any, ImageUploaderProps>(
                 alt="preview"
                 fill
                 className="object-cover rounded-xl border-2 border-dashed border-blue-200 p-1 bg-white shadow-sm transition-transform group-hover:scale-[1.02]"
-                unoptimized
                 onError={handleImageError}
               />
             </div>

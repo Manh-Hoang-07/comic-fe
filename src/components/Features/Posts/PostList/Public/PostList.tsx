@@ -169,7 +169,6 @@ export function PostList({ initialPosts, categories, meta }: PostListProps) {
                                         width={400}
                                         height={224}
                                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                        unoptimized
                                     />
                                 </Link>
                                 <div className="absolute top-4 left-4 bg-white/90 backdrop-blur text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider text-gray-800">

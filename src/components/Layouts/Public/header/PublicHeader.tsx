@@ -15,8 +15,8 @@ import { useAuthStore } from "@/lib/store/authStore";
 import Image from "next/image";
 import { Suspense } from "react";
 import SearchInput from "@/components/Features/Comics/Search/Public/SearchInput";
-import apiClient from "@/lib/api/client";
 import { publicEndpoints } from "@/lib/api/endpoints";
+import { useApiQuery } from "@/hooks/data/useApiQuery";
 
 import { SystemConfig, Menu } from "@/types/api";
 
@@ -37,7 +37,6 @@ export function PublicHeader({
   systemConfig,
   initialMenus = [],
 }: PublicHeaderProps) {
-  const [navigationItems, setNavigationItems] = useState<Menu[]>(initialMenus);
   const [expandedMobileMenus, setExpandedMobileMenus] = useState<string[]>([]);
   const [scrolled, setScrolled] = useState(false);
   const [internalMobileMenuOpen, setInternalMobileMenuOpen] = useState(false);
@@ -52,24 +51,20 @@ export function PublicHeader({
     handleClose();
   };
 
+  const { data: fetchedMenus } = useApiQuery<any>(
+    ["menus", "public"],
+    publicEndpoints.menus.list,
+    undefined,
+    { enabled: initialMenus.length === 0, staleTime: 10 * 60 * 1000 }
+  );
+
+  const navigationItems: Menu[] = initialMenus.length > 0
+    ? initialMenus
+    : (fetchedMenus ? (Array.isArray(fetchedMenus) ? fetchedMenus : (Array.isArray(fetchedMenus.data) ? fetchedMenus.data : [])) : []);
+
   useEffect(() => {
     setMounted(true);
-
-    // Chỉ fetch nếu chưa có dữ liệu ban đầu hoặc muốn cập nhật fresh
-    if (initialMenus.length === 0) {
-      const fetchMenus = async () => {
-        try {
-          const response = await apiClient.get<any>(publicEndpoints.menus.list);
-          const data = response.data;
-          const items = Array.isArray(data) ? data : (Array.isArray(data.data) ? data.data : []);
-          setNavigationItems(items);
-        } catch (error) {
-          console.error("Failed to fetch menus", error);
-        }
-      };
-      fetchMenus();
-    }
-  }, [initialMenus]);
+  }, []);
 
   // Sync scroll lock with menu state
   useEffect(() => {

@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
-import api from "@/lib/api/client";
 import { env } from "@/config/env";
 import { publicEndpoints } from "@/lib/api/endpoints";
+import { useApiQuery } from "@/hooks/data/useApiQuery";
 
 interface Banner {
   id: number;
@@ -38,9 +38,6 @@ export default function BannerSlider({
   containerClass = "",
   heightClass = "h-64 md:h-96",
 }: BannerSliderProps) {
-  const [banners, setBanners] = useState<Banner[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const autoplayIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -58,35 +55,15 @@ export default function BannerSlider({
     return path;
   };
 
-  const fetchBanners = useCallback(async () => {
-    if (!locationCode) return;
+  const { data: rawData, isLoading: loading, error: queryError } = useApiQuery<any>(
+    ["banners", "slider", locationCode],
+    publicEndpoints.banners.getByLocation(locationCode),
+    undefined,
+    { enabled: !!locationCode, staleTime: 5 * 60 * 1000 }
+  );
 
-    setLoading(true);
-    setError(null);
-
-    try {
-      const response = await api.get(publicEndpoints.banners.getByLocation(locationCode));
-      let bannersData: Banner[] = [];
-
-      if (response.data?.success && response.data?.data) {
-        bannersData = Array.isArray(response.data.data) ? response.data.data : [];
-      } else if (Array.isArray(response.data)) {
-        bannersData = response.data;
-      }
-
-      setBanners(bannersData);
-    } catch (err: any) {
-      console.error("Error fetching banners:", err);
-      setError("Không thể tải banner");
-      setBanners([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [locationCode]);
-
-  useEffect(() => {
-    fetchBanners();
-  }, [fetchBanners]);
+  const banners: Banner[] = Array.isArray(rawData) ? rawData : (rawData?.data ? (Array.isArray(rawData.data) ? rawData.data : []) : []);
+  const error = queryError ? "Không thể tải banner" : null;
 
   const currentBanner = banners[currentIndex] || null;
 
@@ -188,7 +165,6 @@ export default function BannerSlider({
                   alt={currentBanner.title || "Banner"}
                   fill
                   className="object-cover"
-                  unoptimized
                 />
               )}
 

@@ -389,7 +389,6 @@ export default function ProjectForm({
                     alt="preview"
                     fill
                     className="object-cover transition-transform group-hover:scale-110"
-                    unoptimized
                   />
                   <button
                     type="button"

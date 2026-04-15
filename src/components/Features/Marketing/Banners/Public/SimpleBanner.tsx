@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
-import api from "@/lib/api/client";
 import { env } from "@/config/env";
 import { publicEndpoints } from "@/lib/api/endpoints";
+import { useApiQuery } from "@/hooks/data/useApiQuery";
 
 interface Banner {
   id: number;
@@ -30,10 +29,6 @@ export default function SimpleBanner({
   index = 0,
   containerClass = "",
 }: SimpleBannerProps) {
-  const [banner, setBanner] = useState<Banner | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
   const apiBase = env.apiUrl;
 
   const getImageUrl = (path: string | null | undefined): string | null => {
@@ -47,39 +42,16 @@ export default function SimpleBanner({
     return path;
   };
 
-  const fetchBanner = useCallback(async () => {
-    if (!locationCode) return;
+  const { data: rawData, isLoading: loading, error: queryError } = useApiQuery<any>(
+    ["banners", "simple", locationCode],
+    publicEndpoints.banners.getByLocation(locationCode),
+    undefined,
+    { enabled: !!locationCode, staleTime: 5 * 60 * 1000 }
+  );
 
-    setLoading(true);
-    setError(null);
-
-    try {
-      const response = await api.get(publicEndpoints.banners.getByLocation(locationCode));
-      let bannersData: Banner[] = [];
-
-      if (response.data?.success && response.data?.data) {
-        bannersData = Array.isArray(response.data.data) ? response.data.data : [];
-      } else if (Array.isArray(response.data)) {
-        bannersData = response.data;
-      }
-
-      if (bannersData.length > 0) {
-        setBanner(bannersData[index] || bannersData[0]);
-      } else {
-        setBanner(null);
-      }
-    } catch (err: any) {
-      console.error("Error fetching banner:", err);
-      setError("Không thể tải banner");
-      setBanner(null);
-    } finally {
-      setLoading(false);
-    }
-  }, [locationCode, index]);
-
-  useEffect(() => {
-    fetchBanner();
-  }, [fetchBanner]);
+  const bannersData: Banner[] = Array.isArray(rawData) ? rawData : (rawData?.data ? (Array.isArray(rawData.data) ? rawData.data : []) : []);
+  const banner = bannersData.length > 0 ? (bannersData[index] || bannersData[0]) : null;
+  const error = queryError ? "Không thể tải banner" : null;
 
   if (loading) {
     return (
@@ -111,7 +83,6 @@ export default function SimpleBanner({
             width={800}
             height={400}
             className="w-full h-auto object-cover"
-            unoptimized
           />
         )}
 
