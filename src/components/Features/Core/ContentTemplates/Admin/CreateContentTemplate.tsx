@@ -1,9 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import ContentTemplateForm from "./ContentTemplateForm";
-import api from "@/lib/api/client";
-import { useToastContext } from "@/contexts/ToastContext";
+import { useFormModal } from "@/hooks";
 
 interface CreateContentTemplateProps {
     show: boolean;
@@ -18,25 +16,15 @@ export default function CreateContentTemplate({
     onSuccess,
     onClose,
 }: CreateContentTemplateProps) {
-    const [apiErrors, setApiErrors] = useState<any>(null);
-    const { showError, showSuccess } = useToastContext();
-
-    const handleSubmit = async (formData: any) => {
-        setApiErrors(null);
-        try {
-            await api.post(createApi, formData);
-            showSuccess("Tạo mẫu nội dung thành công");
-            onSuccess?.();
-        } catch (error: any) {
-            const errors = error.response?.data?.errors || error.response?.data || error;
-            setApiErrors(errors);
-            showError(error.response?.data?.message || "Có lỗi xảy ra khi tạo mới");
-        }
-    };
+    const { loading, apiErrors, handleSubmit } = useFormModal(
+        { mode: "create", show, createApi },
+        { createSuccessMessage: "Tạo mẫu nội dung thành công", onSuccess, onClose }
+    );
 
     return (
         <ContentTemplateForm
             apiErrors={apiErrors}
+            loading={loading}
             onCancel={onClose}
             onSubmit={handleSubmit}
         />

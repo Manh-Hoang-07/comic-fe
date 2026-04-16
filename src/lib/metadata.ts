@@ -1,14 +1,11 @@
 import { Metadata } from "next";
+import { env } from "@/config/env";
 
 export const siteConfig = {
-  name: "Next.js Company",
-  description: "A modern web application built with Next.js, TypeScript, and Tailwind CSS",
-  url: "https://example.com",
-  ogImage: "/images/og-image.jpg",
-  links: {
-    twitter: "https://twitter.com/example",
-    github: "https://github.com/example",
-  },
+  name: env.siteName,
+  description: env.siteDescription,
+  url: env.siteUrl,
+  ogImage: env.ogImage,
 };
 
 export function constructMetadata({
@@ -27,22 +24,13 @@ export function constructMetadata({
   return {
     title,
     description,
-    keywords: [
-      "Next.js",
-      "React",
-      "TypeScript",
-      "Tailwind CSS",
-      "Web Development",
-      "Modern Web App",
-    ],
-    authors: [{ name: "Next.js Company" }],
-    creator: "Next.js Company",
     openGraph: {
       type: "website",
-      locale: "en_US",
+      locale: "vi_VN",
       url: siteConfig.url,
       title,
       description,
+      siteName: siteConfig.name,
       images: [
         {
           url: image,
@@ -57,7 +45,6 @@ export function constructMetadata({
       title,
       description,
       images: [image],
-      creator: "@example",
     },
     icons,
     metadataBase: new URL(siteConfig.url),
@@ -85,4 +72,3 @@ export function constructPageMetadata({
     image: siteConfig.ogImage,
   });
 }
-

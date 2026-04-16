@@ -1,9 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import WardForm, { WardFormValues } from "./WardForm";
-import api from "@/lib/api/client";
-import { useToastContext } from "@/contexts/ToastContext";
+import WardForm from "./WardForm";
+import { useFormModal } from "@/hooks";
 
 interface CreateWardProps {
   show: boolean;
@@ -18,30 +16,18 @@ export default function CreateWard({
   onSuccess,
   onClose,
 }: CreateWardProps) {
-  const [apiErrors, setApiErrors] = useState<any>(null);
-  const { showError, showSuccess } = useToastContext();
-
-  const handleSubmit = async (formData: WardFormValues) => {
-    setApiErrors(null);
-    try {
-      await api.post(createApi, formData);
-      showSuccess("Tạo Phường/Xã thành công");
-      onSuccess?.();
-    } catch (error: any) {
-      const errors = error.response?.data?.errors || error.response?.data || error;
-      setApiErrors(errors);
-      showError(error.response?.data?.message || "Có lỗi xảy ra khi tạo mới");
-    }
-  };
+  const { loading, apiErrors, handleSubmit } = useFormModal(
+    { mode: "create", show, createApi },
+    { createSuccessMessage: "Tạo Phường/Xã thành công", onSuccess, onClose }
+  );
 
   return (
     <WardForm
       show={show}
       apiErrors={apiErrors}
+      loading={loading}
       onCancel={onClose}
       onSubmit={handleSubmit}
     />
   );
 }
-
-

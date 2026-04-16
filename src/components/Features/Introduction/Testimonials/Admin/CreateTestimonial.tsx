@@ -1,9 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import TestimonialForm from "./TestimonialForm";
-import api from "@/lib/api/client";
-import { useToastContext } from "@/contexts/ToastContext";
+import { useFormModal } from "@/hooks";
 
 interface CreateTestimonialProps {
   show: boolean;
@@ -18,25 +16,10 @@ export default function CreateTestimonial({
   onSuccess,
   onClose,
 }: CreateTestimonialProps) {
-  const [apiErrors, setApiErrors] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
-  const { showError, showSuccess } = useToastContext();
-
-  const handleSubmit = async (formData: any) => {
-    setApiErrors(null);
-    setLoading(true);
-    try {
-      await api.post(createApi, formData);
-      showSuccess("Tạo đánh giá thành công");
-      onSuccess?.();
-    } catch (error: any) {
-      const errors = error.response?.data?.errors || error.response?.data || error;
-      setApiErrors(errors);
-      showError(error.response?.data?.message || "Có lỗi xảy ra khi tạo mới");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { loading, apiErrors, handleSubmit } = useFormModal(
+    { mode: "create", show, createApi },
+    { createSuccessMessage: "Tạo đánh giá thành công", onSuccess, onClose }
+  );
 
   return (
     <TestimonialForm
@@ -48,8 +31,3 @@ export default function CreateTestimonial({
     />
   );
 }
-
-
-
-
-

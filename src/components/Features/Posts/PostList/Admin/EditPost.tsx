@@ -1,13 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 const PostForm = dynamic(() => import("./PostForm"), {
   ssr: false,
   loading: () => <div className="p-6 animate-pulse"><div className="h-8 w-48 bg-gray-200 rounded mb-4" /><div className="space-y-3">{[...Array(5)].map((_, i) => <div key={i} className="h-10 bg-gray-200 rounded" />)}</div></div>,
 });
-import api from "@/lib/api/client";
-import { useToastContext } from "@/contexts/ToastContext";
+import { useFormModal } from "@/hooks";
 
 interface EditPostProps {
   show: boolean;
@@ -30,58 +28,20 @@ export default function EditPost({
   onSuccess,
   onClose,
 }: EditPostProps) {
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
-  const [apiErrors, setApiErrors] = useState<any>(null);
-  const { showError, showSuccess } = useToastContext();
-
-  useEffect(() => {
-    if (show) {
-      if (target?.fetchApi) {
-        const fetchData = async () => {
-          setLoading(true);
-          try {
-            const response = await api.get(target.fetchApi!);
-            setData(response.data?.data || response.data);
-          } catch (error) {
-            showError("Không thể tải thông tin bài viết");
-            onClose?.();
-          } finally {
-            setLoading(false);
-          }
-        };
-        fetchData();
-      } else if (target?.initialData) {
-        setData(target.initialData);
-      }
-    } else {
-      setData(null);
-      setApiErrors(null);
+  const { entityData, loading, apiErrors, handleSubmit } = useFormModal(
+    { mode: "edit", show, target },
+    {
+      updateSuccessMessage: "Cập nhật bài viết thành công",
+      fetchErrorMessage: "Không thể tải thông tin bài viết",
+      onSuccess,
+      onClose,
     }
-  }, [show, target, showError, onClose]);
-
-  const handleSubmit = async (formData: any) => {
-    if (!target?.updateApi) return;
-    
-    setApiErrors(null);
-    setLoading(true);
-    try {
-      await api.put(target.updateApi, formData);
-      showSuccess("Cập nhật bài viết thành công");
-      onSuccess?.();
-    } catch (error: any) {
-      const errors = error.response?.data?.errors || error.response?.data || error;
-      setApiErrors(errors);
-      showError(error.response?.data?.message || "Có lỗi xảy ra khi cập nhật");
-    } finally {
-      setLoading(false);
-    }
-  };
+  );
 
   return (
     <PostForm
       show={show}
-      post={data}
+      post={entityData}
       statusEnums={statusEnums}
       postTypeEnums={postTypeEnums}
       categoryEnums={categoryEnums}
@@ -93,7 +53,3 @@ export default function EditPost({
     />
   );
 }
-
-
-
-

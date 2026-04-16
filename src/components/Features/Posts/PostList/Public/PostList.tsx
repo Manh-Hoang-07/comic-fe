@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Pagination } from "@/components/UI/Navigation/Pagination";
+import Pagination from "@/components/UI/DataDisplay/Pagination";
 import { ContentWrapper } from "@/components/UI/Loading/ContentWrapper";
 
 interface PostCategory {

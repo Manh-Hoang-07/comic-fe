@@ -1,12 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import ProvinceForm, {
-  AdminProvinceFormEntity,
-  ProvinceFormValues,
-} from "./ProvinceForm";
-import api from "@/lib/api/client";
-import { useToastContext } from "@/contexts/ToastContext";
+import ProvinceForm from "./ProvinceForm";
+import { useFormModal } from "@/hooks";
 
 interface EditProvinceProps {
   show: boolean;
@@ -21,55 +16,15 @@ export default function EditProvince({
   onSuccess,
   onClose,
 }: EditProvinceProps) {
-  const [provinceData, setProvinceData] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
-  const [apiErrors, setApiErrors] = useState<any>(null);
-  const { showError, showSuccess } = useToastContext();
-
-  useEffect(() => {
-    if (show) {
-      if (target?.fetchApi) {
-        const fetchProvinceDetails = async () => {
-          setLoading(true);
-          try {
-            const response = await api.get(target.fetchApi!);
-            setProvinceData(response.data?.data || response.data);
-          } catch (error) {
-            showError("Không thể tải thông tin Tỉnh/Thành phố");
-            onClose?.();
-          } finally {
-            setLoading(false);
-          }
-        };
-        fetchProvinceDetails();
-      } else if (target?.initialData) {
-        setProvinceData(target.initialData);
-      }
-    } else {
-      setProvinceData(null);
-      setApiErrors(null);
-    }
-  }, [show, target, showError, onClose]);
-
-  const handleSubmit = async (formData: ProvinceFormValues) => {
-    if (!target?.updateApi) return;
-    
-    setApiErrors(null);
-    try {
-      await api.put(target.updateApi, formData);
-      showSuccess("Cập nhật Tỉnh/Thành phố thành công");
-      onSuccess?.();
-    } catch (error: any) {
-      const errors = error.response?.data?.errors || error.response?.data || error;
-      setApiErrors(errors);
-      showError(error.response?.data?.message || "Có lỗi xảy ra khi cập nhật");
-    }
-  };
+  const { entityData, loading, apiErrors, handleSubmit } = useFormModal(
+    { mode: "edit", show, target },
+    { updateSuccessMessage: "Cập nhật Tỉnh/Thành phố thành công", fetchErrorMessage: "Không thể tải thông tin Tỉnh/Thành phố", onSuccess, onClose }
+  );
 
   return (
     <ProvinceForm
       show={show}
-      province={provinceData}
+      province={entityData}
       apiErrors={apiErrors}
       loading={loading}
       onCancel={onClose}
@@ -77,5 +32,3 @@ export default function EditProvince({
     />
   );
 }
-
-

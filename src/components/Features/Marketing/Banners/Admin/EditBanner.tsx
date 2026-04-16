@@ -1,9 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import BannerForm, { BannerFormValues } from "./BannerForm";
-import api from "@/lib/api/client";
-import { useToastContext } from "@/contexts/ToastContext";
+import BannerForm from "./BannerForm";
+import { useFormModal } from "@/hooks";
 
 interface EditBannerProps {
   show: boolean;
@@ -22,58 +20,20 @@ export default function EditBanner({
   onSuccess,
   onClose,
 }: EditBannerProps) {
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
-  const [apiErrors, setApiErrors] = useState<any>(null);
-  const { showError, showSuccess } = useToastContext();
-
-  useEffect(() => {
-    if (show) {
-      if (target?.fetchApi) {
-        const fetchData = async () => {
-          setLoading(true);
-          try {
-            const response = await api.get(target.fetchApi!);
-            setData(response.data?.data || response.data);
-          } catch (error) {
-            showError("Không thể tải thông tin banner");
-            onClose?.();
-          } finally {
-            setLoading(false);
-          }
-        };
-        fetchData();
-      } else if (target?.initialData) {
-        setData(target.initialData);
-      }
-    } else {
-      setData(null);
-      setApiErrors(null);
+  const { entityData, loading, apiErrors, handleSubmit } = useFormModal(
+    { mode: "edit", show, target },
+    {
+      updateSuccessMessage: "Cập nhật banner thành công",
+      fetchErrorMessage: "Không thể tải thông tin banner",
+      onSuccess,
+      onClose,
     }
-  }, [show, target, showError, onClose]);
-
-  const handleSubmit = async (formData: BannerFormValues) => {
-    if (!target?.updateApi) return;
-    
-    setApiErrors(null);
-    setLoading(true);
-    try {
-      await api.put(target.updateApi, formData);
-      showSuccess("Cập nhật banner thành công");
-      onSuccess?.();
-    } catch (error: any) {
-      const errors = error.response?.data?.errors || error.response?.data || error;
-      setApiErrors(errors);
-      showError(error.response?.data?.message || "Có lỗi xảy ra khi cập nhật");
-    } finally {
-      setLoading(false);
-    }
-  };
+  );
 
   return (
     <BannerForm
       show={show}
-      banner={data}
+      banner={entityData}
       statusEnums={statusEnums}
       locationEnums={locationEnums}
       apiErrors={apiErrors}
@@ -83,7 +43,3 @@ export default function EditBanner({
     />
   );
 }
-
-
-
-

@@ -1,9 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import FAQForm from "./FAQForm";
-import api from "@/lib/api/client";
-import { useToastContext } from "@/contexts/ToastContext";
+import { useFormModal } from "@/hooks";
 
 interface CreateFAQProps {
   show: boolean;
@@ -18,25 +16,10 @@ export default function CreateFAQ({
   onSuccess,
   onClose,
 }: CreateFAQProps) {
-  const [apiErrors, setApiErrors] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
-  const { showError, showSuccess } = useToastContext();
-
-  const handleSubmit = async (formData: any) => {
-    setApiErrors(null);
-    setLoading(true);
-    try {
-      await api.post(createApi, formData);
-      showSuccess("Tạo câu hỏi thường gặp thành công");
-      onSuccess?.();
-    } catch (error: any) {
-      const errors = error.response?.data?.errors || error.response?.data || error;
-      setApiErrors(errors);
-      showError(error.response?.data?.message || "Có lỗi xảy ra khi tạo mới");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { loading, apiErrors, handleSubmit } = useFormModal(
+    { mode: "create", show, createApi },
+    { createSuccessMessage: "Tạo câu hỏi thường gặp thành công", onSuccess, onClose }
+  );
 
   return (
     <FAQForm
@@ -48,8 +31,3 @@ export default function CreateFAQ({
     />
   );
 }
-
-
-
-
-

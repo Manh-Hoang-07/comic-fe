@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { getComics, getComicCategories } from "@/lib/api/public/comic";
 import { ComicCard } from "@/components/Features/Comics/ComicList/Public/ComicCard";
-import { Pagination } from "@/components/UI/Navigation/Pagination";
+import Pagination from "@/components/UI/DataDisplay/Pagination";
 import { CategorySelect } from "@/components/Features/Comics/Categories/Public/CategorySelect";
 import { ContentWrapper } from "@/components/UI/Loading/ContentWrapper";
 

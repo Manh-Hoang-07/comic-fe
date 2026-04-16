@@ -1,9 +1,7 @@
 "use client";
 
-import { useListPage } from "@/hooks";
-import useModal from "@/hooks/ui-ux/useModal";
+import { useAdminCrud } from "@/hooks";
 import { adminEndpoints } from "@/lib/api/endpoints";
-import api from "@/lib/api/client";
 import SkeletonLoader from "@/components/UI/Feedback/SkeletonLoader";
 import ConfirmModal from "@/components/UI/Feedback/ConfirmModal";
 import Actions from "@/components/UI/DataDisplay/Actions";
@@ -11,23 +9,9 @@ import Pagination from "@/components/UI/DataDisplay/Pagination";
 import PostTagsFilter from "./PostTagsFilter";
 import CreateTag from "./CreateTag";
 import EditTag from "./EditTag";
-import { useState, useEffect } from "react";
-import { useToastContext } from "@/contexts/ToastContext";
+import { BASIC_STATUS, BASIC_STATUS_BADGES, getStatusBadge } from "@/config/constants/status";
 
-const getBasicStatusArray = () => [
-  { value: "active", label: "Hoạt động", class: "bg-emerald-100 text-emerald-800 border-emerald-200" },
-  { value: "inactive", label: "Ngừng hoạt động", class: "bg-gray-100 text-gray-800 border-gray-200" },
-];
-
-const getStatusText = (value: string): string => {
-  const status = getBasicStatusArray().find((s) => s.value === value);
-  return status?.label || value;
-};
-
-const getStatusClass = (value: string): string => {
-  const status = getBasicStatusArray().find((s) => s.value === value);
-  return status?.class || "bg-gray-100 text-gray-800";
-};
+const endpoints = adminEndpoints.postTags;
 
 interface Tag {
   id: number;
@@ -44,42 +28,24 @@ export default function AdminPostTags({
   title = "Quản lý thẻ bài viết",
   createButtonText = "Thêm thẻ mới",
 }: AdminPostTagsProps) {
-  const { data, actions, ui } = useListPage({
-    endpoint: adminEndpoints.postTags.list,
+  const {
+    data, actions, ui,
+    createModal, editModal, deleteModal,
+    handleDeleteConfirm, openCreate, openEdit, openDelete,
+  } = useAdminCrud({
+    endpoint: endpoints.list,
+    deleteSuccessMessage: "Đã xóa thẻ thành công",
   });
-  
+
   const { items, loading, pagination, filters, hasData } = data;
   const { getSerialNumber } = ui;
-  const { showSuccess, showError } = useToastContext();
-
-  const createModal = useModal<{ createApi: string }>();
-  const editModal = useModal<{ fetchApi?: string; initialData?: any; updateApi: string }>();
-  const deleteModal = useModal<{ id: number | string; name?: string; deleteApi: string }>();
-
-  const [statusEnums, setStatusEnums] = useState<Array<{ value: string; label?: string; name?: string }>>([]);
-
-  useEffect(() => {
-    setStatusEnums(getBasicStatusArray());
-  }, []);
-
-  const handleDeleteConfirm = async () => {
-    if (!deleteModal.data?.deleteApi) return;
-    try {
-      await api.delete(deleteModal.data.deleteApi);
-      showSuccess("Đã xóa thẻ thành công");
-      deleteModal.close();
-      actions.refresh();
-    } catch (error: any) {
-      showError(error.response?.data?.message || "Có lỗi xảy ra khi xóa");
-    }
-  };
 
   return (
     <div className="admin-post-tags">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold tracking-tight text-gray-900 font-primary">{title}</h1>
         <button
-          onClick={() => createModal.open({ createApi: adminEndpoints.postTags.create })}
+          onClick={() => openCreate(endpoints.create)}
           className="px-6 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-bold transition-all active:scale-95 shadow-lg shadow-blue-500/20"
         >
           {createButtonText}
@@ -88,7 +54,7 @@ export default function AdminPostTags({
 
       <PostTagsFilter
         initialFilters={filters}
-        statusEnums={statusEnums}
+        statusEnums={BASIC_STATUS}
         onUpdateFilters={actions.updateFilters}
       />
 
@@ -107,60 +73,42 @@ export default function AdminPostTags({
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-100">
-                {items.length > 0 ? items.map((tag: Tag, index) => (
-                  <tr key={tag.id} className="hover:bg-gray-50/50 transition-colors group">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-medium">
-                      {getSerialNumber(index)}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10">
-                          <div className="h-10 w-10 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center transition-transform group-hover:scale-110">
-                            <svg
-                              className="w-5 h-5 text-indigo-500"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2.5"
-                                d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
-                              ></path>
-                            </svg>
+                {items.length > 0 ? items.map((tag: Tag, index) => {
+                  const badge = getStatusBadge(tag.status || "", BASIC_STATUS_BADGES);
+                  return (
+                    <tr key={tag.id} className="hover:bg-gray-50/50 transition-colors group">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-medium">
+                        {getSerialNumber(index)}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center">
+                          <div className="flex-shrink-0 h-10 w-10">
+                            <div className="h-10 w-10 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center transition-transform group-hover:scale-110">
+                              <svg className="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                              </svg>
+                            </div>
+                          </div>
+                          <div className="ml-4">
+                            <div className="text-sm font-black text-gray-900 group-hover:text-blue-600 transition-colors">{tag.name}</div>
                           </div>
                         </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-black text-gray-900 group-hover:text-blue-600 transition-colors">{tag.name}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <span
-                        className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border transition-colors ${getStatusClass(
-                          tag.status || ""
-                        )}`}
-                      >
-                        {getStatusText(tag.status || "")}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <Actions
-                        item={tag}
-                        onEdit={() => editModal.open({
-                           fetchApi: adminEndpoints.postTags.show(tag.id),
-                           updateApi: adminEndpoints.postTags.update(tag.id)
-                        })}
-                        onDelete={() => deleteModal.open({
-                           id: tag.id,
-                           name: tag.name,
-                           deleteApi: adminEndpoints.postTags.delete(tag.id)
-                        })}
-                      />
-                    </td>
-                  </tr>
-                )) : (
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border transition-colors ${badge.className}`}>
+                          {badge.label}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <Actions
+                          item={tag}
+                          onEdit={() => openEdit(tag, endpoints)}
+                          onDelete={() => openDelete(tag, endpoints)}
+                        />
+                      </td>
+                    </tr>
+                  );
+                }) : (
                   <tr>
                     <td colSpan={4} className="px-6 py-12 text-center text-gray-500 italic font-medium">
                       Chưa có thẻ nào được tạo
@@ -186,7 +134,7 @@ export default function AdminPostTags({
         <CreateTag
           show={createModal.isOpen}
           createApi={createModal.data.createApi}
-          statusEnums={statusEnums}
+          statusEnums={BASIC_STATUS}
           onClose={createModal.close}
           onSuccess={() => {
             createModal.close();
@@ -199,7 +147,7 @@ export default function AdminPostTags({
         <EditTag
           show={editModal.isOpen}
           target={editModal.data}
-          statusEnums={statusEnums}
+          statusEnums={BASIC_STATUS}
           onClose={editModal.close}
           onSuccess={() => {
             editModal.close();
@@ -212,7 +160,7 @@ export default function AdminPostTags({
         <ConfirmModal
           show={deleteModal.isOpen}
           title="Xác nhận xóa"
-          message={`Bạn có chắc chắn muốn xóa thẻ "${deleteModal.data.name}"? Thao tác này không thể hoàn tác.`}
+          message={`Bạn có chắc chắn muốn xóa thẻ "${deleteModal.data.displayName}"? Thao tác này không thể hoàn tác.`}
           onClose={deleteModal.close}
           onConfirm={handleDeleteConfirm}
           confirmText="Xác nhận xóa"
@@ -222,6 +170,3 @@ export default function AdminPostTags({
     </div>
   );
 }
-
-
-

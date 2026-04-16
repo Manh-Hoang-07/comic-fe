@@ -1,9 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import ContextForm from "./ContextForm";
-import apiClient from "@/lib/api/client";
-import { useToastContext } from "@/contexts/ToastContext";
+import { useFormModal } from "@/hooks";
 
 interface EditContextProps {
   show: boolean;
@@ -20,55 +18,15 @@ export default function EditContext({
   onSuccess,
   onClose,
 }: EditContextProps) {
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
-  const [apiErrors, setApiErrors] = useState<any>(null);
-  const { showError, showSuccess } = useToastContext();
-
-  useEffect(() => {
-    if (show) {
-      if (target?.fetchApi) {
-        const fetchData = async () => {
-          setLoading(true);
-          try {
-            const response = await apiClient.get(target.fetchApi!);
-            const result = response.data?.data ?? response.data;
-            setData(result);
-          } catch (error) {
-            showError("Không thể tải thông tin chi tiết");
-            onClose?.();
-          } finally {
-            setLoading(false);
-          }
-        };
-        fetchData();
-      } else if (target?.initialData) {
-        setData(target.initialData);
-      }
-    } else {
-      setData(null);
-    }
-  }, [show, target, showError, onClose]);
-
-  const handleSubmit = async (formData: any) => {
-    if (!target?.updateApi) return;
-    
-    setApiErrors(null);
-    try {
-      await apiClient.put(target.updateApi, formData);
-      showSuccess("Cập nhật thành công");
-      onSuccess?.();
-    } catch (error: any) {
-      const errors = error.response?.data?.errors || error.response?.data || error;
-      setApiErrors(errors);
-      showError(error.response?.data?.message || "Có lỗi xảy ra khi cập nhật");
-    }
-  };
+  const { entityData, loading, apiErrors, handleSubmit } = useFormModal(
+    { mode: "edit", show, target },
+    { updateSuccessMessage: "Cập nhật thành công", fetchErrorMessage: "Không thể tải thông tin chi tiết", onSuccess, onClose }
+  );
 
   return (
     <ContextForm
       show={show}
-      context={data}
+      context={entityData}
       loading={loading}
       statusEnums={statusEnums}
       apiErrors={apiErrors}
@@ -77,7 +35,3 @@ export default function EditContext({
     />
   );
 }
-
-
-
-

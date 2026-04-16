@@ -54,7 +54,7 @@ export default function LoginPage() {
       });
 
       if (result.success) {
-        router.push("/dashboard/admin");
+        router.push("/admin");
       } else {
         if (result.errors) {
           // Map lỗi từ API về field tương ứng

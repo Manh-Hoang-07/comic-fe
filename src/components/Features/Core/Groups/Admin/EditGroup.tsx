@@ -1,9 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import GroupForm from "./GroupForm";
-import api from "@/lib/api/client";
-import { useToastContext } from "@/contexts/ToastContext";
+import { useFormModal } from "@/hooks";
 
 interface EditGroupProps {
   show: boolean;
@@ -18,55 +16,15 @@ export default function EditGroup({
   onSuccess,
   onClose,
 }: EditGroupProps) {
-  const [groupData, setGroupData] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
-  const [apiErrors, setApiErrors] = useState<any>(null);
-  const { showError, showSuccess } = useToastContext();
-
-  useEffect(() => {
-    if (show) {
-      if (target?.fetchApi) {
-        const fetchGroupDetails = async () => {
-          setLoading(true);
-          try {
-            const response = await api.get(target.fetchApi!);
-            setGroupData(response.data?.data || response.data);
-          } catch (error) {
-            showError("Không thể tải thông tin nhóm");
-            onClose?.();
-          } finally {
-            setLoading(false);
-          }
-        };
-        fetchGroupDetails();
-      } else if (target?.initialData) {
-        setGroupData(target.initialData);
-      }
-    } else {
-      setGroupData(null);
-      setApiErrors(null);
-    }
-  }, [show, target, showError, onClose]);
-
-  const handleSubmit = async (formData: any) => {
-    if (!target?.updateApi) return;
-    
-    setApiErrors(null);
-    try {
-      await api.put(target.updateApi, formData);
-      showSuccess("Cập nhật nhóm thành công");
-      onSuccess?.();
-    } catch (error: any) {
-      const errors = error.response?.data?.errors || error.response?.data || error;
-      setApiErrors(errors);
-      showError(error.response?.data?.message || "Có lỗi xảy ra khi cập nhật");
-    }
-  };
+  const { entityData, loading, apiErrors, handleSubmit } = useFormModal(
+    { mode: "edit", show, target },
+    { updateSuccessMessage: "Cập nhật nhóm thành công", fetchErrorMessage: "Không thể tải thông tin nhóm", onSuccess, onClose }
+  );
 
   return (
     <GroupForm
       show={show}
-      group={groupData}
+      group={entityData}
       apiErrors={apiErrors}
       loading={loading}
       onSubmit={handleSubmit}
@@ -74,7 +32,3 @@ export default function EditGroup({
     />
   );
 }
-
-
-
-

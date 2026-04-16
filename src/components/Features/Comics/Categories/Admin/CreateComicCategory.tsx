@@ -1,10 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import ComicCategoryForm from "./ComicCategoryForm";
 import Modal from "@/components/UI/Feedback/Modal";
-import api from "@/lib/api/client";
-import { useToastContext } from "@/contexts/ToastContext";
+import { useFormModal } from "@/hooks";
 
 interface CreateComicCategoryProps {
     show: boolean;
@@ -19,21 +17,10 @@ export default function CreateComicCategory({
     onSuccess,
     onClose,
 }: CreateComicCategoryProps) {
-    const [apiErrors, setApiErrors] = useState<any>(null);
-    const { showError, showSuccess } = useToastContext();
-
-    const handleSubmit = async (formData: any) => {
-        setApiErrors(null);
-        try {
-            await api.post(createApi, formData);
-            showSuccess("Tạo danh mục truyện thành công");
-            onSuccess?.();
-        } catch (error: any) {
-            const errors = error.response?.data?.errors || error.response?.data || error;
-            setApiErrors(errors);
-            showError(error.response?.data?.message || "Có lỗi xảy ra khi tạo mới");
-        }
-    };
+    const { loading, apiErrors, handleSubmit } = useFormModal(
+        { mode: "create", show, createApi },
+        { createSuccessMessage: "Tạo danh mục truyện thành công", onSuccess, onClose }
+    );
 
     return (
         <Modal
@@ -44,12 +31,10 @@ export default function CreateComicCategory({
         >
             <ComicCategoryForm
                 apiErrors={apiErrors}
+                loading={loading}
                 onCancel={onClose!}
                 onSubmit={handleSubmit}
             />
         </Modal>
     );
 }
-
-
-

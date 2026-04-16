@@ -1,9 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import RoleForm from "./RoleForm";
-import api from "@/lib/api/client";
-import { useToastContext } from "@/contexts/ToastContext";
+import { useFormModal } from "@/hooks";
 
 interface CreateRoleProps {
   show: boolean;
@@ -20,33 +18,19 @@ export default function CreateRole({
   onSuccess,
   onClose,
 }: CreateRoleProps) {
-  const [apiErrors, setApiErrors] = useState<any>(null);
-  const { showError, showSuccess } = useToastContext();
-
-  const handleSubmit = async (formData: any) => {
-    setApiErrors(null);
-    try {
-      await api.post(createApi, formData);
-      showSuccess("Tạo vai trò thành công");
-      onSuccess?.();
-    } catch (error: any) {
-      const errors = error.response?.data?.errors || error.response?.data || error;
-      setApiErrors(errors);
-      showError(error.response?.data?.message || "Có lỗi xảy ra khi tạo mới");
-    }
-  };
+  const { loading, apiErrors, handleSubmit } = useFormModal(
+    { mode: "create", show, createApi },
+    { createSuccessMessage: "Tạo vai trò thành công", onSuccess, onClose }
+  );
 
   return (
     <RoleForm
       show={show}
       statusEnums={statusEnums}
       apiErrors={apiErrors}
+      loading={loading}
       onSubmit={handleSubmit}
       onCancel={onClose}
     />
   );
 }
-
-
-
-

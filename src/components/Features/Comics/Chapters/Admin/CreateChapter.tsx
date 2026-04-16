@@ -1,10 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import ChapterForm from "./ChapterForm";
 import Modal from "@/components/UI/Feedback/Modal";
-import api from "@/lib/api/client";
-import { useToastContext } from "@/contexts/ToastContext";
+import { useFormModal } from "@/hooks";
 
 interface CreateChapterProps {
     show: boolean;
@@ -21,21 +19,10 @@ export default function CreateChapter({
     onSuccess,
     onClose,
 }: CreateChapterProps) {
-    const [apiErrors, setApiErrors] = useState<any>(null);
-    const { showError, showSuccess } = useToastContext();
-
-    const handleSubmit = async (formData: any) => {
-        setApiErrors(null);
-        try {
-            await api.post(createApi, formData);
-            showSuccess("Tạo chương truyện thành công");
-            onSuccess?.();
-        } catch (error: any) {
-            const errors = error.response?.data?.errors || error.response?.data || error;
-            setApiErrors(errors);
-            showError(error.response?.data?.message || "Có lỗi xảy ra khi tạo mới");
-        }
-    };
+    const { loading, apiErrors, handleSubmit } = useFormModal(
+        { mode: "create", show, createApi },
+        { createSuccessMessage: "Tạo chương truyện thành công", onSuccess, onClose }
+    );
 
     return (
         <Modal
@@ -47,12 +34,10 @@ export default function CreateChapter({
             <ChapterForm
                 comicId={comicId}
                 apiErrors={apiErrors}
+                loading={loading}
                 onCancel={onClose!}
                 onSubmit={handleSubmit}
             />
         </Modal>
     );
 }
-
-
-

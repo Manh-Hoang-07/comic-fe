@@ -1,9 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import ContextForm from "./ContextForm";
-import apiClient from "@/lib/api/client";
-import { useToastContext } from "@/contexts/ToastContext";
+import { useFormModal } from "@/hooks";
 
 interface CreateContextProps {
   show: boolean;
@@ -20,33 +18,19 @@ export default function CreateContext({
   onSuccess,
   onClose,
 }: CreateContextProps) {
-  const [apiErrors, setApiErrors] = useState<any>(null);
-  const { showError, showSuccess } = useToastContext();
-
-  const handleSubmit = async (formData: any) => {
-    setApiErrors(null);
-    try {
-      await apiClient.post(createApi, formData);
-      showSuccess("Tạo mới thành công");
-      onSuccess?.();
-    } catch (error: any) {
-      const errors = error.response?.data?.errors || error.response?.data || error;
-      setApiErrors(errors);
-      showError(error.response?.data?.message || "Có lỗi xảy ra khi tạo mới");
-    }
-  };
+  const { loading, apiErrors, handleSubmit } = useFormModal(
+    { mode: "create", show, createApi },
+    { createSuccessMessage: "Tạo mới thành công", onSuccess, onClose }
+  );
 
   return (
     <ContextForm
       show={show}
       statusEnums={statusEnums}
       apiErrors={apiErrors}
+      loading={loading}
       onSubmit={handleSubmit}
       onCancel={onClose}
     />
   );
 }
-
-
-
-

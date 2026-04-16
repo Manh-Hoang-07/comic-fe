@@ -1,9 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import CountryForm, { CountryFormValues } from "./CountryForm";
-import api from "@/lib/api/client";
-import { useToastContext } from "@/contexts/ToastContext";
+import CountryForm from "./CountryForm";
+import { useFormModal } from "@/hooks";
 
 interface CreateCountryProps {
   show: boolean;
@@ -18,30 +16,18 @@ export default function CreateCountry({
   onSuccess,
   onClose,
 }: CreateCountryProps) {
-  const [apiErrors, setApiErrors] = useState<any>(null);
-  const { showError, showSuccess } = useToastContext();
-
-  const handleSubmit = async (formData: CountryFormValues) => {
-    setApiErrors(null);
-    try {
-      await api.post(createApi, formData);
-      showSuccess("Tạo quốc gia thành công");
-      onSuccess?.();
-    } catch (error: any) {
-      const errors = error.response?.data?.errors || error.response?.data || error;
-      setApiErrors(errors);
-      showError(error.response?.data?.message || "Có lỗi xảy ra khi tạo mới");
-    }
-  };
+  const { loading, apiErrors, handleSubmit } = useFormModal(
+    { mode: "create", show, createApi },
+    { createSuccessMessage: "Tạo quốc gia thành công", onSuccess, onClose }
+  );
 
   return (
     <CountryForm
       show={show}
       apiErrors={apiErrors}
+      loading={loading}
       onCancel={onClose}
       onSubmit={handleSubmit}
     />
   );
 }
-
-

@@ -34,7 +34,7 @@ export default function GoogleCallbackPage() {
             fetchUserInfo(true)
                 .then(() => {
                     // 3. Redirect user vào app
-                    router.push("/dashboard/admin");
+                    router.push("/admin");
                 })
                 .catch((err) => {
                     console.error("Failed to fetch user info", err);

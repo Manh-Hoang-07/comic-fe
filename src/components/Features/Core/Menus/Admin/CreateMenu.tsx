@@ -1,9 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import MenuForm from "./MenuForm";
-import api from "@/lib/api/client";
-import { useToastContext } from "@/contexts/ToastContext";
+import { useFormModal } from "@/hooks";
 
 interface CreateMenuProps {
   show: boolean;
@@ -24,21 +22,10 @@ export default function CreateMenu({
   onSuccess,
   onClose,
 }: CreateMenuProps) {
-  const [apiErrors, setApiErrors] = useState<any>(null);
-  const { showError, showSuccess } = useToastContext();
-
-  const handleSubmit = async (formData: any) => {
-    setApiErrors(null);
-    try {
-      await api.post(createApi, formData);
-      showSuccess("Tạo menu thành công");
-      onSuccess?.();
-    } catch (error: any) {
-      const errors = error.response?.data?.errors || error.response?.data || error;
-      setApiErrors(errors);
-      showError(error.response?.data?.message || "Có lỗi xảy ra khi tạo mới");
-    }
-  };
+  const { loading, apiErrors, handleSubmit } = useFormModal(
+    { mode: "create", show, createApi },
+    { createSuccessMessage: "Tạo menu thành công", onSuccess, onClose }
+  );
 
   return (
     <MenuForm
@@ -47,12 +34,9 @@ export default function CreateMenu({
       parentMenus={parentMenus}
       permissions={permissions}
       apiErrors={apiErrors}
+      loading={loading}
       onSubmit={handleSubmit}
       onCancel={onClose}
     />
   );
 }
-
-
-
-

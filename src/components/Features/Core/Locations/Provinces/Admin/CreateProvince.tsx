@@ -1,9 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import ProvinceForm, { ProvinceFormValues } from "./ProvinceForm";
-import api from "@/lib/api/client";
-import { useToastContext } from "@/contexts/ToastContext";
+import ProvinceForm from "./ProvinceForm";
+import { useFormModal } from "@/hooks";
 
 interface CreateProvinceProps {
   show: boolean;
@@ -18,30 +16,18 @@ export default function CreateProvince({
   onSuccess,
   onClose,
 }: CreateProvinceProps) {
-  const [apiErrors, setApiErrors] = useState<any>(null);
-  const { showError, showSuccess } = useToastContext();
-
-  const handleSubmit = async (formData: ProvinceFormValues) => {
-    setApiErrors(null);
-    try {
-      await api.post(createApi, formData);
-      showSuccess("Tạo Tỉnh/Thành phố thành công");
-      onSuccess?.();
-    } catch (error: any) {
-      const errors = error.response?.data?.errors || error.response?.data || error;
-      setApiErrors(errors);
-      showError(error.response?.data?.message || "Có lỗi xảy ra khi tạo mới");
-    }
-  };
+  const { loading, apiErrors, handleSubmit } = useFormModal(
+    { mode: "create", show, createApi },
+    { createSuccessMessage: "Tạo Tỉnh/Thành phố thành công", onSuccess, onClose }
+  );
 
   return (
     <ProvinceForm
       show={show}
       apiErrors={apiErrors}
+      loading={loading}
       onCancel={onClose}
       onSubmit={handleSubmit}
     />
   );
 }
-
-

@@ -3,7 +3,7 @@
 import { useEffect, useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import { tagSchema, type TagFormValues } from "@/config/validations/tag";
 import Modal from "@/components/UI/Feedback/Modal";
 import FormField from "@/components/UI/Forms/FormField";
 import dynamic from "next/dynamic";
@@ -14,22 +14,7 @@ const CKEditor = dynamic(() => import("@/components/UI/Forms/CKEditor"), {
 import { userEndpoints } from "@/lib/api/endpoints";
 import SingleSelectEnhanced from "@/components/UI/Forms/SingleSelectEnhanced";
 
-// 1. Define Tag Schema
-const tagSchema = z.object({
-  name: z.string().min(1, "Tên thẻ là bắt buộc").max(255, "Tên thẻ không được vượt quá 255 ký tự"),
-  description: z.string().optional().nullable(),
-  status: z.string().min(1, "Trạng thái là bắt buộc").default("active"),
-  meta_title: z.string().max(255, "Meta Title tối đa 255 ký tự").optional().nullable(),
-  meta_description: z.string().max(1000, "Meta Description tối đa 1000 ký tự").optional().nullable(),
-  canonical_url: z.string().url("URL không hợp lệ").or(z.literal("")).optional().nullable(),
-});
-
-type TagFormValues = z.infer<typeof tagSchema>;
-
-const getBasicStatusArray = () => [
-  { value: "active", label: "Hoạt động" },
-  { value: "inactive", label: "Ngừng hoạt động" },
-];
+import { BASIC_STATUS } from "@/config/constants/status";
 
 interface Tag {
   id?: number;
@@ -80,7 +65,7 @@ export default function TagForm({
   });
 
   const statusOptions = useMemo(() => {
-    const statusArray = statusEnums && statusEnums.length > 0 ? statusEnums : getBasicStatusArray();
+    const statusArray = statusEnums && statusEnums.length > 0 ? statusEnums : BASIC_STATUS;
     return statusArray.map((opt) => ({
       value: opt.value,
       label: opt.label || (opt as any).name || opt.value,
