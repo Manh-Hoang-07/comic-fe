@@ -36,7 +36,7 @@ export const TrendingHero: React.FC<TrendingHeroProps> = ({ comics }) => {
                                     src={firstComic.cover_image}
                                     alt="Background"
                                     fill
-                                    quality={10}
+                                    quality={25}
                                     priority
                                     className="object-cover blur-[60px] opacity-20 scale-110"
                                 />

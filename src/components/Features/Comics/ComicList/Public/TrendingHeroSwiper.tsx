@@ -11,6 +11,7 @@ import 'swiper/css';
 import 'swiper/css/effect-fade';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
+import './TrendingHeroSwiper.css';
 import { ChevronLeft, ChevronRight, Star, Clock } from "lucide-react";
 
 interface TrendingHeroSwiperProps {
@@ -54,7 +55,7 @@ export default function TrendingHeroSwiper({ comics }: TrendingHeroSwiperProps) 
                                         fill
                                         priority={index === 0}
                                         loading={index === 0 ? "eager" : "lazy"}
-                                        quality={10}
+                                        quality={25}
                                         className="object-cover blur-[60px] opacity-20 scale-110"
                                     />
                                 </div>
@@ -150,28 +151,6 @@ export default function TrendingHeroSwiper({ comics }: TrendingHeroSwiperProps) 
                 </div>
             </Swiper>
 
-            <style jsx global>{`
-                .swiper-pagination-bullet-custom {
-                    width: 24px;
-                    height: 4px;
-                    background: rgba(0, 0, 0, 0.2);
-                    border-radius: 2px;
-                    transition: all 0.3s ease;
-                    cursor: pointer;
-                }
-                .swiper-pagination-bullet-active-custom {
-                    background: #dc2626;
-                    width: 32px;
-                }
-                @keyframes fadeInUp {
-                    from { opacity: 0; transform: translateY(20px); }
-                    to { opacity: 1; transform: translateY(0); }
-                }
-                .animate-fade-in-up {
-                    opacity: 0;
-                    animation: fadeInUp 0.6s ease-out forwards;
-                }
-            `}</style>
         </>
     );
 }

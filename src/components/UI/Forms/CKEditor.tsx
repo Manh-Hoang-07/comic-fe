@@ -2,6 +2,7 @@
 
 import { Editor } from "@tinymce/tinymce-react";
 import { useRef } from "react";
+import "./CKEditor.css";
 
 interface CKEditorProps {
   value?: string;
@@ -108,23 +109,6 @@ export default function CKEditor({
         }}
       />
 
-      <style jsx global>{`
-        .tox-tinymce {
-          border: none !important;
-          border-radius: 0 !important;
-        }
-        .tox-editor-header {
-          box-shadow: none !important;
-          border-bottom: 1px solid #e5e7eb !important;
-          background-color: #f9fafb !important;
-        }
-        .tox-toolbar__group {
-          padding: 0 4px !important;
-        }
-        .tox-edit-area__iframe {
-          background-color: white !important;
-        }
-      `}</style>
     </div>
   );
 }

@@ -5,7 +5,7 @@ import "@/styles/globals.css";
 import { ToastProvider } from "@/contexts/ToastContext";
 import ToastContainer from "@/components/UI/Feedback/ToastContainer";
 import { AuthInitializer } from "@/components/Providers/AuthInitializer";
-import { GlobalLoadingOverlay } from "@/components/UI/Loading/GlobalLoadingOverlay";
+
 import { NavigationProgress } from "@/components/UI/Navigation/NavigationProgress";
 import { QueryProvider } from "@/components/Providers/QueryProvider";
 
@@ -56,7 +56,6 @@ export default function RootLayout({
       >
         <Suspense fallback={null}>
           <NavigationProgress />
-          <GlobalLoadingOverlay />
         </Suspense>
         <QueryProvider>
           <ToastProvider>

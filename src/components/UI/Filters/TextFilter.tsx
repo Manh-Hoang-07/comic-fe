@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { debounce } from "@/utils/debounce";
 
 interface TextFilterProps {
@@ -11,7 +11,7 @@ interface TextFilterProps {
   onChange?: (value: string) => void;
 }
 
-export default function TextFilter({
+function TextFilter({
   value = "",
   label,
   placeholder = "Nhập từ khóa...",
@@ -64,5 +64,4 @@ export default function TextFilter({
   );
 }
 
-
-
+export default React.memo(TextFilter);

@@ -10,7 +10,7 @@ interface ComicSectionProps {
     className?: string;
 }
 
-export const ComicSection: React.FC<ComicSectionProps> = ({ title, comics, viewAllLink, className = "" }) => {
+function ComicSectionInner({ title, comics, viewAllLink, className = "" }: ComicSectionProps) {
     if (!comics || comics.length === 0) return null;
 
     return (
@@ -30,7 +30,6 @@ export const ComicSection: React.FC<ComicSectionProps> = ({ title, comics, viewA
             </div>
         </section>
     );
-};
+}
 
-
-
+export const ComicSection = React.memo(ComicSectionInner);

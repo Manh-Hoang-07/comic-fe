@@ -83,7 +83,6 @@ export function useUrlListSync<T extends { id: any } = any>(config: {
       setItems(transformedData);
 
       if (metaData) {
-        const params = getUrlParams();
         const toNumber = (val: any): number | undefined => {
           if (val === null || val === undefined || val === "") return undefined;
           const n = typeof val === "number" ? val : parseInt(String(val), 10);

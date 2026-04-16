@@ -1,0 +1,29 @@
+.swiper-pagination-bullet-custom {
+    width: 24px;
+    height: 4px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 2px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.swiper-pagination-bullet-active-custom {
+    background: #dc2626;
+    width: 32px;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in-up {
+    opacity: 0;
+    animation: fadeInUp 0.6s ease-out forwards;
+}

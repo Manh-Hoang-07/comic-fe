@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /d/comic-fe/src /d/comic-fe/app -type f \\\\\\(-name *.tsx -o -name *.ts -o -name *.jsx -o -name *.js \\\\\\))",
+      "Bash(find /d/comic-fe/src -name \"*.tsx\" -type f -exec grep -l \"useEffect.*fetch\\\\|useEffect.*useAuthInit\\\\|useEffect.*checkAuth\" {})"
+    ]
+  }
+}
