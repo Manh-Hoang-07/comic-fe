@@ -1,69 +1,38 @@
 "use client";
 
-import { useListPage } from "@/hooks";
-import useModal from "@/hooks/ui-ux/useModal";
+import { useCrudList } from "@/hooks";
 import { adminEndpoints } from "@/lib/api/endpoints";
+import { BASIC_STATUS_BADGES, getStatusBadge } from "@/config/constants/status";
 import Pagination from "@/components/UI/DataDisplay/Pagination";
 import SkeletonLoader from "@/components/UI/Feedback/SkeletonLoader";
 import Actions from "@/components/UI/DataDisplay/Actions";
 import ConfirmModal from "@/components/UI/Feedback/ConfirmModal";
-import { useToastContext } from "@/contexts/ToastContext";
-import api from "@/lib/api/client";
 import type { AdminCountry } from "@/types/location";
 import CountryFilter from "./CountryFilter";
 import CreateCountry from "./CreateCountry";
 import EditCountry from "./EditCountry";
 
+const endpoints = adminEndpoints.location.countries;
+
 export default function AdminCountries() {
-  const { data, actions, ui } = useListPage({
-    endpoint: adminEndpoints.location.countries.list,
+  const {
+    data, actions, ui,
+    createModal, editModal, deleteModal,
+    handleDeleteConfirm, openCreate, openEdit, openDelete,
+  } = useCrudList({
+    endpoint: endpoints.list,
+    deleteSuccessMessage: "Đã xóa quốc gia thành công",
   });
-  
+
   const { items, loading, pagination, filters, hasData } = data;
   const { getSerialNumber } = ui;
-  const { showSuccess, showError } = useToastContext();
-
-  const getStatusBadge = (status?: string) => {
-    if (status === "active") {
-      return {
-        label: "Hoạt động",
-        className: "bg-green-100 text-green-800",
-      };
-    }
-    if (status === "inactive") {
-      return {
-        label: "Ngừng hoạt động",
-        className: "bg-gray-100 text-gray-800",
-      };
-    }
-    return {
-      label: status || "Không xác định",
-      className: "bg-gray-100 text-gray-800",
-    };
-  };
-
-  const createModal = useModal<{ createApi: string }>();
-  const editModal = useModal<{ fetchApi?: string; initialData?: any; updateApi: string }>();
-  const deleteModal = useModal<{ id: number; name?: string; deleteApi: string }>();
-
-  const handleDeleteConfirm = async () => {
-    if (!deleteModal.data?.deleteApi) return;
-    try {
-      await api.delete(deleteModal.data.deleteApi);
-      showSuccess("Đã xóa quốc gia thành công");
-      deleteModal.close();
-      actions.refresh();
-    } catch (error: any) {
-      showError(error.response?.data?.message || "Có lỗi xảy ra khi xóa");
-    }
-  };
 
   return (
     <div className="admin-countries">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Quản lý quốc gia</h1>
         <button
-          onClick={() => createModal.open({ createApi: adminEndpoints.location.countries.create })}
+          onClick={() => openCreate(endpoints.create)}
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none"
         >
           Thêm quốc gia mới
@@ -99,7 +68,7 @@ export default function AdminCountries() {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {items.map((country: AdminCountry, index: number) => {
-                  const status = getStatusBadge(country.status);
+                  const badge = getStatusBadge(country.status || "", BASIC_STATUS_BADGES);
                   return (
                     <tr key={country.id}>
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
@@ -113,9 +82,9 @@ export default function AdminCountries() {
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
                         <span
-                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${status.className}`}
+                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${badge.className}`}
                         >
-                          {status.label}
+                          {badge.label}
                         </span>
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
@@ -123,18 +92,11 @@ export default function AdminCountries() {
                           item={country}
                           showView={false}
                           showDelete={false}
-                          onEdit={() => editModal.open({
-                            fetchApi: adminEndpoints.location.countries.show(country.id),
-                            updateApi: adminEndpoints.location.countries.update(country.id)
-                          })}
+                          onEdit={() => openEdit(country, endpoints)}
                           additionalActions={[
                             {
                               label: "Xóa",
-                              action: () => deleteModal.open({
-                                id: country.id,
-                                name: country.name,
-                                deleteApi: adminEndpoints.location.countries.delete(country.id)
-                              }),
+                              action: () => openDelete(country, endpoints),
                               icon: "trash",
                             },
                           ]}
@@ -196,7 +158,7 @@ export default function AdminCountries() {
         <ConfirmModal
           show={deleteModal.isOpen}
           title="Xác nhận xóa"
-          message={`Bạn có chắc chắn muốn xóa quốc gia "${deleteModal.data.name}"?`}
+          message={`Bạn có chắc chắn muốn xóa quốc gia "${deleteModal.data.displayName}"?`}
           onClose={deleteModal.close}
           onConfirm={handleDeleteConfirm}
         />
@@ -204,5 +166,3 @@ export default function AdminCountries() {
     </div>
   );
 }
-
-

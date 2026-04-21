@@ -3,18 +3,20 @@
 import { useState, useEffect } from "react";
 import api from "@/lib/api/client";
 import { adminEndpoints } from "@/lib/api/endpoints";
-import { useListPage } from "@/hooks";
-import useModal from "@/hooks/ui-ux/useModal";
+import { useCrudList } from "@/hooks";
+import { BASIC_STATUS_BADGES, getStatusBadge } from "@/config/constants/status";
 import SkeletonLoader from "@/components/UI/Feedback/SkeletonLoader";
 import ConfirmModal from "@/components/UI/Feedback/ConfirmModal";
 import Actions from "@/components/UI/DataDisplay/Actions";
 import Pagination from "@/components/UI/DataDisplay/Pagination";
-import { useToastContext } from "@/contexts/ToastContext";
+import useModal from "@/hooks/ui-ux/useModal";
 import UsersFilter from "./UsersFilter";
 import CreateUser from "./CreateUser";
 import EditUser from "./EditUser";
 import ChangePassword from "./ChangePassword";
 import AssignRole from "./AssignRole";
+
+const endpoints = adminEndpoints.users;
 
 interface AdminUsersProps {
   title?: string;
@@ -25,16 +27,23 @@ export default function AdminUsers({
   title = "Quản lý người dùng",
   createButtonText = "Thêm người dùng mới",
 }: AdminUsersProps) {
-  const { data, actions, ui } = useListPage({
-    endpoint: adminEndpoints.users.list,
+  const {
+    data, actions, ui,
+    createModal, editModal, deleteModal,
+    handleDeleteConfirm, openCreate, openEdit, openDelete,
+  } = useCrudList({
+    endpoint: endpoints.list,
+    deleteSuccessMessage: "Người dùng đã được xóa thành công",
   });
-  
+
   const { items, loading, pagination, filters, hasData } = data;
   const { getSerialNumber } = ui;
-  const { showSuccess, showError } = useToastContext();
 
   const [statusEnums, setStatusEnums] = useState<any[]>([]);
   const [genderEnums, setGenderEnums] = useState<any[]>([]);
+
+  const passwordModal = useModal<{ passApi: string; user: any }>();
+  const roleModal = useModal<{ user: any }>();
 
   const loadEnums = async () => {
     try {
@@ -42,7 +51,7 @@ export default function AdminUsers({
       if (statusResponse.data?.success) {
         setStatusEnums(statusResponse.data.data || []);
       }
-      
+
       const genderResponse = await api.get(adminEndpoints.enums.byName("gender"));
       if (genderResponse.data?.success) {
         setGenderEnums(genderResponse.data.data || []);
@@ -61,30 +70,12 @@ export default function AdminUsers({
     return found?.label || found?.name || status || "Không xác định";
   };
 
-  const createModal = useModal<{ createApi: string }>();
-  const editModal = useModal<{ fetchApi?: string; initialData?: any; updateApi: string }>();
-  const deleteModal = useModal<{ id: number; name?: string; deleteApi: string }>();
-  const passwordModal = useModal<{ passApi: string; user: any }>();
-  const roleModal = useModal<{ user: any }>();
-
-  const handleDeleteConfirm = async () => {
-    if (!deleteModal.data?.deleteApi) return;
-    try {
-      await api.delete(deleteModal.data.deleteApi);
-      showSuccess("Người dùng đã được xóa thành công");
-      deleteModal.close();
-      actions.refresh();
-    } catch (error: any) {
-      showError(error.response?.data?.message || "Có lỗi xảy ra khi xóa");
-    }
-  };
-
   return (
     <div className="admin-users">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">{title}</h1>
         <button
-          onClick={() => createModal.open({ createApi: adminEndpoints.users.create })}
+          onClick={() => openCreate(endpoints.create)}
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
         >
           {createButtonText}
@@ -129,20 +120,13 @@ export default function AdminUsers({
                       <div className="flex items-center space-x-2">
                         <Actions
                           item={user}
-                          onEdit={() => editModal.open({ 
-                            fetchApi: adminEndpoints.users.show(user.id),
-                            updateApi: adminEndpoints.users.update(user.id)
-                          })}
-                          onDelete={() => deleteModal.open({ 
-                            id: user.id, 
-                            name: user.username || user.email, 
-                            deleteApi: adminEndpoints.users.delete(user.id) 
-                          })}
+                          onEdit={() => openEdit(user, endpoints)}
+                          onDelete={() => openDelete(user, endpoints, "username")}
                         />
                         <button
-                          onClick={() => passwordModal.open({ 
-                            passApi: adminEndpoints.users.changePassword(user.id), 
-                            user 
+                          onClick={() => passwordModal.open({
+                            passApi: endpoints.changePassword(user.id),
+                            user
                           })}
                           className="p-2 rounded-full hover:bg-blue-100 transition-colors"
                           title="Đổi mật khẩu"
@@ -216,7 +200,7 @@ export default function AdminUsers({
         <ConfirmModal
           show={deleteModal.isOpen}
           title="Xác nhận xóa"
-          message={`Bạn có chắc chắn muốn xóa người dùng "${deleteModal.data.name}"?`}
+          message={`Bạn có chắc chắn muốn xóa người dùng "${deleteModal.data.displayName}"?`}
           onClose={deleteModal.close}
           onConfirm={handleDeleteConfirm}
         />
@@ -246,4 +230,3 @@ export default function AdminUsers({
     </div>
   );
 }
-

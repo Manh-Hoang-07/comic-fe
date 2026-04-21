@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import { comicSchema, type ComicFormValues } from "./comicSchema";
 import { adminComicService } from "@/lib/api/admin/comic";
 import { AdminComic, AdminComicCategory } from "@/types/comic";
 import FormField from "@/components/UI/Forms/FormField";
@@ -18,18 +18,6 @@ import SingleSelectEnhanced from "@/components/UI/Forms/SingleSelectEnhanced";
 import { useToastContext } from "@/contexts/ToastContext";
 import Modal from "@/components/UI/Feedback/Modal";
 import { userEndpoints } from "@/lib/api/endpoints";
-
-const comicSchema = z.object({
-    title: z.string().min(1, "Tiêu đề không được để trống").max(255, "Tiêu đề tối đa 255 ký tự"),
-    author: z.string().min(1, "Tác giả không được để trống").max(255, "Tác giả tối đa 255 ký tự"),
-    description: z.string().max(10000, "Mô tả tối đa 10000 ký tự").optional().nullable().or(z.literal("")),
-    status: z.enum(["draft", "published", "completed", "hidden"]).default("draft"),
-    is_featured: z.boolean().default(false),
-    category_ids: z.array(z.string()).min(1, "Vui lòng chọn ít nhất một danh mục"),
-    cover_image: z.string().optional().nullable().or(z.literal("")),
-});
-
-type ComicFormValues = z.infer<typeof comicSchema>;
 
 interface ComicFormProps {
     show: boolean;

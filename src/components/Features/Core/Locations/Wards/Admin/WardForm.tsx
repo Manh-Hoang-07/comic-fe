@@ -3,27 +3,11 @@
 import { useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import Modal from "@/components/UI/Feedback/Modal";
 import FormField from "@/components/UI/Forms/FormField";
 import SingleSelectEnhanced from "@/components/UI/Forms/SingleSelectEnhanced";
 import { adminEndpoints } from "@/lib/api/endpoints";
-
-const wardSchema = z.object({
-  code: z
-    .string()
-    .min(1, "Mã phường/xã là bắt buộc")
-    .max(20, "Mã không được vượt quá 20 ký tự"),
-  name: z
-    .string()
-    .min(1, "Tên phường/xã là bắt buộc")
-    .max(191, "Tên không được vượt quá 191 ký tự"),
-  type: z.string().optional().nullable(),
-  province_id: z.coerce.number().min(1, "Tỉnh/Thành là bắt buộc"),
-  status: z.enum(["active", "inactive"]).default("active"),
-});
-
-export type WardFormValues = z.infer<typeof wardSchema>;
+import { wardSchema, type WardFormValues } from "./wardSchema";
 
 export interface AdminWardFormEntity {
   id?: number;

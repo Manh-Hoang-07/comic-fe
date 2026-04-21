@@ -3,23 +3,10 @@
 import { useEffect, useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import Modal from "@/components/UI/Feedback/Modal";
 import FormField from "@/components/UI/Forms/FormField";
 import SingleSelectEnhanced from "@/components/UI/Forms/SingleSelectEnhanced";
-
-// 1. Define BannerLocation Schema
-const bannerLocationSchema = z.object({
-  code: z.string()
-    .min(1, "Mã vị trí là bắt buộc")
-    .regex(/^[a-z0-9_]+$/, "Mã vị trí chỉ chứa chữ cái thường, số và dấu gạch dưới")
-    .max(100, "Mã tối đa 100 ký tự"),
-  name: z.string().min(1, "Tên vị trí là bắt buộc").max(255, "Tên tối đa 255 ký tự"),
-  description: z.string().max(500, "Mô tả tối đa 500 ký tự").optional().nullable(),
-  status: z.string().min(1, "Trạng thái là bắt buộc").default("active"),
-});
-
-type BannerLocationFormValues = z.infer<typeof bannerLocationSchema>;
+import { bannerLocationSchema, type BannerLocationFormValues } from "./bannerLocationSchema";
 
 const getBasicStatusArray = () => [
   { value: "active", label: "Hoạt động" },

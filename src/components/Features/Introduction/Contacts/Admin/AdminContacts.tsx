@@ -1,7 +1,6 @@
 "use client";
 
-import { useListPage } from "@/hooks";
-import useModal from "@/hooks/ui-ux/useModal";
+import { useCrudList } from "@/hooks";
 import { adminEndpoints } from "@/lib/api/endpoints";
 import ContactsFilter from "./ContactsFilter";
 import SkeletonLoader from "@/components/UI/Feedback/SkeletonLoader";
@@ -9,57 +8,27 @@ import Actions from "@/components/UI/DataDisplay/Actions";
 import Pagination from "@/components/UI/DataDisplay/Pagination";
 import { formatDate } from "@/utils";
 import ConfirmModal from "@/components/UI/Feedback/ConfirmModal";
-import { useToastContext } from "@/contexts/ToastContext";
-import api from "@/lib/api/client";
+import { getStatusBadge } from "@/config/constants/status";
+import { CONTACT_STATUS_BADGES } from "@/components/Features/Introduction/Contacts/constants";
+
+const endpoints = adminEndpoints.contacts;
 
 interface AdminContactsProps {
     title?: string;
 }
 
 export default function AdminContacts({ title = "Quản lý Liên hệ" }: AdminContactsProps) {
-    const { data, actions, ui } = useListPage({
-        endpoint: adminEndpoints.contacts.list,
+    const {
+        data, actions, ui,
+        deleteModal,
+        handleDeleteConfirm, openDelete,
+    } = useCrudList({
+        endpoint: endpoints.list,
+        deleteSuccessMessage: "Liên hệ đã được xóa thành công",
     });
-    
+
     const { items, loading, pagination, filters, hasData } = data;
     const { getSerialNumber } = ui;
-    const { showSuccess, showError } = useToastContext();
-
-    const deleteModal = useModal<{ id: number | string; name?: string; deleteApi: string }>();
-
-    const getStatusLabel = (status: string) => {
-        const map: Record<string, string> = {
-            new: "Mới",
-            read: "Đã xem",
-            processing: "Đang xử lý",
-            replied: "Đã phản hồi",
-            closed: "Đã đóng",
-        };
-        return map[status] || status;
-    };
-
-    const getStatusClass = (status: string) => {
-        const map: Record<string, string> = {
-            new: "bg-blue-100 text-blue-800",
-            read: "bg-green-100 text-green-800",
-            processing: "bg-yellow-100 text-yellow-800",
-            replied: "bg-purple-100 text-purple-800",
-            closed: "bg-gray-100 text-gray-800",
-        };
-        return map[status] || "bg-gray-100 text-gray-800";
-    };
-
-    const handleDeleteConfirm = async () => {
-        if (!deleteModal.data?.deleteApi) return;
-        try {
-            await api.delete(deleteModal.data.deleteApi);
-            showSuccess("Liên hệ đã được xóa thành công");
-            deleteModal.close();
-            actions.refresh();
-        } catch (error: any) {
-            showError(error.response?.data?.message || "Có lỗi xảy ra khi xóa");
-        }
-    };
 
     return (
         <div className="admin-contacts">
@@ -90,38 +59,37 @@ export default function AdminContacts({ title = "Quản lý Liên hệ" }: Admin
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
-                                {items.length > 0 ? items.map((contact, index) => (
-                                    <tr key={contact.id} className="hover:bg-gray-50 transition-colors">
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{getSerialNumber(index)}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{contact.name}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            <div className="font-medium text-indigo-600">{contact.email}</div>
-                                            <div className="text-xs text-gray-400">{contact.phone}</div>
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate" title={contact.message}>
-                                            {contact.message}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-center">
-                                            <span className={`px-2 py-1 inline-flex text-[10px] leading-5 font-bold uppercase rounded-full ${getStatusClass(contact.status)}`}>
-                                                {getStatusLabel(contact.status)}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {formatDate(contact.created_at)}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-right">
-                                            <Actions
-                                                item={contact}
-                                                showEdit={false}
-                                                onDelete={() => deleteModal.open({
-                                                    id: contact.id,
-                                                    name: contact.name,
-                                                    deleteApi: adminEndpoints.contacts.delete(contact.id)
-                                                })}
-                                            />
-                                        </td>
-                                    </tr>
-                                )) : (
+                                {items.length > 0 ? items.map((contact, index) => {
+                                    const badge = getStatusBadge(contact.status, CONTACT_STATUS_BADGES);
+                                    return (
+                                        <tr key={contact.id} className="hover:bg-gray-50 transition-colors">
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{getSerialNumber(index)}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{contact.name}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                <div className="font-medium text-indigo-600">{contact.email}</div>
+                                                <div className="text-xs text-gray-400">{contact.phone}</div>
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate" title={contact.message}>
+                                                {contact.message}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-center">
+                                                <span className={`px-2 py-1 inline-flex text-[10px] leading-5 font-bold uppercase rounded-full ${badge.className}`}>
+                                                    {badge.label}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                {formatDate(contact.created_at)}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-right">
+                                                <Actions
+                                                    item={contact}
+                                                    showEdit={false}
+                                                    onDelete={() => openDelete(contact, endpoints)}
+                                                />
+                                            </td>
+                                        </tr>
+                                    );
+                                }) : (
                                     <tr>
                                         <td colSpan={7} className="px-6 py-10 text-center text-gray-500 italic">
                                             Không có dữ liệu liên hệ nào
@@ -147,7 +115,7 @@ export default function AdminContacts({ title = "Quản lý Liên hệ" }: Admin
                 <ConfirmModal
                     show={deleteModal.isOpen}
                     title="Xác nhận xóa"
-                    message={`Bạn có chắc chắn muốn xóa liên hệ từ "${deleteModal.data.name}"?`}
+                    message={`Bạn có chắc chắn muốn xóa liên hệ từ "${deleteModal.data.displayName}"?`}
                     onClose={deleteModal.close}
                     onConfirm={handleDeleteConfirm}
                 />
@@ -155,6 +123,3 @@ export default function AdminContacts({ title = "Quản lý Liên hệ" }: Admin
         </div>
     );
 }
-
-
-

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { nameField, statusField, optionalText, metaFields } from "./common";
+import { nameField, statusField, optionalText, metaFields } from "@/config/validations/common";
 
 export const tagSchema = z.object({
   name: nameField("Tên thẻ"),

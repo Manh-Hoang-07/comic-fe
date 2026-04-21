@@ -1,75 +1,42 @@
 "use client";
 
-import { useListPage } from "@/hooks";
-import useModal from "@/hooks/ui-ux/useModal";
+import { useCrudList } from "@/hooks";
 import { adminEndpoints } from "@/lib/api/endpoints";
 import SkeletonLoader from "@/components/UI/Feedback/SkeletonLoader";
 import ConfirmModal from "@/components/UI/Feedback/ConfirmModal";
 import Actions from "@/components/UI/DataDisplay/Actions";
 import Pagination from "@/components/UI/DataDisplay/Pagination";
-import { useToastContext } from "@/contexts/ToastContext";
-import api from "@/lib/api/client";
 import ComicFilter from "./ComicFilter";
 import CreateComic from "./CreateComic";
 import EditComic from "./EditComic";
 import { AdminComic } from "@/types/comic";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { getStatusBadge } from "@/config/constants/status";
+import { COMIC_STATUS_BADGES } from "@/components/Features/Comics/constants";
+
+const endpoints = adminEndpoints.comics;
 
 export default function AdminComics() {
     const router = useRouter();
-    const { data, actions, ui } = useListPage({
-        endpoint: adminEndpoints.comics.list,
+    const {
+        data, actions, ui,
+        createModal, editModal, deleteModal,
+        handleDeleteConfirm, openCreate, openEdit, openDelete,
+    } = useCrudList({
+        endpoint: endpoints.list,
+        deleteSuccessMessage: "Đã xóa truyện thành công",
     });
+
     const { items, loading, pagination, filters, hasData } = data;
     const { getSerialNumber } = ui;
-    const { showSuccess, showError } = useToastContext();
-
-    const getStatusBadge = (status: string) => {
-        const badges: Record<string, string> = {
-            draft: "bg-gray-100 text-gray-800",
-            published: "bg-green-100 text-green-800",
-            completed: "bg-blue-100 text-blue-800",
-            hidden: "bg-red-100 text-red-800",
-        };
-        const labels: Record<string, string> = {
-            draft: "Nháp",
-            published: "Công khai",
-            completed: "Hoàn tất",
-            hidden: "Ẩn",
-        };
-        return (
-            <span
-                className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold leading-5 ${badges[status] || badges.draft
-                    }`}
-            >
-                {labels[status] || status}
-            </span>
-        );
-    };
-
-    const createModal = useModal<{ createApi: string }>();
-    const editModal = useModal<{ fetchApi?: string; initialData?: any; updateApi: string }>();
-    const deleteModal = useModal<{ id: number | string; title?: string; deleteApi: string }>();
-
-    const handleDeleteConfirm = async () => {
-        if (!deleteModal.data?.deleteApi) return;
-        try {
-            await api.delete(deleteModal.data.deleteApi);
-            showSuccess("Đã xóa truyện thành công");
-            deleteModal.close();
-            actions.refresh();
-        } catch (error: any) {
-            showError(error.response?.data?.message || "Có lỗi xảy ra khi xóa");
-        }
-    };
 
     return (
         <div className="admin-comics">
             <div className="mb-6 flex items-center justify-between">
                 <h1 className="text-2xl font-bold font-primary text-gray-900">Thư viện truyện</h1>
                 <button
-                    onClick={() => createModal.open({ createApi: adminEndpoints.comics.create })}
+                    onClick={() => openCreate(endpoints.create)}
                     className="flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700 focus:outline-none"
                 >
                     <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -110,113 +77,115 @@ export default function AdminComics() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-200 bg-white">
-                                {items.map((comic: AdminComic, index) => (
-                                    <tr key={comic.id} className="hover:bg-gray-50">
-                                        <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
-                                            {getSerialNumber(index)}
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-4">
-                                                <div className="relative h-16 w-12 flex-shrink-0 overflow-hidden rounded border border-gray-100 shadow-sm">
-                                                    <Image
-                                                        src={comic.cover_image || "/placeholder-comic.png"}
-                                                        alt={comic.title}
-                                                        fill
-                                                        className="object-cover"
-                                                    />
-                                                </div>
-                                                <div className="max-w-[200px]">
-                                                    <div className="truncate text-sm font-semibold text-gray-900">
-                                                        {comic.title}
+                                {items.map((comic: AdminComic, index) => {
+                                    const badge = getStatusBadge(comic.status, COMIC_STATUS_BADGES);
+                                    return (
+                                        <tr key={comic.id} className="hover:bg-gray-50">
+                                            <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
+                                                {getSerialNumber(index)}
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="relative h-16 w-12 flex-shrink-0 overflow-hidden rounded border border-gray-100 shadow-sm">
+                                                        <Image
+                                                            src={comic.cover_image || "/placeholder-comic.png"}
+                                                            alt={comic.title}
+                                                            fill
+                                                            className="object-cover"
+                                                        />
                                                     </div>
-                                                    <div className="mt-1 flex flex-wrap gap-1">
-                                                        {comic.categories?.slice(0, 2).map((cat) => (
-                                                            <span
-                                                                key={cat.id}
-                                                                className="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-bold uppercase text-gray-500"
-                                                            >
-                                                                {cat.name}
-                                                            </span>
-                                                        ))}
-                                                        {comic.is_featured && (
-                                                            <span className="rounded bg-yellow-100 px-1.5 py-0.5 text-[10px] font-bold uppercase text-yellow-700">
-                                                                Nổi bật
-                                                            </span>
-                                                        )}
+                                                    <div className="max-w-[200px]">
+                                                        <div className="truncate text-sm font-semibold text-gray-900">
+                                                            {comic.title}
+                                                        </div>
+                                                        <div className="mt-1 flex flex-wrap gap-1">
+                                                            {comic.categories?.slice(0, 2).map((cat) => (
+                                                                <span
+                                                                    key={cat.id}
+                                                                    className="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-bold uppercase text-gray-500"
+                                                                >
+                                                                    {cat.name}
+                                                                </span>
+                                                            ))}
+                                                            {comic.is_featured && (
+                                                                <span className="rounded bg-yellow-100 px-1.5 py-0.5 text-[10px] font-bold uppercase text-yellow-700">
+                                                                    Nổi bật
+                                                                </span>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        </td>
-                                        <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-600">
-                                            {comic.author}
-                                        </td>
-                                        <td className="whitespace-nowrap px-6 py-4">{getStatusBadge(comic.status)}</td>
-                                        <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
-                                            <div className="flex flex-col gap-1">
-                                                <div className="flex items-center gap-1.5">
-                                                    <svg
-                                                        className="h-3.5 w-3.5"
-                                                        fill="none"
-                                                        stroke="currentColor"
-                                                        viewBox="0 0 24 24"
-                                                    >
-                                                        <path
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            strokeWidth={2}
-                                                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                                                        />
-                                                        <path
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            strokeWidth={2}
-                                                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                                                        />
-                                                    </svg>
-                                                    <span>{comic.view_count?.toLocaleString() || 0}</span>
+                                            </td>
+                                            <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-600">
+                                                {comic.author}
+                                            </td>
+                                            <td className="whitespace-nowrap px-6 py-4">
+                                                <span
+                                                    className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold leading-5 ${badge.className}`}
+                                                >
+                                                    {badge.label}
+                                                </span>
+                                            </td>
+                                            <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
+                                                <div className="flex flex-col gap-1">
+                                                    <div className="flex items-center gap-1.5">
+                                                        <svg
+                                                            className="h-3.5 w-3.5"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            viewBox="0 0 24 24"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                strokeWidth={2}
+                                                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                                            />
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                strokeWidth={2}
+                                                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                                                            />
+                                                        </svg>
+                                                        <span>{comic.view_count?.toLocaleString() || 0}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-1.5 text-xs text-gray-400">
+                                                        <svg
+                                                            className="h-3.5 w-3.5"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            viewBox="0 0 24 24"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                strokeWidth={2}
+                                                                d="M4 6h16M4 10h16M4 14h16M4 18h16"
+                                                            />
+                                                        </svg>
+                                                        <span>{comic.chapters_count || 0} chương</span>
+                                                    </div>
                                                 </div>
-                                                <div className="flex items-center gap-1.5 text-xs text-gray-400">
-                                                    <svg
-                                                        className="h-3.5 w-3.5"
-                                                        fill="none"
-                                                        stroke="currentColor"
-                                                        viewBox="0 0 24 24"
-                                                    >
-                                                        <path
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            strokeWidth={2}
-                                                            d="M4 6h16M4 10h16M4 14h16M4 18h16"
-                                                        />
-                                                    </svg>
-                                                    <span>{comic.chapters_count || 0} chương</span>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="whitespace-nowrap px-6 py-4 text-center text-sm font-medium">
-                                            <Actions
-                                                item={comic}
-                                                onEdit={() => editModal.open({
-                                                    fetchApi: adminEndpoints.comics.show(comic.id),
-                                                    updateApi: adminEndpoints.comics.update(comic.id)
-                                                })}
-                                                onDelete={() => deleteModal.open({
-                                                    id: comic.id,
-                                                    title: comic.title,
-                                                    deleteApi: adminEndpoints.comics.delete(comic.id)
-                                                })}
-                                                additionalActions={[
-                                                    {
-                                                        label: "Chương truyện",
-                                                        icon: "document-text",
-                                                        action: () => router.push(`/admin/chapters?comic_id=${comic.id}`),
-                                                        className: "text-purple-600 hover:text-purple-700",
-                                                    },
-                                                ]}
-                                            />
-                                        </td>
-                                    </tr>
-                                ))}
+                                            </td>
+                                            <td className="whitespace-nowrap px-6 py-4 text-center text-sm font-medium">
+                                                <Actions
+                                                    item={comic}
+                                                    onEdit={() => openEdit(comic, endpoints)}
+                                                    onDelete={() => openDelete(comic, endpoints, "title")}
+                                                    additionalActions={[
+                                                        {
+                                                            label: "Chương truyện",
+                                                            icon: "document-text",
+                                                            action: () => router.push(`/admin/chapters?comic_id=${comic.id}`),
+                                                            className: "text-purple-600 hover:text-purple-700",
+                                                        },
+                                                    ]}
+                                                />
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
                                 {items.length === 0 && (
                                     <tr>
                                         <td colSpan={6} className="px-6 py-10 text-center text-gray-500 italic">
@@ -269,7 +238,7 @@ export default function AdminComics() {
                 <ConfirmModal
                     show={deleteModal.isOpen}
                     title="Xác nhận xóa"
-                    message={`Bạn có chắc chắn muốn xóa truyện "${deleteModal.data.title}"? Dữ liệu các chương truyện cũng sẽ bị xóa.`}
+                    message={`Bạn có chắc chắn muốn xóa truyện "${deleteModal.data.displayName}"? Dữ liệu các chương truyện cũng sẽ bị xóa.`}
                     onClose={deleteModal.close}
                     onConfirm={handleDeleteConfirm}
                     confirmText="Xác nhận xóa"
@@ -278,6 +247,3 @@ export default function AdminComics() {
         </div>
     );
 }
-
-
-

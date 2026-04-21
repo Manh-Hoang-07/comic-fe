@@ -1,11 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useListPage } from "@/hooks";
-import useModal from "@/hooks/ui-ux/useModal";
+import { useCrudList } from "@/hooks";
 import { adminEndpoints } from "@/lib/api/endpoints";
-import apiClient from "@/lib/api/client";
-import { useToastContext } from "@/contexts/ToastContext";
+import { BASIC_STATUS, BASIC_STATUS_BADGES, getStatusBadge } from "@/config/constants/status";
 import SkeletonLoader from "@/components/UI/Feedback/SkeletonLoader";
 import ConfirmModal from "@/components/UI/Feedback/ConfirmModal";
 import Actions from "@/components/UI/DataDisplay/Actions";
@@ -14,10 +11,7 @@ import ContextsFilter from "./ContextsFilter";
 import CreateContext from "./CreateContext";
 import EditContext from "./EditContext";
 
-const getBasicStatusArray = () => [
-  { value: "active", label: "Hoạt động" },
-  { value: "inactive", label: "Ngừng hoạt động" },
-];
+const endpoints = adminEndpoints.contexts;
 
 const getTypeLabel = (value: string): string => {
   const labels: Record<string, string> = {
@@ -29,19 +23,6 @@ const getTypeLabel = (value: string): string => {
     organization: "Organization",
   };
   return labels[value] || value;
-};
-
-const getStatusLabel = (value: string): string => {
-  const status = getBasicStatusArray().find((s) => s.value === value);
-  return status?.label || value;
-};
-
-const getStatusClass = (value: string): string => {
-  const classes: Record<string, string> = {
-    active: "bg-green-100 text-green-800",
-    inactive: "bg-gray-100 text-gray-800",
-  };
-  return classes[value] || "bg-gray-100 text-gray-800";
 };
 
 interface Context {
@@ -61,42 +42,24 @@ export default function AdminContexts({
   title = "Quản lý contexts",
   createButtonText = "Thêm context mới",
 }: AdminContextsProps) {
-  const { data, actions, ui } = useListPage({
-    endpoint: adminEndpoints.contexts.list,
+  const {
+    data, actions, ui,
+    createModal, editModal, deleteModal,
+    handleDeleteConfirm, openCreate, openEdit, openDelete,
+  } = useCrudList({
+    endpoint: endpoints.list,
+    deleteSuccessMessage: "Đã xóa thành công",
   });
-  
+
   const { items, loading, pagination, filters, hasData } = data;
   const { getSerialNumber } = ui;
-  const { showSuccess, showError } = useToastContext();
-
-  const [statusEnums, setStatusEnums] = useState<Array<{ value: string; label?: string; name?: string }>>([]);
-
-  useEffect(() => {
-    setStatusEnums(getBasicStatusArray());
-  }, []);
-
-  const createModal = useModal<{ createApi: string }>();
-  const editModal = useModal<{ fetchApi?: string; initialData?: any; updateApi: string }>();
-  const deleteModal = useModal<{ id: number; name?: string; deleteApi: string }>();
-
-  const handleDeleteConfirm = async () => {
-    if (!deleteModal.data?.deleteApi) return;
-    try {
-      await apiClient.delete(deleteModal.data.deleteApi);
-      showSuccess("Đã xóa thành công");
-      deleteModal.close();
-      actions.refresh();
-    } catch (error: any) {
-      showError(error.response?.data?.message || "Có lỗi xảy ra khi xóa");
-    }
-  };
 
   return (
     <div className="admin-contexts">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">{title}</h1>
         <button
-          onClick={() => createModal.open({ createApi: adminEndpoints.contexts.create })}
+          onClick={() => openCreate(endpoints.create)}
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none"
         >
           {createButtonText}
@@ -105,7 +68,7 @@ export default function AdminContexts({
 
       <ContextsFilter
         initialFilters={filters}
-        statusEnums={statusEnums}
+        statusEnums={BASIC_STATUS}
         onUpdateFilters={actions.updateFilters}
       />
 
@@ -125,39 +88,35 @@ export default function AdminContexts({
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {items.map((context: Context, index) => (
-                <tr key={context.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{getSerialNumber(index)}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    <code className="px-2 py-1 bg-gray-100 rounded text-xs">{context.id}</code>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                      {getTypeLabel(context.type || "")}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{context.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusClass(context.status || "")}`}>
-                      {getStatusLabel(context.status || "")}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <Actions
-                      item={context}
-                      onEdit={() => editModal.open({ 
-                        fetchApi: adminEndpoints.contexts.show(context.id),
-                        updateApi: adminEndpoints.contexts.update(context.id)
-                      })}
-                      onDelete={() => deleteModal.open({ 
-                        id: context.id, 
-                        name: context.name, 
-                        deleteApi: adminEndpoints.contexts.delete(context.id) 
-                      })}
-                    />
-                  </td>
-                </tr>
-              ))}
+              {items.map((context: Context, index) => {
+                const badge = getStatusBadge(context.status || "", BASIC_STATUS_BADGES);
+                return (
+                  <tr key={context.id}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{getSerialNumber(index)}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      <code className="px-2 py-1 bg-gray-100 rounded text-xs">{context.id}</code>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                        {getTypeLabel(context.type || "")}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{context.name}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${badge.className}`}>
+                        {badge.label}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <Actions
+                        item={context}
+                        onEdit={() => openEdit(context, endpoints)}
+                        onDelete={() => openDelete(context, endpoints)}
+                      />
+                    </td>
+                  </tr>
+                );
+              })}
               {items.length === 0 && (
                 <tr>
                   <td colSpan={6} className="px-6 py-4 text-center text-gray-500">Không có dữ liệu</td>
@@ -181,7 +140,7 @@ export default function AdminContexts({
         <CreateContext
           show={createModal.isOpen}
           createApi={createModal.data.createApi}
-          statusEnums={statusEnums}
+          statusEnums={BASIC_STATUS}
           onClose={createModal.close}
           onSuccess={() => {
             createModal.close();
@@ -194,7 +153,7 @@ export default function AdminContexts({
         <EditContext
           show={editModal.isOpen}
           target={editModal.data}
-          statusEnums={statusEnums}
+          statusEnums={BASIC_STATUS}
           onClose={editModal.close}
           onSuccess={() => {
             editModal.close();
@@ -207,7 +166,7 @@ export default function AdminContexts({
         <ConfirmModal
           show={deleteModal.isOpen}
           title="Xác nhận xóa"
-          message={`Bạn có chắc chắn muốn xóa context ${deleteModal.data.name || ""}?`}
+          message={`Bạn có chắc chắn muốn xóa context ${deleteModal.data.displayName || ""}?`}
           onClose={deleteModal.close}
           onConfirm={handleDeleteConfirm}
         />

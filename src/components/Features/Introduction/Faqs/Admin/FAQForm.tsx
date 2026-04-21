@@ -3,19 +3,9 @@
 import { useEffect, useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import Modal from "@/components/UI/Feedback/Modal";
 import FormField from "@/components/UI/Forms/FormField";
-
-// 1. Define FAQ Schema
-const faqSchema = z.object({
-  question: z.string().min(1, "Câu hỏi là bắt buộc").max(500, "Câu hỏi không được vượt quá 500 ký tự"),
-  answer: z.string().min(1, "Câu trả lời là bắt buộc").max(2000, "Câu trả lời không được vượt quá 2000 ký tự"),
-  status: z.string().min(1, "Trạng thái là bắt buộc").default("active"),
-  sort_order: z.coerce.number().int().min(0, "Thứ tự không được âm").default(0),
-});
-
-type FAQFormValues = z.infer<typeof faqSchema>;
+import { faqSchema, type FAQFormValues } from "./faqSchema";
 
 const getBasicStatusArray = () => [
   { value: "active", label: "Hoạt động" },

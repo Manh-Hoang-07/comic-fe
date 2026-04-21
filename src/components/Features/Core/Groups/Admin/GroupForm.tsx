@@ -3,25 +3,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { useForm, Controller, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import Modal from "@/components/UI/Feedback/Modal";
 import FormField from "@/components/UI/Forms/FormField";
 import SingleSelectEnhanced from "@/components/UI/Forms/SingleSelectEnhanced";
 import api from "@/lib/api/client";
 import { adminEndpoints } from "@/lib/api/endpoints";
-
-// 1. Define Group Schema
-const groupSchema = z.object({
-  type: z.string().min(1, "Loại group là bắt buộc").max(100, "Loại tối đa 100 ký tự"),
-  context_id: z.coerce.number().optional().nullable(),
-  code: z.string().min(1, "Mã code là bắt buộc").max(100, "Mã code không được vượt quá 100 ký tự"),
-  name: z.string().min(1, "Tên group là bắt buộc").max(255, "Tên group không được vượt quá 255 ký tự"),
-  description: z.string().max(500, "Mô tả không được vượt quá 500 ký tự").optional().nullable(),
-  metadata: z.record(z.any()).default({}),
-  metadata_json: z.string().optional().nullable(),
-});
-
-type GroupFormValues = z.infer<typeof groupSchema>;
+import { groupSchema, type GroupFormValues } from "./groupSchema";
 
 interface Group {
   id?: number;

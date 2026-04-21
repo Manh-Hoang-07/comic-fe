@@ -1,19 +1,19 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import api from "@/lib/api/client";
+import { useCrudList } from "@/hooks";
 import { adminEndpoints } from "@/lib/api/endpoints";
-import { useListPage } from "@/hooks";
-import useModal from "@/hooks/ui-ux/useModal";
+import { BASIC_STATUS, BASIC_STATUS_BADGES, getStatusBadge } from "@/config/constants/status";
 import SkeletonLoader from "@/components/UI/Feedback/SkeletonLoader";
 import ConfirmModal from "@/components/UI/Feedback/ConfirmModal";
 import Actions from "@/components/UI/DataDisplay/Actions";
 import Pagination from "@/components/UI/DataDisplay/Pagination";
-import { useToastContext } from "@/contexts/ToastContext";
+import useModal from "@/hooks/ui-ux/useModal";
 import RolesFilter from "./RolesFilter";
 import CreateRole from "./CreateRole";
 import EditRole from "./EditRole";
 import AssignPermissions from "./AssignPermissions";
+
+const endpoints = adminEndpoints.roles;
 
 interface AdminRolesProps {
   title?: string;
@@ -24,64 +24,27 @@ export default function AdminRoles({
   title = "Quản lý vai trò",
   createButtonText = "Thêm vai trò mới",
 }: AdminRolesProps) {
-  const { data, actions, ui } = useListPage({
-    endpoint: adminEndpoints.roles.list,
+  const {
+    data, actions, ui,
+    createModal, editModal, deleteModal,
+    handleDeleteConfirm, openCreate, openEdit, openDelete,
+    toast,
+  } = useCrudList({
+    endpoint: endpoints.list,
+    deleteSuccessMessage: "Đã xóa vai trò thành công",
   });
-  
+
   const { items, loading, pagination, filters, hasData } = data;
   const { getSerialNumber } = ui;
-  const { showSuccess, showError } = useToastContext();
 
-  const [statusEnums, setStatusEnums] = useState<any[]>([]);
-
-  const fetchEnums = async () => {
-    try {
-      const statusResponse = await api.get(adminEndpoints.enums.byName("basic_status"));
-      if (statusResponse.data?.success) {
-        setStatusEnums(statusResponse.data.data || []);
-      }
-    } catch (e) {
-      setStatusEnums([]);
-    }
-  };
-
-  useEffect(() => {
-    fetchEnums();
-  }, []);
-
-  const getStatusLabel = (status: string): string => {
-    const found = statusEnums.find((s) => s.value === status || s.id === status);
-    return found?.label || found?.name || status || "Không xác định";
-  };
-
-  const getStatusClass = (status: string): string => {
-    const found = statusEnums.find((s) => s.value === status);
-    return found?.class || found?.badge_class || "bg-gray-100 text-gray-800";
-  };
-
-  const createModal = useModal<{ createApi: string }>();
-  const editModal = useModal<{ fetchApi?: string; initialData?: any; updateApi: string }>();
-  const deleteModal = useModal<{ id: number; name?: string; deleteApi: string }>();
   const permissionsModal = useModal<{ role: any }>();
-
-  const handleDeleteConfirm = async () => {
-    if (!deleteModal.data?.deleteApi) return;
-    try {
-      await api.delete(deleteModal.data.deleteApi);
-      showSuccess("Đã xóa vai trò thành công");
-      deleteModal.close();
-      actions.refresh();
-    } catch (error: any) {
-      showError(error.response?.data?.message || "Có lỗi xảy ra khi xóa");
-    }
-  };
 
   return (
     <div className="admin-roles">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">{title}</h1>
         <button
-          onClick={() => createModal.open({ createApi: adminEndpoints.roles.create })}
+          onClick={() => openCreate(endpoints.create)}
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium"
         >
           {createButtonText}
@@ -90,7 +53,7 @@ export default function AdminRoles({
 
       <RolesFilter
         initialFilters={filters}
-        statusEnums={statusEnums}
+        statusEnums={BASIC_STATUS}
         onUpdateFilters={actions.updateFilters}
       />
 
@@ -110,47 +73,43 @@ export default function AdminRoles({
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {items.map((role, index) => (
-                  <tr key={role.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{getSerialNumber(index)}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      <code className="px-2 py-1 bg-gray-100 rounded text-xs">{role.code}</code>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{role.name || "—"}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusClass(role.status || "")}`}>
-                        {getStatusLabel(role.status || "")}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <Actions
-                        item={role}
-                        showView={false}
-                        showDelete={false}
-                        onEdit={() => editModal.open({
-                          fetchApi: adminEndpoints.roles.show(role.id),
-                          updateApi: adminEndpoints.roles.update(role.id)
-                        })}
-                        additionalActions={[
-                          {
-                            label: "Gán quyền",
-                            action: () => permissionsModal.open({ role }),
-                            icon: "key",
-                          },
-                          {
-                            label: "Xóa",
-                            action: () => deleteModal.open({
-                              id: role.id,
-                              name: role.name,
-                              deleteApi: adminEndpoints.roles.delete(role.id)
-                            }),
-                            icon: "trash",
-                          },
-                        ]}
-                      />
-                    </td>
-                  </tr>
-                ))}
+                {items.map((role, index) => {
+                  const badge = getStatusBadge(role.status || "", BASIC_STATUS_BADGES);
+                  return (
+                    <tr key={role.id}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{getSerialNumber(index)}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        <code className="px-2 py-1 bg-gray-100 rounded text-xs">{role.code}</code>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{role.name || "—"}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${badge.className}`}>
+                          {badge.label}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <Actions
+                          item={role}
+                          showView={false}
+                          showDelete={false}
+                          onEdit={() => openEdit(role, endpoints)}
+                          additionalActions={[
+                            {
+                              label: "Gán quyền",
+                              action: () => permissionsModal.open({ role }),
+                              icon: "key",
+                            },
+                            {
+                              label: "Xóa",
+                              action: () => openDelete(role, endpoints),
+                              icon: "trash",
+                            },
+                          ]}
+                        />
+                      </td>
+                    </tr>
+                  );
+                })}
                 {!loading && items.length === 0 && (
                   <tr>
                     <td colSpan={5} className="px-10 py-10 text-center text-gray-500">Không có dữ liệu</td>
@@ -175,7 +134,7 @@ export default function AdminRoles({
         <CreateRole
           show={createModal.isOpen}
           createApi={createModal.data.createApi}
-          statusEnums={statusEnums}
+          statusEnums={BASIC_STATUS}
           onClose={createModal.close}
           onSuccess={() => {
             createModal.close();
@@ -188,7 +147,7 @@ export default function AdminRoles({
         <EditRole
           show={editModal.isOpen}
           target={editModal.data}
-          statusEnums={statusEnums}
+          statusEnums={BASIC_STATUS}
           onClose={editModal.close}
           onSuccess={() => {
             editModal.close();
@@ -201,7 +160,7 @@ export default function AdminRoles({
         <ConfirmModal
           show={deleteModal.isOpen}
           title="Xác nhận xóa"
-          message={`Bạn có chắc chắn muốn xóa vai trò "${deleteModal.data.name || deleteModal.data.id}"?`}
+          message={`Bạn có chắc chắn muốn xóa vai trò "${deleteModal.data.displayName || deleteModal.data.id}"?`}
           onClose={deleteModal.close}
           onConfirm={handleDeleteConfirm}
         />
@@ -214,7 +173,7 @@ export default function AdminRoles({
           onClose={permissionsModal.close}
           onPermissionsAssigned={() => {
             permissionsModal.close();
-            showSuccess("Quyền đã được gán thành công");
+            toast.success("Quyền đã được gán thành công");
             actions.refresh();
           }}
         />
@@ -222,4 +181,3 @@ export default function AdminRoles({
     </div>
   );
 }
-

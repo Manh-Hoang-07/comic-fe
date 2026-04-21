@@ -3,23 +3,10 @@
 import { useEffect, useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import Modal from "@/components/UI/Feedback/Modal";
 import FormField from "@/components/UI/Forms/FormField";
 import ImageUploader from "@/components/UI/Forms/ImageUploader";
-
-// 1. Define Partner Schema
-const partnerSchema = z.object({
-  name: z.string().min(1, "Tên đối tác là bắt buộc").max(255, "Tên đối tác không được vượt quá 255 ký tự"),
-  logo: z.string().min(1, "Logo là bắt buộc"),
-  website: z.string().url("URL không hợp lệ").or(z.literal("")).optional().nullable(),
-  description: z.string().max(500, "Mô tả tối đa 500 ký tự").optional().nullable(),
-  type: z.string().min(1, "Loại đối tác là bắt buộc").default("client"),
-  status: z.string().min(1, "Trạng thái là bắt buộc").default("active"),
-  sort_order: z.coerce.number().int().min(0, "Thứ tự không được âm").default(0),
-});
-
-type PartnerFormValues = z.infer<typeof partnerSchema>;
+import { partnerSchema, type PartnerFormValues } from "./partnerSchema";
 
 const getPartnerTypeArray = () => [
   { value: "supplier", label: "Nhà cung cấp" },

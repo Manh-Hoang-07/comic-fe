@@ -3,20 +3,11 @@
 import { useEffect, useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import Modal from "@/components/UI/Feedback/Modal";
 import FormField from "@/components/UI/Forms/FormField";
 import SingleSelectEnhanced from "@/components/UI/Forms/SingleSelectEnhanced";
 import SkeletonLoader from "@/components/UI/Feedback/SkeletonLoader";
-
-const contextSchema = z.object({
-  type: z.string().min(1, "Loại context là bắt buộc").max(100, "Loại context tối đa 100 ký tự"),
-  code: z.string().max(100, "Mã code tối đa 100 ký tự").optional().nullable(),
-  name: z.string().min(1, "Tên context là bắt buộc").max(255, "Tên context tối đa 255 ký tự"),
-  status: z.string().min(1, "Trạng thái là bắt buộc").default("active"),
-});
-
-type ContextFormValues = z.infer<typeof contextSchema>;
+import { contextSchema, type ContextFormValues } from "./contextSchema";
 
 const getBasicStatusArray = () => [
   { value: "active", label: "Hoạt động" },

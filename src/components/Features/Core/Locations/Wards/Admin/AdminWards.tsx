@@ -1,82 +1,51 @@
 "use client";
 
-import { useListPage } from "@/hooks";
-import useModal from "@/hooks/ui-ux/useModal";
+import { useCrudList } from "@/hooks";
 import { adminEndpoints } from "@/lib/api/endpoints";
+import { BASIC_STATUS_BADGES, getStatusBadge } from "@/config/constants/status";
 import Pagination from "@/components/UI/DataDisplay/Pagination";
 import SkeletonLoader from "@/components/UI/Feedback/SkeletonLoader";
 import Actions from "@/components/UI/DataDisplay/Actions";
 import ConfirmModal from "@/components/UI/Feedback/ConfirmModal";
-import { useToastContext } from "@/contexts/ToastContext";
-import api from "@/lib/api/client";
 import type { AdminWard } from "@/types/location";
 import WardFilter from "./WardFilter";
 import CreateWard from "./CreateWard";
 import EditWard from "./EditWard";
 
+const endpoints = adminEndpoints.location.wards;
+
+const getWardTypeLabel = (type?: string | null) => {
+  switch (type) {
+    case "Ward":
+      return "Phường";
+    case "Commune":
+      return "Xã";
+    case "Township":
+      return "Thị trấn";
+    default:
+      return type || "—";
+  }
+};
+
 export default function AdminWards() {
-  const { data, actions, ui } = useListPage({
-    endpoint: adminEndpoints.location.wards.list,
+  const {
+    data, actions, ui,
+    createModal, editModal, deleteModal,
+    handleDeleteConfirm, openCreate, openEdit, openDelete,
+  } = useCrudList({
+    endpoint: endpoints.list,
+    deleteSuccessMessage: "Đã xóa Phường/Xã thành công",
   });
-  
+
   const { items, loading, pagination, filters, hasData } = data;
   const { getSerialNumber } = ui;
-  const { showSuccess, showError } = useToastContext();
-
-  const getStatusBadge = (status?: string) => {
-    if (status === "active") {
-      return {
-        label: "Hoạt động",
-        className: "bg-green-100 text-green-800",
-      };
-    }
-    if (status === "inactive") {
-      return {
-        label: "Ngừng hoạt động",
-        className: "bg-gray-100 text-gray-800",
-      };
-    }
-    return {
-      label: status || "Không xác định",
-      className: "bg-gray-100 text-gray-800",
-    };
-  };
-
-  const getWardTypeLabel = (type?: string | null) => {
-    switch (type) {
-      case "Ward":
-        return "Phường";
-      case "Commune":
-        return "Xã";
-      case "Township":
-        return "Thị trấn";
-      default:
-        return type || "—";
-    }
-  };
-
-  const createModal = useModal<{ createApi: string }>();
-  const editModal = useModal<{ fetchApi?: string; initialData?: any; updateApi: string }>();
-  const deleteModal = useModal<{ id: number; name?: string; deleteApi: string }>();
-
-  const handleDeleteConfirm = async () => {
-    if (!deleteModal.data?.deleteApi) return;
-    try {
-      await api.delete(deleteModal.data.deleteApi);
-      showSuccess("Đã xóa Phường/Xã thành công");
-      deleteModal.close();
-      actions.refresh();
-    } catch (error: any) {
-      showError(error.response?.data?.message || "Có lỗi xảy ra khi xóa");
-    }
-  };
 
   return (
     <div className="admin-wards">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Quản lý Phường/Xã</h1>
         <button
-          onClick={() => createModal.open({ createApi: adminEndpoints.location.wards.create })}
+          onClick={() => openCreate(endpoints.create)}
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none"
         >
           Thêm Phường/Xã
@@ -112,7 +81,7 @@ export default function AdminWards() {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {items.map((ward: AdminWard, index: number) => {
-                  const status = getStatusBadge(ward.status);
+                  const badge = getStatusBadge(ward.status || "", BASIC_STATUS_BADGES);
                   return (
                     <tr key={ward.id}>
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
@@ -126,9 +95,9 @@ export default function AdminWards() {
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
                         <span
-                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${status.className}`}
+                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${badge.className}`}
                         >
-                          {status.label}
+                          {badge.label}
                         </span>
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
@@ -136,18 +105,11 @@ export default function AdminWards() {
                           item={ward}
                           showView={false}
                           showDelete={false}
-                          onEdit={() => editModal.open({
-                            fetchApi: adminEndpoints.location.wards.show(ward.id),
-                            updateApi: adminEndpoints.location.wards.update(ward.id)
-                          })}
+                          onEdit={() => openEdit(ward, endpoints)}
                           additionalActions={[
                             {
                               label: "Xóa",
-                              action: () => deleteModal.open({
-                                id: ward.id,
-                                name: ward.name,
-                                deleteApi: adminEndpoints.location.wards.delete(ward.id)
-                              }),
+                              action: () => openDelete(ward, endpoints),
                               icon: "trash",
                             },
                           ]}
@@ -209,7 +171,7 @@ export default function AdminWards() {
         <ConfirmModal
           show={deleteModal.isOpen}
           title="Xác nhận xóa"
-          message={`Bạn có chắc chắn muốn xóa Phường/Xã "${deleteModal.data.name}"?`}
+          message={`Bạn có chắc chắn muốn xóa Phường/Xã "${deleteModal.data.displayName}"?`}
           onClose={deleteModal.close}
           onConfirm={handleDeleteConfirm}
         />
@@ -217,5 +179,3 @@ export default function AdminWards() {
     </div>
   );
 }
-
-

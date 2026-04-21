@@ -3,33 +3,12 @@
 import { useEffect, useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import { bannerSchema, type BannerFormValues } from "./bannerSchema";
 import Modal from "@/components/UI/Feedback/Modal";
 import FormField from "@/components/UI/Forms/FormField";
 import ImageUploader from "@/components/UI/Forms/ImageUploader";
 import SingleSelectEnhanced from "@/components/UI/Forms/SingleSelectEnhanced";
 import { adminEndpoints } from "@/lib/api/endpoints";
-
-// 1. Định nghĩa Banner Schema (Declarative)
-export const bannerSchema = z.object({
-  title: z.string().min(1, "Tiêu đề là bắt buộc").max(255, "Tiêu đề quá dài"),
-  subtitle: z.string().max(255, "Phụ đề quá dài").optional().nullable(),
-  description: z.string().optional().nullable(),
-  image: z.string().min(1, "Hình ảnh desktop là bắt buộc"),
-  mobile_image: z.string().optional().nullable(),
-  link: z.string().url("Link không hợp lệ").or(z.literal("")).optional().nullable(),
-  link_target: z.enum(["_self", "_blank"]).default("_self"),
-  button_text: z.string().max(50, "Text nút quá dài").optional().nullable(),
-  button_color: z.string().regex(/^#[0-9A-F]{6}$/i, "Màu không hợp lệ").default("#ff6b6b"),
-  text_color: z.string().regex(/^#[0-9A-F]{6}$/i, "Màu không hợp lệ").default("#ffffff"),
-  location_id: z.coerce.number({ invalid_type_error: "Vị trí là bắt buộc" }).positive("Vị trí không hợp lệ"),
-  sort_order: z.coerce.number().int().min(0, "Thứ tự không được âm").default(1),
-  status: z.string().min(1, "Trạng thái là bắt buộc").default("active"),
-  start_date: z.string().optional().nullable(),
-  end_date: z.string().optional().nullable(),
-});
-
-export type BannerFormValues = z.infer<typeof bannerSchema>;
 
 interface BannerFormProps {
   show: boolean;

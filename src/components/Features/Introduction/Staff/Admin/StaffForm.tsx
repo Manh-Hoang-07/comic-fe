@@ -3,32 +3,10 @@
 import { useEffect, useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import Modal from "@/components/UI/Feedback/Modal";
 import FormField from "@/components/UI/Forms/FormField";
 import ImageUploader from "@/components/UI/Forms/ImageUploader";
-
-// 1. Define Staff Schema
-const staffSchema = z.object({
-  name: z.string().min(1, "Họ tên là bắt buộc").max(100, "Họ tên không được vượt quá 100 ký tự"),
-  position: z.string().min(1, "Chức vụ là bắt buộc").max(100, "Chức vụ không được vượt quá 100 ký tự"),
-  department: z.string().max(100, "Phòng ban tối đa 100 ký tự").optional().nullable(),
-  bio: z.string().max(1000, "Tiểu sử tối đa 1000 ký tự").optional().nullable(),
-  avatar: z.string().optional().nullable(),
-  email: z.string().email("Email không hợp lệ").or(z.literal("")).optional().nullable(),
-  phone: z.string().max(20, "Số điện thoại tối đa 20 ký tự").optional().nullable(),
-  social_links: z.object({
-    facebook: z.string().url("URL không hợp lệ").or(z.literal("")).optional().nullable(),
-    linkedin: z.string().url("URL không hợp lệ").or(z.literal("")).optional().nullable(),
-    twitter: z.string().url("URL không hợp lệ").or(z.literal("")).optional().nullable(),
-  }).optional(),
-  experience: z.coerce.number().min(0, "Kinh nghiệm không được âm").default(0),
-  expertise: z.string().max(500, "Chuyên môn tối đa 500 ký tự").optional().nullable(),
-  status: z.string().min(1, "Trạng thái là bắt buộc").default("active"),
-  sort_order: z.coerce.number().int().min(0, "Thứ tự không được âm").default(0),
-});
-
-type StaffFormValues = z.infer<typeof staffSchema>;
+import { staffSchema, type StaffFormValues } from "./staffSchema";
 
 const getBasicStatusArray = () => [
   { value: "active", label: "Hoạt động" },

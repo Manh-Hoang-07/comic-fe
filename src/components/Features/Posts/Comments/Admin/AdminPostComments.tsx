@@ -1,11 +1,10 @@
 "use client";
 
-import { useMemo, useState, Fragment } from "react";
+import { useState, Fragment } from "react";
 import Image from "next/image";
 import api from "@/lib/api/client";
 import { adminEndpoints } from "@/lib/api/endpoints";
-import { useListPage } from "@/hooks";
-import useModal from "@/hooks/ui-ux/useModal";
+import { useCrudList } from "@/hooks";
 import SkeletonLoader from "@/components/UI/Feedback/SkeletonLoader";
 import ConfirmModal from "@/components/UI/Feedback/ConfirmModal";
 import Actions from "@/components/UI/DataDisplay/Actions";
@@ -14,7 +13,8 @@ import PostCommentsFilter from "./PostCommentsFilter";
 import { PostComment } from "@/types/api";
 import { User, MessageSquare, CornerDownRight, FileText } from "lucide-react";
 import Modal from "@/components/UI/Feedback/Modal";
-import { useToastContext } from "@/contexts/ToastContext";
+
+const endpoints = adminEndpoints.postComments;
 
 const formatDate = (dateString?: string): string => {
     if (!dateString) return "—";
@@ -34,17 +34,19 @@ interface AdminPostCommentsProps {
 export default function AdminPostComments({
     title = "Quản lý bình luận bài viết",
 }: AdminPostCommentsProps) {
-    const { data, actions, ui } = useListPage({
-        endpoint: adminEndpoints.postComments.list,
+    const {
+        data, actions, ui, toast,
+        deleteModal, handleDeleteConfirm,
+    } = useCrudList({
+        endpoint: endpoints.list,
+        deleteSuccessMessage: "Đã xóa bình luận thành công",
     });
-    
+
     const { items, loading, pagination, filters, hasData } = data;
     const { getSerialNumber } = ui;
-    const { showSuccess, showError } = useToastContext();
 
     const [togglingId, setTogglingId] = useState<string | number | null>(null);
-    const viewModal = useModal<PostComment>();
-    const deleteModal = useModal<{ id: string | number; name?: string; deleteApi: string }>();
+    const [viewComment, setViewComment] = useState<PostComment | null>(null);
 
     const handleToggleStatus = async (comment: PostComment) => {
         const newStatus = comment.status === "visible" ? "hidden" : "visible";
@@ -53,24 +55,12 @@ export default function AdminPostComments({
             await api.put(adminEndpoints.postComments.updateStatus(comment.id), {
                 status: newStatus,
             });
-            showSuccess(`Đã ${newStatus === "visible" ? "hiện" : "ẩn"} bình luận`);
+            toast.success(`Đã ${newStatus === "visible" ? "hiện" : "ẩn"} bình luận`);
             actions.refresh();
         } catch (error) {
-            showError("Không thể cập nhật trạng thái bình luận");
+            toast.error("Không thể cập nhật trạng thái bình luận");
         } finally {
             setTogglingId(null);
-        }
-    };
-
-    const handleDeleteConfirm = async () => {
-        if (!deleteModal.data?.deleteApi) return;
-        try {
-            await api.delete(deleteModal.data.deleteApi);
-            showSuccess("Đã xóa bình luận thành công");
-            deleteModal.close();
-            actions.refresh();
-        } catch (error: any) {
-            showError(error.response?.data?.message || "Có lỗi xảy ra khi xóa");
         }
     };
 
@@ -80,7 +70,7 @@ export default function AdminPostComments({
         return (
             <Fragment key={comment.id}>
                 <tr className={`
-                    ${comment.status === "hidden" ? "bg-rose-50/50" : ""} 
+                    ${comment.status === "hidden" ? "bg-rose-50/50" : ""}
                     ${isReply ? "bg-gray-50/10" : "bg-white"}
                     hover:bg-gray-50/80 transition-colors
                 `}>
@@ -157,13 +147,13 @@ export default function AdminPostComments({
                             showDelete={true}
                             onDelete={() => deleteModal.open({
                                 id: comment.id,
-                                name: comment.user?.name || comment.guest_name || "Khách",
+                                displayName: comment.user?.name || comment.guest_name || "Khách",
                                 deleteApi: adminEndpoints.postComments.delete(comment.id)
                             })}
                             additionalActions={[
                                 {
                                     label: "Xem chi tiết",
-                                    action: () => viewModal.open(comment),
+                                    action: () => setViewComment(comment),
                                     icon: "eye",
                                 },
                                 {
@@ -240,58 +230,58 @@ export default function AdminPostComments({
 
             {/* View Detail Modal */}
             <Modal
-                show={viewModal.isOpen}
+                show={!!viewComment}
                 title="Chi tiết bình luận"
-                onClose={viewModal.close}
+                onClose={() => setViewComment(null)}
                 footer={
                     <div className="flex justify-end gap-3 mt-2">
                         <button
-                            onClick={viewModal.close}
+                            onClick={() => setViewComment(null)}
                             className="px-6 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-bold active:scale-95 shadow-sm text-sm"
                         >
                             Đóng
                         </button>
-                        {viewModal.data && (
+                        {viewComment && (
                             <button
                                 onClick={() => {
-                                    handleToggleStatus(viewModal.data!);
-                                    viewModal.close();
+                                    handleToggleStatus(viewComment);
+                                    setViewComment(null);
                                 }}
-                                className={`px-6 py-2.5 text-white rounded-xl transition-all font-bold active:scale-95 shadow-lg text-sm ${viewModal.data.status === 'visible' 
-                                    ? 'bg-amber-500 hover:bg-amber-600 shadow-amber-500/20' 
+                                className={`px-6 py-2.5 text-white rounded-xl transition-all font-bold active:scale-95 shadow-lg text-sm ${viewComment.status === 'visible'
+                                    ? 'bg-amber-500 hover:bg-amber-600 shadow-amber-500/20'
                                     : 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20'}`}
                             >
-                                {viewModal.data.status === 'visible' ? 'Ẩn bình luận' : 'Hiện bình luận'}
+                                {viewComment.status === 'visible' ? 'Ẩn bình luận' : 'Hiện bình luận'}
                             </button>
                         )}
                     </div>
                 }
             >
-                {viewModal.data && (
+                {viewComment && (
                     <div className="space-y-6">
                         <div className="flex items-center gap-4 pb-5 border-b border-gray-100">
                             <div className="w-14 h-14 rounded-2xl bg-blue-50/50 flex items-center justify-center overflow-hidden border border-blue-100 shadow-sm">
-                                {viewModal.data.user?.image ? (
-                                    <Image src={viewModal.data.user.image} alt={viewModal.data.user.name || "User"} className="w-full h-full object-cover" width={56} height={56} />
+                                {viewComment.user?.image ? (
+                                    <Image src={viewComment.user.image} alt={viewComment.user.name || "User"} className="w-full h-full object-cover" width={56} height={56} />
                                 ) : (
                                     <User className="text-blue-500 w-8 h-8" />
                                 )}
                             </div>
                             <div className="flex flex-col">
                                 <span className="text-xl font-black text-gray-900 leading-tight">
-                                    {viewModal.data.user?.name || viewModal.data.guest_name || "Khách"}
+                                    {viewComment.user?.name || viewComment.guest_name || "Khách"}
                                 </span>
                                 <span className="text-sm text-gray-500 font-medium">
-                                    {viewModal.data.user?.email || viewModal.data.guest_email || "Email chưa cập nhật"}
+                                    {viewComment.user?.email || viewComment.guest_email || "Email chưa cập nhật"}
                                 </span>
                             </div>
                             <div className="ml-auto flex flex-col items-end">
-                                <span className={`px-2.5 py-1 text-[10px] font-black uppercase rounded-lg tracking-widest border transition-colors ${viewModal.data.status === 'visible' 
-                                    ? 'bg-emerald-100 text-emerald-800 border-emerald-200' 
+                                <span className={`px-2.5 py-1 text-[10px] font-black uppercase rounded-lg tracking-widest border transition-colors ${viewComment.status === 'visible'
+                                    ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
                                     : 'bg-rose-100 text-rose-800 border-rose-200'}`}>
-                                    {viewModal.data.status === 'visible' ? 'Công khai' : 'Tạm ẩn'}
+                                    {viewComment.status === 'visible' ? 'Công khai' : 'Tạm ẩn'}
                                 </span>
-                                <span className="text-[10px] text-gray-400 font-bold mt-2 uppercase tracking-tight">{formatDate(viewModal.data.created_at)}</span>
+                                <span className="text-[10px] text-gray-400 font-bold mt-2 uppercase tracking-tight">{formatDate(viewComment.created_at)}</span>
                             </div>
                         </div>
 
@@ -302,24 +292,24 @@ export default function AdminPostComments({
                              </div>
                              <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100 italic text-gray-800 leading-relaxed min-h-[120px] relative">
                                 <span className="absolute top-2 left-2 text-4xl text-gray-200 font-serif leading-none">&ldquo;</span>
-                                <div className="relative z-10 px-4">{viewModal.data.content}</div>
+                                <div className="relative z-10 px-4">{viewComment.content}</div>
                                 <span className="absolute bottom-2 right-2 text-4xl text-gray-200 font-serif leading-none">&rdquo;</span>
                              </div>
                         </div>
 
-                        {viewModal.data.post && (
+                        {viewComment.post && (
                             <div className="bg-gradient-to-br from-indigo-50 to-blue-50 p-5 rounded-2xl border border-blue-100/50">
                                 <div className="flex items-center gap-2 mb-2">
                                     <FileText className="w-4 h-4 text-blue-500" />
                                     <span className="text-[10px] font-black uppercase text-blue-500 tracking-widest">Bài viết liên quan</span>
                                 </div>
                                 <a
-                                    href={`/posts/${viewModal.data.post.slug}`}
+                                    href={`/posts/${viewComment.post.slug}`}
                                     target="_blank"
                                     rel="noreferrer"
                                     className="text-indigo-800 font-black hover:underline text-lg block"
                                 >
-                                    {viewModal.data.post.name}
+                                    {viewComment.post.name}
                                 </a>
                             </div>
                         )}
@@ -331,7 +321,7 @@ export default function AdminPostComments({
                 <ConfirmModal
                     show={deleteModal.isOpen}
                     title="Xác nhận xóa"
-                    message={`Bình luận này sẽ bị xóa vĩnh viễn khỏi hệ thống. Bạn có chắc chắn muốn xóa bình luận của "${deleteModal.data.name}"?`}
+                    message={`Bình luận này sẽ bị xóa vĩnh viễn khỏi hệ thống. Bạn có chắc chắn muốn xóa bình luận của "${deleteModal.data.displayName}"?`}
                     onClose={deleteModal.close}
                     onConfirm={handleDeleteConfirm}
                     confirmText="Xác nhận xóa"
@@ -341,4 +331,3 @@ export default function AdminPostComments({
         </div>
     );
 }
-

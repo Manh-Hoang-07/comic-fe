@@ -1,7 +1,7 @@
 // CRUD
 export * from "./crud/useListPage";
-export * from "./crud/useAdminCrud";  // Chỉ dùng cho admin list pages (list + modals + delete)
-export * from "./crud/useFormModal";  // Dùng cho BẤT KỲ form modal nào (create/edit) - không chỉ admin
+export * from "./crud/useCrudList";
+export * from "./crud/useFormModal";
 export * from "./crud/useModals";
 export * from "./crud/useUrlApiSync";
 export * from "./crud/useUrlListSync";

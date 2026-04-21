@@ -3,28 +3,11 @@
 import { useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import Modal from "@/components/UI/Feedback/Modal";
 import FormField from "@/components/UI/Forms/FormField";
 import SingleSelectEnhanced from "@/components/UI/Forms/SingleSelectEnhanced";
 import { adminEndpoints } from "@/lib/api/endpoints";
-
-const provinceSchema = z.object({
-  code: z
-    .string()
-    .min(1, "Mã tỉnh/thành là bắt buộc")
-    .max(20, "Mã không được vượt quá 20 ký tự"),
-  name: z
-    .string()
-    .min(1, "Tên tỉnh/thành là bắt buộc")
-    .max(191, "Tên không được vượt quá 191 ký tự"),
-  type: z.string().optional().nullable(),
-  phone_code: z.string().optional().nullable(),
-  country_id: z.coerce.number().min(1, "Quốc gia là bắt buộc"),
-  status: z.enum(["active", "inactive"]).default("active"),
-});
-
-export type ProvinceFormValues = z.infer<typeof provinceSchema>;
+import { provinceSchema, type ProvinceFormValues } from "./provinceSchema";
 
 export interface AdminProvinceFormEntity {
   id?: number;

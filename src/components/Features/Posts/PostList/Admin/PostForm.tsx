@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import { postSchema, type PostFormValues } from "./postSchema";
 import Modal from "@/components/UI/Feedback/Modal";
 import FormField from "@/components/UI/Forms/FormField";
 import ImageUploader from "@/components/UI/Forms/ImageUploader";
@@ -17,33 +17,6 @@ import SearchableSelect from "@/components/UI/Forms/SearchableSelect";
 import MultipleSelect from "@/components/UI/Forms/MultipleSelect";
 import { adminEndpoints } from "@/lib/api/endpoints";
 import api from "@/lib/api/client";
-
-// 1. Định nghĩa Post Schema (Declarative)
-const postSchema = z.object({
-  name: z.string().min(1, "Tiêu đề là bắt buộc").max(255, "Tiêu đề không được vượt quá 255 ký tự"),
-  excerpt: z.string().max(500, "Tóm tắt tối đa 500 ký tự").optional().nullable().or(z.literal("")),
-  content: z.string().min(1, "Nội dung là bắt buộc"),
-  cover_image: z.string().min(1, "Ảnh bìa là bắt buộc"),
-  image: z.string().optional().nullable().or(z.literal("")),
-  post_type: z.string().default("text"),
-  video_url: z.string().url("Video URL không hợp lệ").or(z.literal("")).optional().nullable(),
-  audio_url: z.string().url("Audio URL không hợp lệ").or(z.literal("")).optional().nullable(),
-  status: z.string().min(1, "Trạng thái là bắt buộc").default("draft"),
-  published_at: z.string().optional().nullable().or(z.literal("")),
-  primary_postcategory_id: z.coerce.number({ invalid_type_error: "Vui lòng chọn danh mục chính" }).positive("Vui lòng chọn danh mục chính"),
-  category_ids: z.array(z.number()).default([]),
-  tag_ids: z.array(z.number()).default([]),
-  is_featured: z.boolean().default(false),
-  is_pinned: z.boolean().default(false),
-  meta_title: z.string().max(255, "Meta Title quá dài").optional().nullable().or(z.literal("")),
-  meta_description: z.string().max(500, "Meta Description quá dài").optional().nullable().or(z.literal("")),
-  canonical_url: z.string().url("URL không hợp lệ").or(z.literal("")).optional().nullable(),
-  og_title: z.string().max(255, "OG Title quá dài").optional().nullable().or(z.literal("")),
-  og_description: z.string().max(500, "OG Description quá dài").optional().nullable().or(z.literal("")),
-  og_image: z.string().optional().nullable().or(z.literal("")),
-});
-
-type PostFormValues = z.infer<typeof postSchema>;
 
 interface PostFormProps {
   show: boolean;

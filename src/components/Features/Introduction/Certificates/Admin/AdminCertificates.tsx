@@ -1,8 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useListPage } from "@/hooks";
-import useModal from "@/hooks/ui-ux/useModal";
+import { useCrudList } from "@/hooks";
 import { adminEndpoints } from "@/lib/api/endpoints";
 import SkeletonLoader from "@/components/UI/Feedback/SkeletonLoader";
 import ConfirmModal from "@/components/UI/Feedback/ConfirmModal";
@@ -11,8 +10,9 @@ import Pagination from "@/components/UI/DataDisplay/Pagination";
 import CertificatesFilter from "./CertificatesFilter";
 import CreateCertificate from "./CreateCertificate";
 import EditCertificate from "./EditCertificate";
-import { useToastContext } from "@/contexts/ToastContext";
-import api from "@/lib/api/client";
+import { BASIC_STATUS_BADGES, getStatusBadge } from "@/config/constants/status";
+
+const endpoints = adminEndpoints.certificates;
 
 const getCertificateTypeLabel = (value: string): string => {
   const labels: Record<string, string> = {
@@ -54,36 +54,24 @@ export default function AdminCertificates({
   title = "Quản lý chứng chỉ",
   createButtonText = "Thêm chứng chỉ mới",
 }: AdminCertificatesProps) {
-  const { data, actions, ui } = useListPage({
-    endpoint: adminEndpoints.certificates.list,
+  const {
+    data, actions, ui,
+    createModal, editModal, deleteModal,
+    handleDeleteConfirm, openCreate, openEdit, openDelete,
+  } = useCrudList({
+    endpoint: endpoints.list,
+    deleteSuccessMessage: "Đã xóa chứng chỉ thành công",
   });
-  
+
   const { items, loading, pagination, filters, hasData } = data;
   const { getSerialNumber } = ui;
-  const { showSuccess, showError } = useToastContext();
-
-  const createModal = useModal<{ createApi: string }>();
-  const editModal = useModal<{ fetchApi?: string; initialData?: any; updateApi: string }>();
-  const deleteModal = useModal<{ id: number | string; name?: string; deleteApi: string }>();
-
-  const handleDeleteConfirm = async () => {
-    if (!deleteModal.data?.deleteApi) return;
-    try {
-      await api.delete(deleteModal.data.deleteApi);
-      showSuccess("Đã xóa chứng chỉ thành công");
-      deleteModal.close();
-      actions.refresh();
-    } catch (error: any) {
-      showError(error.response?.data?.message || "Có lỗi xảy ra khi xóa");
-    }
-  };
 
   return (
     <div className="admin-certificates">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">{title}</h1>
         <button
-          onClick={() => createModal.open({ createApi: adminEndpoints.certificates.create })}
+          onClick={() => openCreate(endpoints.create)}
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none"
         >
           {createButtonText}
@@ -133,81 +121,66 @@ export default function AdminCertificates({
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {items.length > 0 ? items.map((item: Certificate, index) => (
-                  <tr key={item.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {getSerialNumber(index)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {item.name}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {getCertificateTypeLabel(item.type || "")}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">
-                      {item.issued_by || "-"}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {item.certificate_number || "-"}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-center">
-                      {item.image ? (
-                        <div className="flex justify-center">
-                          <Image
-                            src={item.image}
-                            alt={item.name}
-                            width={100}
-                            height={60}
-                            className="h-14 w-auto object-contain rounded border border-gray-100"
-                          />
+                {items.length > 0 ? items.map((item: Certificate, index) => {
+                  const badge = getStatusBadge(item.status || "", BASIC_STATUS_BADGES);
+                  return (
+                    <tr key={item.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {getSerialNumber(index)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {item.name}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {getCertificateTypeLabel(item.type || "")}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-500">
+                        {item.issued_by || "-"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {item.certificate_number || "-"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        {item.image ? (
+                          <div className="flex justify-center">
+                            <Image
+                              src={item.image}
+                              alt={item.name}
+                              width={100}
+                              height={60}
+                              className="h-14 w-auto object-contain rounded border border-gray-100"
+                            />
+                          </div>
+                        ) : (
+                          <span className="text-gray-400 font-italic">Không có ảnh</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <div className="font-medium">{formatDate(item.issued_date)}</div>
+                        <div className="text-[10px] text-gray-400">
+                          Hết hạn: {formatDate(item.expiry_date)}
                         </div>
-                      ) : (
-                        <span className="text-gray-400 font-italic">Không có ảnh</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <div className="font-medium">{formatDate(item.issued_date)}</div>
-                      <div className="text-[10px] text-gray-400">
-                        Hết hạn: {formatDate(item.expiry_date)}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-center">
-                      <div className="flex flex-col gap-1 items-center">
-                        <span
-                          className={`px-2 py-1 text-[10px] font-bold uppercase rounded-full ${item.status === "active"
-                            ? "bg-green-100 text-green-800"
-                            : "bg-red-100 text-red-800"
-                            }`}
-                        >
-                          {item.status === "active" ? "Hoạt động" : "Không hoạt động"}
-                        </span>
-                        <span className="text-[10px] text-gray-400">Thứ tự: {item.sort_order ?? 0}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-right">
-                      <Actions
-                        item={item}
-                        onEdit={() => editModal.open({
-                          fetchApi: adminEndpoints.certificates.show(item.id),
-                          updateApi: adminEndpoints.certificates.update(item.id)
-                        })}
-                        showView={false}
-                        showDelete={false}
-                        additionalActions={[
-                          {
-                            label: "Xóa",
-                            action: () => deleteModal.open({
-                              id: item.id,
-                              name: item.name,
-                              deleteApi: adminEndpoints.certificates.delete(item.id)
-                            }),
-                            icon: "trash",
-                          },
-                        ]}
-                      />
-                    </td>
-                  </tr>
-                )) : (
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        <div className="flex flex-col gap-1 items-center">
+                          <span
+                            className={`px-2 py-1 text-[10px] font-bold uppercase rounded-full ${badge.className}`}
+                          >
+                            {badge.label}
+                          </span>
+                          <span className="text-[10px] text-gray-400">Thứ tự: {item.sort_order ?? 0}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-right">
+                        <Actions
+                          item={item}
+                          onEdit={() => openEdit(item, endpoints)}
+                          onDelete={() => openDelete(item, endpoints)}
+                        />
+                      </td>
+                    </tr>
+                  );
+                }) : (
                   <tr>
                     <td colSpan={9} className="px-6 py-10 text-center text-gray-500 italic">
                       Không tìm thấy chứng chỉ nào
@@ -257,7 +230,7 @@ export default function AdminCertificates({
         <ConfirmModal
           show={deleteModal.isOpen}
           title="Xác nhận xóa"
-          message={`Bạn có chắc chắn muốn xóa chứng chỉ "${deleteModal.data.name}"?`}
+          message={`Bạn có chắc chắn muốn xóa chứng chỉ "${deleteModal.data.displayName}"?`}
           onClose={deleteModal.close}
           onConfirm={handleDeleteConfirm}
         />
@@ -265,6 +238,3 @@ export default function AdminCertificates({
     </div>
   );
 }
-
-
-

@@ -1,7 +1,6 @@
 "use client";
 
-import { useListPage } from "@/hooks";
-import useModal from "@/hooks/ui-ux/useModal";
+import { useCrudList } from "@/hooks";
 import Image from "next/image";
 import { adminEndpoints } from "@/lib/api/endpoints";
 import SkeletonLoader from "@/components/UI/Feedback/SkeletonLoader";
@@ -11,8 +10,9 @@ import Pagination from "@/components/UI/DataDisplay/Pagination";
 import GalleryFilter from "./GalleryFilter";
 import CreateGallery from "./CreateGallery";
 import EditGallery from "./EditGallery";
-import { useToastContext } from "@/contexts/ToastContext";
-import api from "@/lib/api/client";
+import { BASIC_STATUS_BADGES, getStatusBadge } from "@/config/constants/status";
+
+const endpoints = adminEndpoints.gallery;
 
 const formatDate = (dateStr?: string): string => {
   if (!dateStr) return "-";
@@ -42,36 +42,24 @@ export default function AdminGallery({
   title = "Quản lý thư viện ảnh",
   createButtonText = "Thêm ảnh mới",
 }: AdminGalleryProps) {
-  const { data, actions, ui } = useListPage({
-    endpoint: adminEndpoints.gallery.list,
+  const {
+    data, actions, ui,
+    createModal, editModal, deleteModal,
+    handleDeleteConfirm, openCreate, openEdit, openDelete,
+  } = useCrudList({
+    endpoint: endpoints.list,
+    deleteSuccessMessage: "Đã xóa thư viện ảnh thành công",
   });
-  
+
   const { items, loading, pagination, filters, hasData } = data;
   const { getSerialNumber } = ui;
-  const { showSuccess, showError } = useToastContext();
-
-  const createModal = useModal<{ createApi: string }>();
-  const editModal = useModal<{ fetchApi?: string; initialData?: any; updateApi: string }>();
-  const deleteModal = useModal<{ id: number | string; title?: string; deleteApi: string }>();
-
-  const handleDeleteConfirm = async () => {
-    if (!deleteModal.data?.deleteApi) return;
-    try {
-      await api.delete(deleteModal.data.deleteApi);
-      showSuccess("Đã xóa thư viện ảnh thành công");
-      deleteModal.close();
-      actions.refresh();
-    } catch (error: any) {
-      showError(error.response?.data?.message || "Có lỗi xảy ra khi xóa");
-    }
-  };
 
   return (
     <div className="admin-gallery">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">{title}</h1>
         <button
-          onClick={() => createModal.open({ createApi: adminEndpoints.gallery.create })}
+          onClick={() => openCreate(endpoints.create)}
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none transition-colors"
         >
           {createButtonText}
@@ -121,84 +109,69 @@ export default function AdminGallery({
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {items.length > 0 ? items.map((item: Gallery, index) => (
-                  <tr key={item.id} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {getSerialNumber(index)}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm font-bold text-gray-900 line-clamp-1">
-                        {item.title || item.name}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.slug || "-"}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-center">
-                      {item.cover_image ? (
-                        <div className="flex justify-center">
-                          <Image
-                            src={item.cover_image}
-                            alt={item.title || item.name || ""}
-                            width={100}
-                            height={60}
-                            className="h-14 w-24 object-cover rounded shadow-sm border border-gray-100"
-                          />
+                {items.length > 0 ? items.map((item: Gallery, index) => {
+                  const badge = getStatusBadge(item.status || "", BASIC_STATUS_BADGES);
+                  return (
+                    <tr key={item.id} className="hover:bg-gray-50/50 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {getSerialNumber(index)}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-sm font-bold text-gray-900 line-clamp-1">
+                          {item.title || item.name}
                         </div>
-                      ) : (
-                        <span className="text-gray-400 italic">No image</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-center">
-                      <span className="px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 text-xs font-bold border border-indigo-100">
-                        {item.images?.length || 0}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-center">
-                      <span
-                        className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold uppercase ${item.status === "active"
-                          ? "bg-emerald-100 text-emerald-700 border border-emerald-200"
-                          : "bg-rose-100 text-rose-700 border border-rose-200"
-                          }`}
-                      >
-                        {item.status === "active" ? "Hoạt động" : "Ẩn"}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-center">
-                      <div className="flex flex-col gap-1 items-center">
-                        {item.featured ? (
-                          <span className="px-2 py-0.5 text-[10px] font-black uppercase rounded bg-amber-100 text-amber-700 border border-amber-200">
-                            Nổi bật
-                          </span>
-                        ) : null}
-                        <span className="text-[10px] text-gray-400 font-medium">Order: {item.sort_order ?? 0}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {formatDate(item.created_at)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-right">
-                      <Actions
-                        item={item}
-                        onEdit={() => editModal.open({
-                          fetchApi: adminEndpoints.gallery.show(item.id),
-                          updateApi: adminEndpoints.gallery.update(item.id)
-                        })}
-                        showView={false}
-                        showDelete={false}
-                        additionalActions={[
-                          {
-                            label: "Xóa",
-                            action: () => deleteModal.open({
-                              id: item.id,
-                              title: item.title || item.name,
-                              deleteApi: adminEndpoints.gallery.delete(item.id)
-                            }),
-                            icon: "trash",
-                          },
-                        ]}
-                      />
-                    </td>
-                  </tr>
-                )) : (
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.slug || "-"}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        {item.cover_image ? (
+                          <div className="flex justify-center">
+                            <Image
+                              src={item.cover_image}
+                              alt={item.title || item.name || ""}
+                              width={100}
+                              height={60}
+                              className="h-14 w-24 object-cover rounded shadow-sm border border-gray-100"
+                            />
+                          </div>
+                        ) : (
+                          <span className="text-gray-400 italic">No image</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        <span className="px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 text-xs font-bold border border-indigo-100">
+                          {item.images?.length || 0}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        <span
+                          className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold uppercase border ${badge.className}`}
+                        >
+                          {badge.label}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        <div className="flex flex-col gap-1 items-center">
+                          {item.featured ? (
+                            <span className="px-2 py-0.5 text-[10px] font-black uppercase rounded bg-amber-100 text-amber-700 border border-amber-200">
+                              Nổi bật
+                            </span>
+                          ) : null}
+                          <span className="text-[10px] text-gray-400 font-medium">Order: {item.sort_order ?? 0}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {formatDate(item.created_at)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-right">
+                        <Actions
+                          item={item}
+                          onEdit={() => openEdit(item, endpoints)}
+                          onDelete={() => openDelete(item, endpoints, "title")}
+                        />
+                      </td>
+                    </tr>
+                  );
+                }) : (
                   <tr>
                     <td colSpan={9} className="px-6 py-12 text-center text-gray-500 italic">
                       <div className="flex flex-col items-center justify-center opacity-40">
@@ -253,7 +226,7 @@ export default function AdminGallery({
         <ConfirmModal
           show={deleteModal.isOpen}
           title="Xác nhận xóa"
-          message={`Bạn có chắc chắn muốn xóa bộ sưu tập "${deleteModal.data.title}"? Thao tác này không thể hoàn tác.`}
+          message={`Bạn có chắc chắn muốn xóa bộ sưu tập "${deleteModal.data.displayName}"? Thao tác này không thể hoàn tác.`}
           onClose={deleteModal.close}
           onConfirm={handleDeleteConfirm}
         />
@@ -261,6 +234,3 @@ export default function AdminGallery({
     </div>
   );
 }
-
-
-

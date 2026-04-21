@@ -3,7 +3,7 @@
 import { useEffect, useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import { postCategorySchema, type PostCategoryFormValues } from "./postCategorySchema";
 import Modal from "@/components/UI/Feedback/Modal";
 import FormField from "@/components/UI/Forms/FormField";
 import ImageUploader from "@/components/UI/Forms/ImageUploader";
@@ -14,22 +14,6 @@ const CKEditor = dynamic(() => import("@/components/UI/Forms/CKEditor"), {
 });
 import { userEndpoints } from "@/lib/api/endpoints";
 import SingleSelectEnhanced from "@/components/UI/Forms/SingleSelectEnhanced";
-
-// 1. Define Category Schema
-const categorySchema = z.object({
-  name: z.string().min(1, "Tên danh mục là bắt buộc").max(255, "Tên danh mục không được vượt quá 255 ký tự"),
-  description: z.string().optional().nullable(),
-  image: z.string().optional().nullable(),
-  og_image: z.string().optional().nullable(),
-  status: z.string().min(1, "Trạng thái là bắt buộc").default("active"),
-  sort_order: z.coerce.number().int().min(0, "Thứ tự không được âm").default(0),
-  parent_id: z.coerce.number().optional().nullable(),
-  meta_title: z.string().max(255, "Meta Title tối đa 255 ký tự").optional().nullable(),
-  meta_description: z.string().max(1000, "Meta Description tối đa 1000 ký tự").optional().nullable(),
-  canonical_url: z.string().url("URL không hợp lệ").or(z.literal("")).optional().nullable(),
-});
-
-type CategoryFormValues = z.infer<typeof categorySchema>;
 
 const getBasicStatusArray = () => [
   { value: "active", label: "Hoạt động" },
@@ -76,8 +60,8 @@ export default function PostCategoryForm({
     reset,
     setError,
     formState: { errors, isSubmitting },
-  } = useForm<CategoryFormValues>({
-    resolver: zodResolver(categorySchema),
+  } = useForm<PostCategoryFormValues>({
+    resolver: zodResolver(postCategorySchema),
     defaultValues: {
       name: "",
       description: "",

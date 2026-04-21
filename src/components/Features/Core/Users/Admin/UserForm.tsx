@@ -3,35 +3,12 @@
 import { useEffect, useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import Modal from "@/components/UI/Feedback/Modal";
 import FormField from "@/components/UI/Forms/FormField";
 import ImageUploader from "@/components/UI/Forms/ImageUploader";
 import SingleSelectEnhanced from "@/components/UI/Forms/SingleSelectEnhanced";
 import LocationSelector from "@/components/Features/Core/Locations/Shared/LocationSelector";
-
-// 1. Define User Schema
-const userSchema = z.object({
-  username: z.string().min(3, "Tên đăng nhập ít nhất 3 ký tự").max(50, "Tên đăng nhập không được vượt quá 50 ký tự"),
-  email: z.string().email("Email không hợp lệ").min(1, "Email là bắt buộc"),
-  phone: z.string().regex(/^[0-9+]{9,15}$/, "Số điện thoại không hợp lệ").optional().nullable(),
-  password: z.string().optional().nullable().transform(val => val === "" ? undefined : val).refine(val => !val || val.length >= 6, {
-    message: "Mật khẩu phải có ít nhất 6 ký tự"
-  }),
-  name: z.string().min(1, "Họ tên là bắt buộc").max(255, "Họ tên không được vượt quá 255 ký tự"),
-  gender: z.string().optional().nullable(),
-  birthday: z.string().optional().nullable(),
-  country_id: z.number().optional().nullable(),
-  province_id: z.number().optional().nullable(),
-  ward_id: z.number().optional().nullable(),
-  address: z.string().max(255, "Địa chỉ không được vượt quá 255 ký tự").optional().nullable(),
-  image: z.string().optional().nullable(),
-  about: z.string().max(500, "Giới thiệu không được vượt quá 500 ký tự").optional().nullable(),
-  status: z.string().min(1, "Trạng thái là bắt buộc").default("active"),
-  remove_image: z.boolean().default(false),
-});
-
-type UserFormValues = z.infer<typeof userSchema>;
+import { userSchema, type UserFormValues } from "./userSchema";
 
 interface User {
   id?: number;

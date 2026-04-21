@@ -3,26 +3,10 @@
 import { useEffect, useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import Modal from "@/components/UI/Feedback/Modal";
 import FormField from "@/components/UI/Forms/FormField";
 import ImageUploader from "@/components/UI/Forms/ImageUploader";
-
-// 1. Define Certificate Schema
-const certificateSchema = z.object({
-  name: z.string().min(1, "Tên chứng chỉ là bắt buộc").max(255, "Tên chứng chỉ không được vượt quá 255 ký tự"),
-  image: z.string().min(1, "Ảnh chứng chỉ là bắt buộc"),
-  issued_by: z.string().max(255, "Cơ quan cấp tối đa 255 ký tự").optional().nullable(),
-  issued_date: z.string().optional().nullable(),
-  expiry_date: z.string().optional().nullable(),
-  certificate_number: z.string().max(100, "Số chứng chỉ tối đa 100 ký tự").optional().nullable(),
-  description: z.string().max(1000, "Mô tả tối đa 1000 ký tự").optional().nullable(),
-  type: z.string().min(1, "Loại chứng chỉ là bắt buộc").default("license"),
-  status: z.string().min(1, "Trạng thái là bắt buộc").default("active"),
-  sort_order: z.coerce.number().int().min(0, "Thứ tự không được âm").default(0),
-});
-
-type CertificateFormValues = z.infer<typeof certificateSchema>;
+import { certificateSchema, type CertificateFormValues } from "./certificateSchema";
 
 const getCertificateTypeArray = () => [
   { value: "iso", label: "ISO" },

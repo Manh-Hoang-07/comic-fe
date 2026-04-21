@@ -3,7 +3,7 @@
 import { useEffect, useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { tagSchema, type TagFormValues } from "@/config/validations/tag";
+import { tagSchema, type TagFormValues } from "./tagSchema";
 import Modal from "@/components/UI/Feedback/Modal";
 import FormField from "@/components/UI/Forms/FormField";
 import dynamic from "next/dynamic";

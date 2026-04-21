@@ -3,8 +3,7 @@
 import { useState, useEffect } from "react";
 import api from "@/lib/api/client";
 import { adminEndpoints } from "@/lib/api/endpoints";
-import { useListPage } from "@/hooks";
-import useModal from "@/hooks/ui-ux/useModal";
+import { useCrudList } from "@/hooks";
 import SkeletonLoader from "@/components/UI/Feedback/SkeletonLoader";
 import ConfirmModal from "@/components/UI/Feedback/ConfirmModal";
 import Actions from "@/components/UI/DataDisplay/Actions";
@@ -12,7 +11,8 @@ import Pagination from "@/components/UI/DataDisplay/Pagination";
 import PostsFilter from "./PostsFilter";
 import CreatePost from "./CreatePost";
 import EditPost from "./EditPost";
-import { useToastContext } from "@/contexts/ToastContext";
+
+const endpoints = adminEndpoints.posts;
 
 const formatDate = (dateString?: string): string => {
   if (!dateString) return "—";
@@ -39,17 +39,17 @@ export default function AdminPosts({
   title = "Quản lý bài viết",
   createButtonText = "Thêm bài viết mới",
 }: AdminPostsProps) {
-  const { data, actions, ui } = useListPage({
-    endpoint: adminEndpoints.posts.list,
+  const {
+    data, actions, ui, toast,
+    createModal, editModal, deleteModal,
+    handleDeleteConfirm, openCreate, openEdit, openDelete,
+  } = useCrudList({
+    endpoint: endpoints.list,
+    deleteSuccessMessage: "Đã xóa bài viết thành công",
   });
-  
+
   const { items, loading, pagination, filters, hasData } = data;
   const { getSerialNumber } = ui;
-  const { showSuccess, showError } = useToastContext();
-
-  const createModal = useModal<{ createApi: string }>();
-  const editModal = useModal<{ fetchApi?: string; initialData?: any; updateApi: string }>();
-  const deleteModal = useModal<{ id: number | string; name?: string; deleteApi: string }>();
 
   const [statusEnums, setStatusEnums] = useState<any[]>([]);
   const [postTypeEnums, setPostTypeEnums] = useState<any[]>([]);
@@ -82,25 +82,13 @@ export default function AdminPosts({
     try {
       const response = await api.put(`${adminEndpoints.posts.delete(post.id)}/restore`);
       if (response.data?.success) {
-        showSuccess("Bài viết đã được khôi phục thành công");
+        toast.success("Bài viết đã được khôi phục thành công");
         actions.refresh();
       } else {
-        showError("Không thể khôi phục bài viết");
+        toast.error("Không thể khôi phục bài viết");
       }
     } catch (error) {
-      showError("Không thể khôi phục bài viết");
-    }
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (!deleteModal.data?.deleteApi) return;
-    try {
-      await api.delete(deleteModal.data.deleteApi);
-      showSuccess("Đã xóa bài viết thành công");
-      deleteModal.close();
-      actions.refresh();
-    } catch (error: any) {
-      showError(error.response?.data?.message || "Có lỗi xảy ra khi xóa");
+      toast.error("Không thể khôi phục bài viết");
     }
   };
 
@@ -119,7 +107,7 @@ export default function AdminPosts({
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">{title}</h1>
         <button
-          onClick={() => createModal.open({ createApi: adminEndpoints.posts.create })}
+          onClick={() => openCreate(endpoints.create)}
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium transition-colors"
         >
           {createButtonText}
@@ -171,10 +159,7 @@ export default function AdminPosts({
                         item={post}
                         showView={false}
                         showDelete={false}
-                        onEdit={() => editModal.open({
-                          fetchApi: adminEndpoints.posts.show(post.id),
-                          updateApi: adminEndpoints.posts.update(post.id)
-                        })}
+                        onEdit={() => openEdit(post, endpoints)}
                         additionalActions={[
                           {
                             label: "Xem bình luận",
@@ -183,11 +168,7 @@ export default function AdminPosts({
                           },
                           {
                             label: post.deleted_at ? "Khôi phục" : "Xóa",
-                            action: () => (post.deleted_at ? handleRestore(post) : deleteModal.open({
-                               id: post.id,
-                               name: post.name,
-                               deleteApi: adminEndpoints.posts.delete(post.id)
-                            })),
+                            action: () => (post.deleted_at ? handleRestore(post) : openDelete(post, endpoints)),
                             icon: post.deleted_at ? "refresh" : "trash",
                             className: post.deleted_at ? "text-emerald-600 hover:text-emerald-700" : "text-rose-600 hover:text-rose-700"
                           },
@@ -252,7 +233,7 @@ export default function AdminPosts({
         <ConfirmModal
           show={deleteModal.isOpen}
           title="Xác nhận xóa"
-          message={`Bạn có chắc chắn muốn xóa bài viết "${deleteModal.data.name}"? Dữ liệu có thể khôi phục sau này.`}
+          message={`Bạn có chắc chắn muốn xóa bài viết "${deleteModal.data.displayName}"? Dữ liệu có thể khôi phục sau này.`}
           onClose={deleteModal.close}
           onConfirm={handleDeleteConfirm}
           confirmText="Xác nhận xóa"
@@ -262,8 +243,3 @@ export default function AdminPosts({
     </div>
   );
 }
-
-
-
-
-

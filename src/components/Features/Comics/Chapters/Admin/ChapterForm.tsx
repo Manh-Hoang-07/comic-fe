@@ -3,23 +3,12 @@
 import { useEffect, useState, useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import { chapterSchema, type ChapterFormValues } from "./chapterSchema";
 import { AdminChapter, AdminComic } from "@/types/comic";
 import FormField from "@/components/UI/Forms/FormField";
 import SingleSelectEnhanced from "@/components/UI/Forms/SingleSelectEnhanced";
 import { useToastContext } from "@/contexts/ToastContext";
 import { adminComicService } from "@/lib/api/admin/comic";
-
-const chapterSchema = z.object({
-    chapter_index: z.coerce.number().int().min(1, "Số thứ tự phải lớn hơn 0"),
-    title: z.string().min(1, "Tiêu đề không được để trống").max(255, "Tiêu đề tối đa 255 ký tự"),
-    chapter_label: z.string().max(100, "Nhãn tối đa 100 ký tự").optional().nullable().or(z.literal("")),
-    status: z.enum(["published", "draft"]).default("published"),
-    comic_id: z.coerce.number({ required_error: "Vui lòng chọn bộ truyện" }).min(1, "Vui lòng chọn bộ truyện"),
-    team_id: z.coerce.number().optional().nullable(),
-});
-
-type ChapterFormValues = z.infer<typeof chapterSchema>;
 
 interface ChapterFormProps {
     chapter?: AdminChapter | null;

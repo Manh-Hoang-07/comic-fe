@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import Modal from "@/components/UI/Feedback/Modal";
 import FormField from "@/components/UI/Forms/FormField";
 import SearchableSelect from "@/components/UI/Forms/SearchableSelect";
@@ -11,17 +10,7 @@ import SingleSelectEnhanced from "@/components/UI/Forms/SingleSelectEnhanced";
 import MultipleSelect from "@/components/UI/Forms/MultipleSelect";
 import { adminEndpoints } from "@/lib/api/endpoints";
 import api from "@/lib/api/client";
-
-// 1. Define Role Schema
-const roleSchema = z.object({
-  code: z.string().min(1, "Mã code là bắt buộc").max(100, "Mã code không được vượt quá 100 ký tự"),
-  name: z.string().min(1, "Tên vai trò là bắt buộc").max(150, "Tên vai trò không được vượt quá 150 ký tự"),
-  parent_id: z.coerce.number().optional().nullable(),
-  status: z.string().min(1, "Trạng thái là bắt buộc").default("active"),
-  context_ids: z.array(z.number()).default([]),
-});
-
-type RoleFormValues = z.infer<typeof roleSchema>;
+import { roleSchema, type RoleFormValues } from "./roleSchema";
 
 interface Role {
   id?: number;

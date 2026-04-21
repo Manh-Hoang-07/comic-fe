@@ -3,7 +3,7 @@
 import { useEffect, useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import { projectSchema, type ProjectFormValues } from "./projectSchema";
 import Modal from "@/components/UI/Feedback/Modal";
 import FormField from "@/components/UI/Forms/FormField";
 import ImageUploader from "@/components/UI/Forms/ImageUploader";
@@ -14,31 +14,6 @@ const CKEditor = dynamic(() => import("@/components/UI/Forms/CKEditor"), {
 });
 import { userEndpoints } from "@/lib/api/endpoints";
 import Image from "next/image";
-
-// 1. Define Project Schema
-const projectSchema = z.object({
-  name: z.string().min(1, "Tên dự án là bắt buộc").max(255, "Tên dự án không được vượt quá 255 ký tự"),
-  slug: z.string().max(255, "Slug không được vượt quá 255 ký tự").optional().nullable(),
-  description: z.string().min(1, "Mô tả chi tiết là bắt buộc"),
-  short_description: z.string().max(500, "Mô tả ngắn tối đa 500 ký tự").optional().nullable(),
-  cover_image: z.string().min(1, "Ảnh bìa là bắt buộc"),
-  location: z.string().max(255, "Địa điểm tối đa 255 ký tự").optional().nullable(),
-  area: z.coerce.number().positive("Diện tích phải là số dương").optional().nullable(),
-  start_date: z.string().optional().nullable(),
-  end_date: z.string().optional().nullable(),
-  status: z.string().min(1, "Trạng thái là bắt buộc").default("planning"),
-  client_name: z.string().max(255, "Tên khách hàng tối đa 255 ký tự").optional().nullable(),
-  budget: z.coerce.number().positive("Ngân sách phải là số dương").optional().nullable(),
-  images: z.array(z.string()).min(1, "Bộ sưu tập ảnh dự án phải có ít nhất 1 ảnh"),
-  featured: z.boolean().default(false),
-  sort_order: z.coerce.number().int().min(0, "Thứ tự không được âm").default(0),
-  meta_title: z.string().max(255, "Meta Title tối đa 255 ký tự").optional().nullable(),
-  meta_description: z.string().max(500, "Meta Description tối đa 500 ký tự").optional().nullable(),
-  canonical_url: z.string().url("URL không hợp lệ").or(z.literal("")).optional().nullable(),
-  og_image: z.string().optional().nullable(),
-});
-
-type ProjectFormValues = z.infer<typeof projectSchema>;
 
 const getProjectStatusArray = () => [
   { value: "planning", label: "Đang lập kế hoạch" },

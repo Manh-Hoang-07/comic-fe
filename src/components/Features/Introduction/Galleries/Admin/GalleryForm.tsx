@@ -3,25 +3,11 @@
 import { useEffect, useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import { gallerySchema, type GalleryFormValues } from "./gallerySchema";
 import Modal from "@/components/UI/Feedback/Modal";
 import FormField from "@/components/UI/Forms/FormField";
 import ImageUploader from "@/components/UI/Forms/ImageUploader";
 import Image from "next/image";
-
-// 1. Define Gallery Schema
-const gallerySchema = z.object({
-  title: z.string().min(1, "Tiêu đề là bắt buộc").max(255, "Tiêu đề tối đa 255 ký tự"),
-  slug: z.string().max(255, "Slug tối đa 255 ký tự").optional().nullable(),
-  description: z.string().max(1000, "Mô tả tối đa 1000 ký tự").optional().nullable(),
-  cover_image: z.string().optional().nullable(),
-  images: z.array(z.string()).min(1, "Vui lòng chọn ít nhất 1 ảnh"),
-  featured: z.boolean().default(false),
-  status: z.string().min(1, "Trạng thái là bắt buộc").default("active"),
-  sort_order: z.coerce.number().int().min(0, "Thứ tự không được âm").default(0),
-});
-
-type GalleryFormValues = z.infer<typeof gallerySchema>;
 
 const getBasicStatusArray = () => [
   { value: "active", label: "Hoạt động" },

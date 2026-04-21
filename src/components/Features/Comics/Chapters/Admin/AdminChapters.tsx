@@ -1,7 +1,6 @@
 "use client";
 
-import { useListPage } from "@/hooks";
-import useModal from "@/hooks/ui-ux/useModal";
+import { useCrudList } from "@/hooks";
 import { adminEndpoints } from "@/lib/api/endpoints";
 import SkeletonLoader from "@/components/UI/Feedback/SkeletonLoader";
 import ConfirmModal from "@/components/UI/Feedback/ConfirmModal";
@@ -18,8 +17,10 @@ import { formatDateTime } from "@/utils/formatters";
 import Link from "next/link";
 import { adminComicService } from "@/lib/api/admin/comic";
 import { useState, useEffect } from "react";
-import { useToastContext } from "@/contexts/ToastContext";
-import api from "@/lib/api/client";
+import useModal from "@/hooks/ui-ux/useModal";
+import { CHAPTER_STATUS } from "@/components/Features/Comics/constants";
+
+const endpoints = adminEndpoints.chapters;
 
 export default function AdminChapters() {
     const searchParams = useSearchParams();
@@ -36,30 +37,19 @@ export default function AdminChapters() {
         }
     }, [comicId]);
 
-    const { data, actions, ui } = useListPage({
-        endpoint: adminEndpoints.chapters.list,
+    const {
+        data, actions, ui,
+        createModal, editModal, deleteModal,
+        handleDeleteConfirm, openCreate, openEdit, openDelete,
+    } = useCrudList({
+        endpoint: endpoints.list,
+        deleteSuccessMessage: "Đã xóa chương thành công",
     });
-    
+
     const { items, loading, pagination, filters, hasData } = data;
     const { getSerialNumber } = ui;
-    const { showSuccess, showError } = useToastContext();
 
-    const createModal = useModal<{ createApi: string }>();
-    const editModal = useModal<{ fetchApi?: string; initialData?: any; updateApi: string }>();
-    const deleteModal = useModal<{ id: number | string; title?: string; chapter_index?: number; deleteApi: string }>();
     const managePagesModal = useModal<{ chapter: AdminChapter }>();
-
-    const handleDeleteConfirm = async () => {
-        if (!deleteModal.data?.deleteApi) return;
-        try {
-            await api.delete(deleteModal.data.deleteApi);
-            showSuccess("Đã xóa chương thành công");
-            deleteModal.close();
-            actions.refresh();
-        } catch (error: any) {
-            showError(error.response?.data?.message || "Có lỗi xảy ra khi xóa");
-        }
-    };
 
     return (
         <div className="admin-chapters">
@@ -86,7 +76,7 @@ export default function AdminChapters() {
                     </p>
                 </div>
                 <button
-                    onClick={() => createModal.open({ createApi: adminEndpoints.chapters.create })}
+                    onClick={() => openCreate(endpoints.create)}
                     className="flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700 focus:outline-none"
                 >
                     <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -170,16 +160,8 @@ export default function AdminChapters() {
                                         <td className="whitespace-nowrap px-6 py-4 text-center text-sm font-medium">
                                             <Actions
                                                 item={chapter}
-                                                onEdit={() => editModal.open({
-                                                    fetchApi: adminEndpoints.chapters.show(chapter.id),
-                                                    updateApi: adminEndpoints.chapters.update(chapter.id)
-                                                })}
-                                                onDelete={() => deleteModal.open({
-                                                    id: chapter.id,
-                                                    title: chapter.title,
-                                                    chapter_index: chapter.chapter_index,
-                                                    deleteApi: adminEndpoints.chapters.delete(chapter.id)
-                                                })}
+                                                onEdit={() => openEdit(chapter, endpoints)}
+                                                onDelete={() => openDelete(chapter, endpoints, "title")}
                                                 additionalActions={[
                                                     {
                                                         label: "Quản lý Trang",
@@ -259,7 +241,7 @@ export default function AdminChapters() {
                 <ConfirmModal
                     show={deleteModal.isOpen}
                     title="Xác nhận xóa chương"
-                    message={`Bạn có chắc chắn muốn xóa chương #${deleteModal.data.chapter_index}: ${deleteModal.data.title}?`}
+                    message={`Bạn có chắc chắn muốn xóa chương "${deleteModal.data.displayName}"?`}
                     onClose={deleteModal.close}
                     onConfirm={handleDeleteConfirm}
                     confirmText="Xác nhận xóa"
@@ -268,6 +250,3 @@ export default function AdminChapters() {
         </div>
     );
 }
-
-
-

@@ -3,27 +3,10 @@
 import { useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import Modal from "@/components/UI/Feedback/Modal";
 import FormField from "@/components/UI/Forms/FormField";
 import SingleSelectEnhanced from "@/components/UI/Forms/SingleSelectEnhanced";
-
-const countrySchema = z.object({
-  code: z
-    .string()
-    .min(1, "Mã quốc gia là bắt buộc")
-    .max(10, "Mã không được vượt quá 10 ký tự"),
-  name: z
-    .string()
-    .min(1, "Tên quốc gia là bắt buộc")
-    .max(191, "Tên không được vượt quá 191 ký tự"),
-  official_name: z.string().optional().nullable(),
-  phone_code: z.string().optional().nullable(),
-  currency_code: z.string().optional().nullable(),
-  status: z.enum(["active", "inactive"]).default("active"),
-});
-
-export type CountryFormValues = z.infer<typeof countrySchema>;
+import { countrySchema, type CountryFormValues } from "./countrySchema";
 
 export interface AdminCountryFormEntity {
   id?: number;

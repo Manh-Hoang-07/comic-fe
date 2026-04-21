@@ -1,80 +1,49 @@
 "use client";
 
-import { useListPage } from "@/hooks";
-import useModal from "@/hooks/ui-ux/useModal";
+import { useCrudList } from "@/hooks";
 import { adminEndpoints } from "@/lib/api/endpoints";
+import { BASIC_STATUS_BADGES, getStatusBadge } from "@/config/constants/status";
 import Pagination from "@/components/UI/DataDisplay/Pagination";
 import SkeletonLoader from "@/components/UI/Feedback/SkeletonLoader";
 import Actions from "@/components/UI/DataDisplay/Actions";
 import ConfirmModal from "@/components/UI/Feedback/ConfirmModal";
-import { useToastContext } from "@/contexts/ToastContext";
-import api from "@/lib/api/client";
 import type { AdminProvince } from "@/types/location";
 import ProvinceFilter from "./ProvinceFilter";
 import CreateProvince from "./CreateProvince";
 import EditProvince from "./EditProvince";
 
+const endpoints = adminEndpoints.location.provinces;
+
+const getProvinceTypeLabel = (type?: string | null) => {
+  switch (type) {
+    case "Province":
+      return "Tỉnh";
+    case "Municipality":
+      return "Thành phố Trung ương";
+    default:
+      return type || "—";
+  }
+};
+
 export default function AdminProvinces() {
-  const { data, actions, ui } = useListPage({
-    endpoint: adminEndpoints.location.provinces.list,
+  const {
+    data, actions, ui,
+    createModal, editModal, deleteModal,
+    handleDeleteConfirm, openCreate, openEdit, openDelete,
+  } = useCrudList({
+    endpoint: endpoints.list,
+    deleteSuccessMessage: "Đã xóa Tỉnh/Thành phố thành công",
   });
-  
+
   const { items, loading, pagination, filters, hasData } = data;
   const { getSerialNumber } = ui;
-  const { showSuccess, showError } = useToastContext();
-
-  const getStatusBadge = (status?: string) => {
-    if (status === "active") {
-      return {
-        label: "Hoạt động",
-        className: "bg-green-100 text-green-800",
-      };
-    }
-    if (status === "inactive") {
-      return {
-        label: "Ngừng hoạt động",
-        className: "bg-gray-100 text-gray-800",
-      };
-    }
-    return {
-      label: status || "Không xác định",
-      className: "bg-gray-100 text-gray-800",
-    };
-  };
-
-  const getProvinceTypeLabel = (type?: string | null) => {
-    switch (type) {
-      case "Province":
-        return "Tỉnh";
-      case "Municipality":
-        return "Thành phố Trung ương";
-      default:
-        return type || "—";
-    }
-  };
-
-  const createModal = useModal<{ createApi: string }>();
-  const editModal = useModal<{ fetchApi?: string; initialData?: any; updateApi: string }>();
-  const deleteModal = useModal<{ id: number; name?: string; deleteApi: string }>();
-
-  const handleDeleteConfirm = async () => {
-    if (!deleteModal.data?.deleteApi) return;
-    try {
-      await api.delete(deleteModal.data.deleteApi);
-      showSuccess("Đã xóa Tỉnh/Thành phố thành công");
-      deleteModal.close();
-      actions.refresh();
-    } catch (error: any) {
-      showError(error.response?.data?.message || "Có lỗi xảy ra khi xóa");
-    }
-  };
 
   return (
     <div className="admin-provinces">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Quản lý Tỉnh/Thành phố</h1>
         <button
-          onClick={() => createModal.open({ createApi: adminEndpoints.location.provinces.create })}
+          onClick={() => openCreate(endpoints.create)}
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none"
         >
           Thêm Tỉnh/Thành phố
@@ -110,7 +79,7 @@ export default function AdminProvinces() {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {items.map((province: AdminProvince, index: number) => {
-                  const status = getStatusBadge(province.status);
+                  const badge = getStatusBadge(province.status || "", BASIC_STATUS_BADGES);
                   return (
                     <tr key={province.id}>
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
@@ -124,9 +93,9 @@ export default function AdminProvinces() {
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
                         <span
-                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${status.className}`}
+                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${badge.className}`}
                         >
-                          {status.label}
+                          {badge.label}
                         </span>
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
@@ -134,18 +103,11 @@ export default function AdminProvinces() {
                           item={province}
                           showView={false}
                           showDelete={false}
-                          onEdit={() => editModal.open({
-                            fetchApi: adminEndpoints.location.provinces.show(province.id),
-                            updateApi: adminEndpoints.location.provinces.update(province.id)
-                          })}
+                          onEdit={() => openEdit(province, endpoints)}
                           additionalActions={[
                             {
                               label: "Xóa",
-                              action: () => deleteModal.open({
-                                id: province.id,
-                                name: province.name,
-                                deleteApi: adminEndpoints.location.provinces.delete(province.id)
-                              }),
+                              action: () => openDelete(province, endpoints),
                               icon: "trash",
                             },
                           ]}
@@ -207,7 +169,7 @@ export default function AdminProvinces() {
         <ConfirmModal
           show={deleteModal.isOpen}
           title="Xác nhận xóa"
-          message={`Bạn có chắc chắn muốn xóa Tỉnh/Thành phố "${deleteModal.data.name}"?`}
+          message={`Bạn có chắc chắn muốn xóa Tỉnh/Thành phố "${deleteModal.data.displayName}"?`}
           onClose={deleteModal.close}
           onConfirm={handleDeleteConfirm}
         />
@@ -215,5 +177,3 @@ export default function AdminProvinces() {
     </div>
   );
 }
-
-

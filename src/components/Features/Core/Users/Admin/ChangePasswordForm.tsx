@@ -3,19 +3,9 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import Modal from "@/components/UI/Feedback/Modal";
 import FormField from "@/components/UI/Forms/FormField";
-
-const changePasswordSchema = z.object({
-  password: z.string().min(6, "Mật khẩu phải có ít nhất 6 ký tự"),
-  password_confirmation: z.string().min(1, "Vui lòng xác nhận mật khẩu mới"),
-}).refine((data) => data.password === data.password_confirmation, {
-  message: "Mật khẩu xác nhận không khớp",
-  path: ["password_confirmation"],
-});
-
-type ChangePasswordFormValues = z.infer<typeof changePasswordSchema>;
+import { changePasswordSchema, type ChangePasswordFormValues } from "./changePasswordSchema";
 
 interface ChangePasswordFormProps {
   show: boolean;

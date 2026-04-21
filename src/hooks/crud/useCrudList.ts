@@ -25,7 +25,7 @@ export interface DeleteModalData {
   displayName?: string;
 }
 
-export interface AdminCrudEndpoints {
+export interface CrudEndpoints {
   list: string;
   create: string;
   show: (id: any) => string;
@@ -33,39 +33,18 @@ export interface AdminCrudEndpoints {
   delete: (id: any) => string;
 }
 
-export interface UseAdminCrudOptions extends UseListPageOptions {
+export interface UseCrudListOptions extends UseListPageOptions {
   /** Message hiển thị khi xóa thành công */
   deleteSuccessMessage?: string;
 }
 
-export interface UseAdminCrudResult {
-  /** Data từ useListPage */
-  data: ReturnType<typeof useListPage>["data"];
-  /** Actions từ useListPage */
-  actions: ReturnType<typeof useListPage>["actions"];
-  /** UI helpers (getSerialNumber) */
-  ui: ReturnType<typeof useListPage>["ui"];
-  /** Toast helpers */
-  toast: { success: (msg: string) => void; error: (msg: string) => void };
-  /** Modal cho create */
-  createModal: ReturnType<typeof useModal<CreateModalData>>;
-  /** Modal cho edit */
-  editModal: ReturnType<typeof useModal<EditModalData>>;
-  /** Modal cho delete */
-  deleteModal: ReturnType<typeof useModal<DeleteModalData>>;
-  /** Handler xóa - gọi API và refresh list */
-  handleDeleteConfirm: () => Promise<void>;
-  /** Helper: mở create modal với đúng endpoint */
-  openCreate: (createApi: string) => void;
-  /** Helper: mở edit modal cho item */
-  openEdit: (item: any, endpoints: AdminCrudEndpoints) => void;
-  /** Helper: mở delete modal cho item */
-  openDelete: (item: any, endpoints: AdminCrudEndpoints, displayNameField?: string) => void;
-}
-
 // ===== HOOK =====
 
-export function useAdminCrud(options: UseAdminCrudOptions): UseAdminCrudResult {
+/**
+ * Hook dùng cho bất kỳ trang CRUD list nào (admin, user, hoặc public).
+ * Gộp: useListPage + 3 modals (create/edit/delete) + delete handler + toast.
+ */
+export function useCrudList(options: UseCrudListOptions) {
   const { deleteSuccessMessage = "Xóa thành công", ...listOptions } = options;
 
   const { data, actions, ui } = useListPage(listOptions);
@@ -95,7 +74,7 @@ export function useAdminCrud(options: UseAdminCrudOptions): UseAdminCrudResult {
   );
 
   const openEdit = useCallback(
-    (item: any, endpoints: AdminCrudEndpoints) => {
+    (item: any, endpoints: CrudEndpoints) => {
       editModal.open({
         fetchApi: endpoints.show(item.id),
         updateApi: endpoints.update(item.id),
@@ -105,7 +84,7 @@ export function useAdminCrud(options: UseAdminCrudOptions): UseAdminCrudResult {
   );
 
   const openDelete = useCallback(
-    (item: any, endpoints: AdminCrudEndpoints, displayNameField = "name") => {
+    (item: any, endpoints: CrudEndpoints, displayNameField = "name") => {
       deleteModal.open({
         id: item.id,
         displayName: item[displayNameField] || item.name || item.title || "",
@@ -129,3 +108,6 @@ export function useAdminCrud(options: UseAdminCrudOptions): UseAdminCrudResult {
     openDelete,
   };
 }
+
+/** @deprecated Dùng useCrudList thay thế */
+export const useAdminCrud = useCrudList;

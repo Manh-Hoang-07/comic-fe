@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { nameField, statusField, sortOrderField, optionalText, optionalUrl, requiredImage } from "./common";
+import { nameField, requiredImage, optionalText, optionalUrl, statusField, sortOrderField } from "@/config/validations/common";
 
 export const partnerSchema = z.object({
   name: nameField("Tên đối tác"),
@@ -10,4 +10,5 @@ export const partnerSchema = z.object({
   status: statusField,
   sort_order: sortOrderField,
 });
+
 export type PartnerFormValues = z.infer<typeof partnerSchema>;

@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import { comicCategorySchema, type ComicCategoryFormValues } from "./comicCategorySchema";
 import { AdminComicCategory } from "@/types/comic";
 import FormField from "@/components/UI/Forms/FormField";
 import dynamic from "next/dynamic";
@@ -12,13 +12,6 @@ const CKEditor = dynamic(() => import("@/components/UI/Forms/CKEditor"), {
   loading: () => <div className="h-[400px] bg-gray-50 border border-gray-200 rounded animate-pulse" />,
 });
 import { userEndpoints } from "@/lib/api/endpoints";
-
-const categorySchema = z.object({
-    name: z.string().min(1, "Tên danh mục không được để trống").max(255, "Tên tối đa 255 ký tự"),
-    description: z.string().max(10000, "Mô tả tối đa 10000 ký tự").optional().nullable().or(z.literal("")),
-});
-
-type CategoryFormValues = z.infer<typeof categorySchema>;
 
 interface ComicCategoryFormProps {
     category?: AdminComicCategory | null;
@@ -42,8 +35,8 @@ export default function ComicCategoryForm({
         reset,
         setError,
         formState: { errors, isSubmitting },
-    } = useForm<CategoryFormValues>({
-        resolver: zodResolver(categorySchema),
+    } = useForm<ComicCategoryFormValues>({
+        resolver: zodResolver(comicCategorySchema),
         defaultValues: {
             name: "",
             description: "",
@@ -76,7 +69,7 @@ export default function ComicCategoryForm({
         }
     }, [apiErrors, setError]);
 
-    const handleFormSubmit = async (values: CategoryFormValues) => {
+    const handleFormSubmit = async (values: ComicCategoryFormValues) => {
         onSubmit?.(values);
     };
 

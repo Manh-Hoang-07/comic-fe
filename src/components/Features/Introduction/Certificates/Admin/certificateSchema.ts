@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { nameField, statusField, sortOrderField, optionalText, requiredImage } from "./common";
+import { nameField, requiredImage, optionalText, statusField, sortOrderField } from "@/config/validations/common";
 
 export const certificateSchema = z.object({
   name: nameField("Tên chứng chỉ"),
@@ -13,4 +13,5 @@ export const certificateSchema = z.object({
   status: statusField,
   sort_order: sortOrderField,
 });
+
 export type CertificateFormValues = z.infer<typeof certificateSchema>;

@@ -1,9 +1,10 @@
 "use client";
 
-import { useListPage } from "@/hooks";
-import useModal from "@/hooks/ui-ux/useModal";
+import { useState } from "react";
+import { useCrudList } from "@/hooks";
 import { adminEndpoints } from "@/lib/api/endpoints";
 import { ContentTemplate } from "@/types/api";
+import { BASIC_STATUS_BADGES, getStatusBadge } from "@/config/constants/status";
 import SkeletonLoader from "@/components/UI/Feedback/SkeletonLoader";
 import ConfirmModal from "@/components/UI/Feedback/ConfirmModal";
 import Actions from "@/components/UI/DataDisplay/Actions";
@@ -13,9 +14,8 @@ import Modal from "@/components/UI/Feedback/Modal";
 import CreateContentTemplate from "./CreateContentTemplate";
 import EditContentTemplate from "./EditContentTemplate";
 import ContentTemplateTestModal from "./ContentTemplateTestModal";
-import { useState } from "react";
-import { useToastContext } from "@/contexts/ToastContext";
-import api from "@/lib/api/client";
+
+const endpoints = adminEndpoints.contentTemplates;
 
 export default function AdminContentTemplates() {
     const [testModal, setTestModal] = useState<{ show: boolean; template: ContentTemplate | null }>({
@@ -23,29 +23,17 @@ export default function AdminContentTemplates() {
         template: null,
     });
 
-    const { data, actions, ui } = useListPage({
-        endpoint: adminEndpoints.contentTemplates.list,
+    const {
+        data, actions, ui,
+        createModal, editModal, deleteModal,
+        handleDeleteConfirm, openCreate, openEdit, openDelete,
+    } = useCrudList({
+        endpoint: endpoints.list,
+        deleteSuccessMessage: "Đã xóa mẫu nội dung thành công",
     });
-    
+
     const { items, loading, pagination, filters, hasData } = data;
     const { getSerialNumber } = ui;
-    const { showSuccess, showError } = useToastContext();
-
-    const createModal = useModal<{ createApi: string }>();
-    const editModal = useModal<{ fetchApi?: string; initialData?: any; updateApi: string }>();
-    const deleteModal = useModal<{ id: number | string; name?: string; deleteApi: string }>();
-
-    const handleDeleteConfirm = async () => {
-        if (!deleteModal.data?.deleteApi) return;
-        try {
-            await api.delete(deleteModal.data.deleteApi);
-            showSuccess("Đã xóa mẫu nội dung thành công");
-            deleteModal.close();
-            actions.refresh();
-        } catch (error: any) {
-            showError(error.response?.data?.message || "Có lỗi xảy ra khi xóa");
-        }
-    };
 
     const handleOpenTest = (item: ContentTemplate) => {
         setTestModal({ show: true, template: item });
@@ -68,7 +56,7 @@ export default function AdminContentTemplates() {
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-2xl font-bold">Mẫu nội dung</h1>
                 <button
-                    onClick={() => createModal.open({ createApi: adminEndpoints.contentTemplates.create })}
+                    onClick={() => openCreate(endpoints.create)}
                     className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center gap-2"
                 >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -101,62 +89,58 @@ export default function AdminContentTemplates() {
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
                                 {items.length > 0 ? (
-                                    items.map((item: ContentTemplate, index) => (
-                                        <tr key={item.id} className="hover:bg-gray-50">
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
-                                                {getSerialNumber(index)}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="flex flex-col">
-                                                    <span className="text-sm font-medium text-gray-900">{item.name}</span>
-                                                    <span className="text-xs text-gray-400 font-mono">{item.code}</span>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-center">
-                                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${item.category === 'render' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'
-                                                    }`}>
-                                                    {item.category === 'render' ? 'Render' : 'File'}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-center">
-                                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getTypeBadgeColor(item.type)}`}>
-                                                    {item.type.toUpperCase()}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-center">
-                                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${item.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                                                    {item.status === 'active' ? 'Hoạt động' : 'Tạm ngưng'}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                <Actions
-                                                    item={item}
-                                                    onEdit={() => editModal.open({
-                                                        fetchApi: adminEndpoints.contentTemplates.show(item.id),
-                                                        updateApi: adminEndpoints.contentTemplates.update(item.id)
-                                                    })}
-                                                    showDelete={false}
-                                                    showView={false}
-                                                    additionalActions={[
-                                                        {
-                                                            label: "Gửi thử",
-                                                            icon: "view",
-                                                            action: () => handleOpenTest(item),
-                                                        },
-                                                        {
-                                                            label: "Xóa",
-                                                            icon: "trash",
-                                                            action: () => deleteModal.open({
-                                                                id: item.id,
-                                                                name: item.name,
-                                                                deleteApi: adminEndpoints.contentTemplates.delete(item.id)
-                                                            }),
-                                                        }
-                                                    ]}
-                                                />
-                                            </td>
-                                        </tr>
-                                    ))
+                                    items.map((item: ContentTemplate, index) => {
+                                        const badge = getStatusBadge(item.status || "", BASIC_STATUS_BADGES);
+                                        return (
+                                            <tr key={item.id} className="hover:bg-gray-50">
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                                                    {getSerialNumber(index)}
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <div className="flex flex-col">
+                                                        <span className="text-sm font-medium text-gray-900">{item.name}</span>
+                                                        <span className="text-xs text-gray-400 font-mono">{item.code}</span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-center">
+                                                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${item.category === 'render' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'
+                                                        }`}>
+                                                        {item.category === 'render' ? 'Render' : 'File'}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-center">
+                                                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getTypeBadgeColor(item.type)}`}>
+                                                        {item.type.toUpperCase()}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-center">
+                                                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${badge.className}`}>
+                                                        {badge.label}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                    <Actions
+                                                        item={item}
+                                                        onEdit={() => openEdit(item, endpoints)}
+                                                        showDelete={false}
+                                                        showView={false}
+                                                        additionalActions={[
+                                                            {
+                                                                label: "Gửi thử",
+                                                                icon: "view",
+                                                                action: () => handleOpenTest(item),
+                                                            },
+                                                            {
+                                                                label: "Xóa",
+                                                                icon: "trash",
+                                                                action: () => openDelete(item, endpoints),
+                                                            }
+                                                        ]}
+                                                    />
+                                                </td>
+                                            </tr>
+                                        );
+                                    })
                                 ) : (
                                     <tr>
                                         <td colSpan={6} className="px-6 py-12 text-center text-gray-400 italic">
@@ -226,7 +210,7 @@ export default function AdminContentTemplates() {
                 <ConfirmModal
                     show={deleteModal.isOpen}
                     title="Xác nhận xóa"
-                    message={`Bạn có chắc chắn muốn xóa mẫu "${deleteModal.data.name}"? Hành động này không thể hoàn tác.`}
+                    message={`Bạn có chắc chắn muốn xóa mẫu "${deleteModal.data.displayName}"? Hành động này không thể hoàn tác.`}
                     onClose={deleteModal.close}
                     onConfirm={handleDeleteConfirm}
                 />
@@ -242,6 +226,3 @@ export default function AdminContentTemplates() {
         </div>
     );
 }
-
-
-

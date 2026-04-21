@@ -1,6 +1,6 @@
 "use client";
 
-import { useAdminCrud } from "@/hooks";
+import { useCrudList } from "@/hooks";
 import { adminEndpoints } from "@/lib/api/endpoints";
 import SkeletonLoader from "@/components/UI/Feedback/SkeletonLoader";
 import ConfirmModal from "@/components/UI/Feedback/ConfirmModal";
@@ -32,7 +32,7 @@ export default function AdminPostTags({
     data, actions, ui,
     createModal, editModal, deleteModal,
     handleDeleteConfirm, openCreate, openEdit, openDelete,
-  } = useAdminCrud({
+  } = useCrudList({
     endpoint: endpoints.list,
     deleteSuccessMessage: "Đã xóa thẻ thành công",
   });
