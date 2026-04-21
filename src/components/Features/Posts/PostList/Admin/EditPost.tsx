@@ -4,17 +4,17 @@ import dynamic from "next/dynamic";
 const PostForm = dynamic(() => import("./PostForm"), {
   ssr: false,
   loading: () => <div className="p-6 animate-pulse"><div className="h-8 w-48 bg-gray-200 rounded mb-4" /><div className="space-y-3">{[...Array(5)].map((_, i) => <div key={i} className="h-10 bg-gray-200 rounded" />)}</div></div>,
-});
+}) as any;
 import { useFormModal } from "@/hooks";
 import { EditTarget } from "@/hooks/crud/useFormModal";
 
 interface EditPostProps {
   show: boolean;
   target: EditTarget | null;
-  statusEnums?: Array<{ value: string; label?: string; name?: string }>;
-  postTypeEnums?: Array<{ value: string; label?: string; name?: string }>;
-  categoryEnums?: Array<{ value: number; label?: string; name?: string }>;
-  tagEnums?: Array<{ value: number; label?: string; name?: string }>;
+  statusEnums?: Array<{ value: string; label: string; name?: string }>;
+  postTypeEnums?: Array<{ value: string; label: string; name?: string }>;
+  categoryEnums?: Array<{ value: number; label: string; name?: string }>;
+  tagEnums?: Array<{ value: number; label: string; name?: string }>;
   onSuccess?: () => void;
   onClose?: () => void;
 }
@@ -47,10 +47,10 @@ export default function EditPost({
       postTypeEnums={postTypeEnums}
       categoryEnums={categoryEnums}
       tagEnums={tagEnums}
-      onSubmit={handleSubmit}
+      onSubmit={(data: Record<string, unknown>) => handleSubmit(data)}
       onCancel={onClose}
       loading={loading}
-      apiErrors={apiErrors}
+      apiErrors={apiErrors ?? undefined}
     />
   );
 }

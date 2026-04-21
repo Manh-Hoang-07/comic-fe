@@ -31,8 +31,8 @@ interface User {
 interface UserFormProps {
   show: boolean;
   user?: User | null;
-  statusEnums?: Array<{ value: string; label?: string; name?: string }>;
-  genderEnums?: Array<{ value: string; label?: string; name?: string }>;
+  statusEnums?: Array<{ value: string; label: string; name?: string }>;
+  genderEnums?: Array<{ value: string; label: string; name?: string }>;
   apiErrors?: Record<string, string | string[]> | null;
   loading?: boolean;
   onSubmit?: (data: Record<string, unknown>) => void;

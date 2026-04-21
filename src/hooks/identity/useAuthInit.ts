@@ -67,7 +67,7 @@ export function useAuthInit(): AuthInitResult {
 
     return {
       isAuthenticated: authStore.isAuthenticated,
-      isAdmin: authStore.userRole === "admin",
+      isAdmin: authStore.can("admin"),
       isUser: authStore.userRole === "user",
       user: authStore.user,
     };

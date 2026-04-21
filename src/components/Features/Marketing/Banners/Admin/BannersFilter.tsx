@@ -6,7 +6,7 @@ import AdminFilter from "@/components/Shared/Admin/AdminFilter";
 
 interface BannersFilterProps {
   initialFilters?: Record<string, any>;
-  statusEnums?: Array<{ value: string; label?: string; name?: string }>;
+  statusEnums?: Array<{ value: string; label: string; name?: string }>;
   locationEnums?: Array<{ id: number; name: string }>;
   onUpdateFilters?: (filters: Record<string, any>) => void;
   onFilterChange?: () => void;

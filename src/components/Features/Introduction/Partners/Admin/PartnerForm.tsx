@@ -16,7 +16,7 @@ const getPartnerTypeArray = () => [
   { value: "other", label: "Khác" },
 ];
 
-const getBasicStatusArray = () => [
+const getBasicStatusArray = (): Array<{ value: string; label: string; name?: string }> => [
   { value: "active", label: "Hoạt động" },
   { value: "inactive", label: "Ngừng hoạt động" },
 ];

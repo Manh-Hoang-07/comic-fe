@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import apiClient from "@/lib/api/client";
+import { normalizeDetailResponse } from "@/lib/api/response-normalizer";
 import { useToastContext } from "@/contexts/ToastContext";
 
 // ===== TYPES =====
@@ -27,7 +28,7 @@ export interface CreateModeProps {
 
 export interface EditTarget {
   fetchApi?: string;
-  initialData?: Record<string, unknown>;
+  initialData?: any;
   updateApi: string;
 }
 
@@ -40,8 +41,8 @@ export interface EditModeProps {
 export type FormModalProps = CreateModeProps | EditModeProps;
 
 export interface UseFormModalResult {
-  /** Dữ liệu entity (chỉ có ở edit mode, sau khi fetch) */
-  entityData: Record<string, unknown> | null;
+  /** Dữ liệu entity (chỉ có ở edit mode, sau khi fetch). Typed as `any` because the hook is entity-agnostic. */
+  entityData: any;
   /** Đang loading (fetch hoặc submit) */
   loading: boolean;
   /** Lỗi từ API */
@@ -84,7 +85,7 @@ export function useFormModal(
     onClose,
   } = options;
 
-  const [entityData, setEntityData] = useState<Record<string, unknown> | null>(null);
+  const [entityData, setEntityData] = useState<Record<string, any> | null>(null);
   const [loading, setLoading] = useState(false);
   const [apiErrors, setApiErrors] = useState<Record<string, string | string[]> | null>(null);
   const { showSuccess, showError } = useToastContext();
@@ -103,7 +104,7 @@ export function useFormModal(
           setLoading(true);
           try {
             const response = await apiClient.get(target.fetchApi!);
-            setEntityData(response.data?.data || response.data);
+            setEntityData(normalizeDetailResponse<Record<string, any>>(response.data));
           } catch {
             showError(fetchErrorMessage);
             onClose?.();
@@ -119,6 +120,7 @@ export function useFormModal(
       setEntityData(null);
       setApiErrors(null);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- Intentional: fire-once effect when modal opens; deps are manually managed
   }, [isEditMode, props.show, isEditMode ? (props as EditModeProps).target : null]);
 
   const handleSubmit = useCallback(

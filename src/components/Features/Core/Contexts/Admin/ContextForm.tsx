@@ -9,7 +9,7 @@ import SingleSelectEnhanced from "@/components/UI/Forms/SingleSelectEnhanced";
 import SkeletonLoader from "@/components/UI/Feedback/SkeletonLoader";
 import { contextSchema, type ContextFormValues } from "./contextSchema";
 
-const getBasicStatusArray = () => [
+const getBasicStatusArray = (): Array<{ value: string; label: string; name?: string }> => [
   { value: "active", label: "Hoạt động" },
   { value: "inactive", label: "Ngừng hoạt động" },
 ];
@@ -26,7 +26,7 @@ interface ContextFormProps {
   show: boolean;
   context?: Context | null;
   loading?: boolean;
-  statusEnums?: Array<{ value: string; label?: string; name?: string }>;
+  statusEnums?: Array<{ value: string; label: string; name?: string }>;
   apiErrors?: Record<string, string | string[]> | null;
   onSubmit?: (data: Record<string, unknown>) => void;
   onCancel?: () => void;

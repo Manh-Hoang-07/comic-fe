@@ -11,7 +11,7 @@ import { EditTarget } from "@/hooks/crud/useFormModal";
 interface EditProjectProps {
   show: boolean;
   target: EditTarget | null;
-  statusEnums?: Array<{ value: string; label?: string; name?: string }>;
+  statusEnums?: Array<{ value: string; label: string; name?: string }>;
   onSuccess?: () => void;
   onClose?: () => void;
 }

@@ -14,7 +14,7 @@ const getProjectStatusArray = () => [
 
 interface ProjectsFilterProps {
   initialFilters?: Record<string, any>;
-  statusEnums?: Array<{ value: string; label?: string; name?: string }>;
+  statusEnums?: Array<{ value: string; label: string; name?: string }>;
   onUpdateFilters?: (filters: Record<string, any>) => void;
   onFilterChange?: () => void;
 }
@@ -31,7 +31,7 @@ export default function ProjectsFilter({
     statusArray.forEach((item) => {
       options.push({
         value: item.value,
-        label: item.label || item.name || item.value,
+        label: item.label || item.value,
       });
     });
     return options;

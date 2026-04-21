@@ -1,5 +1,7 @@
 import apiClient from "@/lib/api/client";
 import { userEndpoints } from "@/lib/api/endpoints";
+import { normalizeListResponse } from "@/lib/api/response-normalizer";
+import { storage } from "@/lib/storage";
 
 export interface Group {
   id: number;
@@ -36,32 +38,25 @@ export async function initializeUserGroups(token?: string): Promise<Group[]> {
     // API: GET /api/user/groups
     const response = await apiClient.get(userEndpoints.groups.list);
 
-    // Parse response (có thể là array trực tiếp hoặc { success: true, data: [...] })
-    let groupsData: Group[] = [];
-    if (Array.isArray(response.data)) {
-      groupsData = response.data;
-    } else if (response.data?.success && Array.isArray(response.data.data)) {
-      groupsData = response.data.data;
-    } else if (Array.isArray(response.data?.data)) {
-      groupsData = response.data.data;
-    }
+    // Parse response using centralized normalizer
+    const groupsData = normalizeListResponse<Group>(response.data);
 
     // Normalize group IDs (đảm bảo là number)
-    const groups: Group[] = (groupsData || []).map((g) => ({
+    const groups: Group[] = groupsData.map((g) => ({
       ...g,
       id: typeof g.id === "string" ? parseInt(g.id, 10) : g.id,
     }));
 
     // Lưu groups vào localStorage
-    localStorage.setItem("user_groups", JSON.stringify(groups));
+    storage.group.setGroups(groups);
 
     // Auto-select group logic
-    const savedGroupId = localStorage.getItem("selected_group_id");
+    const savedGroupId = storage.group.getSelected();
 
     if (groups.length === 1) {
       // Nếu chỉ có 1 group → Auto-select
       const groupId = String(groups[0].id);
-      localStorage.setItem("selected_group_id", groupId);
+      storage.group.setSelected(groupId);
     } else if (groups.length > 1) {
       // Có nhiều groups → kiểm tra group đã chọn trước đó
       if (savedGroupId) {
@@ -69,14 +64,14 @@ export async function initializeUserGroups(token?: string): Promise<Group[]> {
         const groupExists = groups.some((g) => String(g.id) === savedGroupId);
         if (groupExists) {
           // Giữ group đã chọn
-          localStorage.setItem("selected_group_id", savedGroupId);
+          storage.group.setSelected(savedGroupId);
         } else {
           // Group không còn hợp lệ → chọn group đầu tiên làm default
-          localStorage.setItem("selected_group_id", String(groups[0].id));
+          storage.group.setSelected(String(groups[0].id));
         }
       } else {
         // Chưa có group được chọn → chọn group đầu tiên làm default
-        localStorage.setItem("selected_group_id", String(groups[0].id));
+        storage.group.setSelected(String(groups[0].id));
       }
     }
 
@@ -93,19 +88,14 @@ export async function initializeUserGroups(token?: string): Promise<Group[]> {
  * @returns Group | null
  */
 export function getSelectedGroup(): Group | null {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
   try {
-    const groupId = localStorage.getItem("selected_group_id");
-    const groupsJson = localStorage.getItem("user_groups");
+    const groupId = storage.group.getSelected();
+    const groups = storage.group.getGroups();
 
-    if (!groupId || !groupsJson) {
+    if (!groupId || groups.length === 0) {
       return null;
     }
 
-    const groups: Group[] = JSON.parse(groupsJson);
     const group = groups.find((g) => String(g.id) === groupId);
 
     return group || null;
@@ -120,17 +110,8 @@ export function getSelectedGroup(): Group | null {
  * @returns Group[]
  */
 export function getUserGroups(): Group[] {
-  if (typeof window === "undefined") {
-    return [];
-  }
-
   try {
-    const groupsJson = localStorage.getItem("user_groups");
-    if (!groupsJson) {
-      return [];
-    }
-
-    return JSON.parse(groupsJson) as Group[];
+    return storage.group.getGroups();
   } catch (error) {
     console.error("Failed to get user groups:", error);
     return [];

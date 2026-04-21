@@ -30,11 +30,11 @@ export default function ComicCategoryList({ onEdit, refreshTrigger }: ComicCateg
         } finally {
             setLoading(false);
         }
-    }, [page, search, refreshTrigger, showError]);
+    }, [page, search, showError]);
 
     useEffect(() => {
         fetchCategories();
-    }, [fetchCategories]);
+    }, [fetchCategories, refreshTrigger]);
 
     const handleDelete = async (id: number) => {
         if (!confirm("Bạn có chắc muốn xóa danh mục này?")) return;

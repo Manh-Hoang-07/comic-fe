@@ -158,14 +158,14 @@ export default function EditMemberRolesModal({
         >
           {({ form, errors, clearError }: FormChildProps) => (
             <MultipleSelect
-              value={form.role_ids || []}
+              value={(form.role_ids || []) as (string | number)[]}
               onChange={(value: Array<string | number>) => {
                 form.role_ids = value;
                 clearError("role_ids");
               }}
               label="Roles"
               options={roleOptions}
-              error={errors.role_ids}
+              error={errors.role_ids as string | undefined}
               placeholder="Chọn roles..."
             />
           )}

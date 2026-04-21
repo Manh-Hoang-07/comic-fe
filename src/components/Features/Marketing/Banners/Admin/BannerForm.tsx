@@ -13,8 +13,8 @@ import { adminEndpoints } from "@/lib/api/endpoints";
 interface BannerFormProps {
   show: boolean;
   banner?: Record<string, unknown>;
-  statusEnums?: Array<{ value: string; label?: string; name?: string }>;
-  locationEnums?: Array<{ value: number; label?: string; name?: string }>;
+  statusEnums?: Array<{ value: string; label: string; name?: string }>;
+  locationEnums?: Array<{ value: number; label: string; name?: string }>;
   apiErrors?: Record<string, string | string[]> | null;
   loading?: boolean;
   onSubmit?: (data: BannerFormValues) => void;
@@ -52,7 +52,7 @@ export default function BannerForm({
       button_text: "",
       button_color: "#ff6b6b",
       text_color: "#ffffff",
-      location_id: undefined,
+      location_id: undefined as unknown as number,
       sort_order: 1,
       status: "active",
       start_date: "",
@@ -72,7 +72,7 @@ export default function BannerForm({
           image: (b.image as string) || "",
           mobile_image: (b.mobile_image as string) || "",
           link: (b.link as string) || "",
-          link_target: (b.link_target as string) || "_self",
+          link_target: ((b.link_target as string) || "_self") as "_self" | "_blank",
           button_text: (b.button_text as string) || "",
           button_color: (b.button_color as string) || "#ff6b6b",
           text_color: (b.text_color as string) || "#ffffff",
@@ -81,7 +81,7 @@ export default function BannerForm({
           status: (b.status as string) || "active",
           start_date: b.start_date ? new Date(b.start_date as string).toISOString().slice(0, 16) : "",
           end_date: b.end_date ? new Date(b.end_date as string).toISOString().slice(0, 16) : "",
-        });
+        } as BannerFormValues);
       } else {
         reset({
           title: "",

@@ -252,7 +252,7 @@ export default function AdminBanners({ title = "Quản lý banner", createButton
           show={createModal.isOpen}
           createApi={createModal.data.createApi}
           statusEnums={BASIC_STATUS}
-          locationEnums={locationEnums}
+          locationEnums={locationEnums.map(l => ({ value: l.id, name: l.name, label: l.name }))}
           onClose={createModal.close}
           onSuccess={() => {
             createModal.close();
@@ -266,7 +266,7 @@ export default function AdminBanners({ title = "Quản lý banner", createButton
           show={editModal.isOpen}
           target={editModal.data}
           statusEnums={BASIC_STATUS}
-          locationEnums={locationEnums}
+          locationEnums={locationEnums.map(l => ({ value: l.id, name: l.name, label: l.name }))}
           onClose={editModal.close}
           onSuccess={() => {
             editModal.close();

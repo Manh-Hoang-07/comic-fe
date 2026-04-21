@@ -29,7 +29,7 @@ export default async function ComicHomePage() {
     if (!data) {
         return (
             <PublicLayoutWrapper
-                contactChannels={systemConfig?.contact_channels}
+                contactChannels={systemConfig?.contact_channels ?? {}}
                 header={<PublicHeader key="header" systemConfig={systemConfig} initialMenus={menus} />}
                 footer={<PublicFooter key="footer" systemConfig={systemConfig} />}
             >
@@ -51,7 +51,7 @@ export default async function ComicHomePage() {
 
     return (
         <PublicLayoutWrapper
-            contactChannels={systemConfig?.contact_channels}
+            contactChannels={systemConfig?.contact_channels ?? {}}
             header={<PublicHeader key="header" systemConfig={systemConfig} initialMenus={menus} />}
             footer={<PublicFooter key="footer" systemConfig={systemConfig} />}
         >

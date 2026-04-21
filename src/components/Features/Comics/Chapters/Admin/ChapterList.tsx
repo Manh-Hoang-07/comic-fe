@@ -35,11 +35,11 @@ export default function ChapterList({ comicId, onEdit, onManagePages, refreshTri
         } finally {
             setLoading(false);
         }
-    }, [page, comicId, refreshTrigger, showError]);
+    }, [page, comicId, showError]);
 
     useEffect(() => {
         fetchChapters();
-    }, [fetchChapters]);
+    }, [fetchChapters, refreshTrigger]);
 
     const handleDelete = async (id: number) => {
         if (!confirm("Bạn có chắc muốn xóa chương này?")) return;

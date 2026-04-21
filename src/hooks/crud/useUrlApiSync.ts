@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import { useUrlListSync } from "./useUrlListSync";
 import apiClient from "@/lib/api/client";
+import { normalizeResponse } from "@/lib/api/response-normalizer";
 
 /**
  * Composable đơn giản để đồng bộ hóa URL và API
@@ -39,16 +40,8 @@ export function useUrlApiSync<T extends { id: number | string } = { id: number |
 
       try {
         const response = await apiClient.post(createEndpoint, itemData);
-        // Parse response theo format chuẩn: { success, data: {...}, ... }
-        let payload = null;
-        if (response.data?.success && response.data?.data) {
-          payload = response.data.data;
-        } else if (response.data?.data) {
-          payload = response.data.data;
-        } else {
-          payload = response.data;
-        }
-        const newItem = transformItem ? transformItem(payload) : payload;
+        const payload = normalizeResponse<T>(response.data);
+        const newItem = transformItem && payload ? transformItem(payload) : payload;
 
         // Refresh list to get updated data
         await listComposable.refresh();
@@ -71,16 +64,8 @@ export function useUrlApiSync<T extends { id: number | string } = { id: number |
       try {
         const endpointUrl = updateEndpoint(id);
         const response = await apiClient.put(endpointUrl, itemData);
-        // Parse response theo format chuẩn: { success, data: {...}, ... }
-        let payload = null;
-        if (response.data?.success && response.data?.data) {
-          payload = response.data.data;
-        } else if (response.data?.data) {
-          payload = response.data.data;
-        } else {
-          payload = response.data;
-        }
-        const updatedItem = transformItem ? transformItem(payload) : payload;
+        const payload = normalizeResponse<T>(response.data);
+        const updatedItem = transformItem && payload ? transformItem(payload) : payload;
 
         // Refresh list to get updated data
         await listComposable.refresh();

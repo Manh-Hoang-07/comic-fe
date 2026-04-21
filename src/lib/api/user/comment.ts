@@ -1,5 +1,6 @@
 import { api } from "@/lib/api/client";
 import { userEndpoints } from "@/lib/api/endpoints";
+import { normalizeDetailResponse } from "@/lib/api/response-normalizer";
 import { Comment } from "@/types/comic";
 
 export const commentService = {
@@ -8,7 +9,7 @@ export const commentService = {
      */
     postComment: async (data: { comic_id: string | number; chapter_id?: string | number; parent_id?: string | number; content: string }): Promise<Comment> => {
         const response = await api.post<{ data: Comment }>(userEndpoints.comments.create, data);
-        return response.data.data;
+        return normalizeDetailResponse<Comment>(response.data)!;
     },
 
     /**
@@ -16,7 +17,7 @@ export const commentService = {
      */
     updateComment: async (id: string | number, content: string): Promise<Comment> => {
         const response = await api.put<{ data: Comment }>(userEndpoints.comments.update(id), { content });
-        return response.data.data;
+        return normalizeDetailResponse<Comment>(response.data)!;
     },
 
     /**

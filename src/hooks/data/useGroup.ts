@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import api from "@/lib/api/client";
 import { useToast } from "../ui-ux/useToast";
 import { userEndpoints } from "@/lib/api/endpoints";
+import { normalizeListResponse } from "@/lib/api/response-normalizer";
 
 export interface Group {
   id: number;
@@ -49,7 +50,7 @@ export function useGroup() {
     try {
       // Load groups from API
       const response = await api.get(userEndpoints.groups.list);
-      const fetchedGroups = response.data?.data || [];
+      const fetchedGroups = normalizeListResponse<Group>(response.data);
       setGroups(fetchedGroups);
 
       // Store in localStorage

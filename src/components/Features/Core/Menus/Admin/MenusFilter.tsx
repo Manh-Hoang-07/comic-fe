@@ -8,7 +8,7 @@ type ParentMenuItem = { id: number; name: string; children?: ParentMenuItem[] };
 
 interface MenusFilterProps {
   initialFilters?: Record<string, string>;
-  statusEnums?: Array<{ value: string; label?: string; name?: string }>;
+  statusEnums?: Array<{ value: string; label: string; name?: string }>;
   parentMenus?: ParentMenuItem[];
   onUpdateFilters?: (filters: Record<string, string>) => void;
   onFilterChange?: () => void;

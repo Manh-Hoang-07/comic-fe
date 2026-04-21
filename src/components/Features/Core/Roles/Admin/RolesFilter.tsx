@@ -6,7 +6,7 @@ import AdminFilter from "@/components/Shared/Admin/AdminFilter";
 
 interface RolesFilterProps {
   initialFilters?: Record<string, any>;
-  statusEnums?: Array<{ value: string; label?: string; name?: string; id?: number }>;
+  statusEnums?: Array<{ value: string; label: string; name?: string; id?: number }>;
   onUpdateFilters?: (filters: Record<string, any>) => void;
   onFilterChange?: () => void;
 }

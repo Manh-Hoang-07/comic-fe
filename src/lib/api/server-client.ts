@@ -1,5 +1,8 @@
 import { cookies } from "next/headers";
 import { env } from "@/config/env";
+import { createLogger } from "@/lib/logger";
+
+const log = createLogger('api:server');
 
 const getBaseUrl = () => {
     let baseUrl = env.apiUrl;
@@ -78,10 +81,10 @@ export async function serverFetch<T = any>(
     } catch (error: unknown) {
         if (error instanceof Error) {
             if (error.name === 'AbortError') {
-                console.error(`[API Fetch] TIMEOUT: ${endpoint}`);
+                log.error(`TIMEOUT: ${endpoint}`);
                 return { data: null, error: "Connection Timeout" };
             }
-            console.error(`[Server Fetch Error] ${endpoint}:`, error.message);
+            log.error(`Fetch failed: ${endpoint}`, error.message);
             return { data: null, error: error.message };
         }
         return { data: null, error: "Unknown error" };

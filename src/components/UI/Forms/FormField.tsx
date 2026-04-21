@@ -24,7 +24,7 @@ interface FormFieldProps {
   autocomplete?: string;
 
   // Value/Change props (for controlled usage)
-  value?: string | number | boolean | readonly string[];
+  value?: string | number | boolean | readonly string[] | null;
   onChange?: React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>;
   onBlur?: React.FocusEventHandler<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>;
 
@@ -85,7 +85,7 @@ const FormField = forwardRef<HTMLInputElement | HTMLTextAreaElement | HTMLSelect
 
     const renderInput = () => {
       // Common props for standard inputs
-      const commonProps = {
+      const commonProps: any = {
         id: fieldId,
         name,
         placeholder,
@@ -102,11 +102,11 @@ const FormField = forwardRef<HTMLInputElement | HTMLTextAreaElement | HTMLSelect
       if (["text", "email", "password", "number", "tel", "date", "datetime-local"].includes(type)) {
         return (
           <input
-            {...commonProps}
+            {...(commonProps as React.InputHTMLAttributes<HTMLInputElement>)}
             ref={ref as React.Ref<HTMLInputElement>}
             type={type}
-            {...(value !== undefined ? { value: value ?? "" } : {})}
-            onChange={handleInputChange}
+            {...(value !== undefined ? { value: typeof value === "boolean" ? String(value) : (value ?? "") } : {})}
+            onChange={handleInputChange as React.ChangeEventHandler<HTMLInputElement>}
             maxLength={typeof maxlength === "number" ? maxlength : undefined}
             min={min}
             max={max}
@@ -121,8 +121,8 @@ const FormField = forwardRef<HTMLInputElement | HTMLTextAreaElement | HTMLSelect
           <textarea
             {...commonProps}
             ref={ref as React.Ref<HTMLTextAreaElement>}
-            {...(value !== undefined ? { value: value ?? "" } : {})}
-            onChange={handleInputChange}
+            {...(value !== undefined ? { value: String(value ?? "") } : {})}
+            onChange={handleInputChange as React.ChangeEventHandler<HTMLTextAreaElement>}
             maxLength={typeof maxlength === "number" ? maxlength : undefined}
             rows={typeof rows === "number" ? rows : parseInt(String(rows))}
             className={baseInputClass}
@@ -135,8 +135,8 @@ const FormField = forwardRef<HTMLInputElement | HTMLTextAreaElement | HTMLSelect
           <select
             {...commonProps}
             ref={ref as React.Ref<HTMLSelectElement>}
-            {...(value !== undefined ? { value: value ?? (multiple ? [] : "") } : {})}
-            onChange={handleInputChange}
+            {...(value !== undefined ? { value: (value ?? (multiple ? [] : "")) as string | number | readonly string[] } : {})}
+            onChange={handleInputChange as React.ChangeEventHandler<HTMLSelectElement>}
             multiple={multiple}
             className={`${baseInputClass} ${multiple ? "min-h-[120px]" : ""}`}
           >

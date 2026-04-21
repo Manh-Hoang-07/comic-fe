@@ -3,6 +3,7 @@
 import { useState } from "react";
 import api from "@/lib/api/client";
 import { userEndpoints } from "@/lib/api/endpoints";
+import { normalizeDetailResponse, normalizeListResponse } from "@/lib/api/response-normalizer";
 
 export interface UploadResponse {
   url?: string;
@@ -82,7 +83,7 @@ export function useUpload() {
         }
       );
 
-      const responseData: UploadResponse = response.data?.data ?? (response.data as UploadResponse);
+      const responseData: UploadResponse = normalizeDetailResponse<UploadResponse>(response.data) ?? (response.data as UploadResponse);
 
       if (!responseData || (!responseData.url && !responseData.path)) {
         throw new Error("Invalid response from server");
@@ -152,11 +153,8 @@ export function useUpload() {
         }
       );
 
-      // Handle different response structures
-      // Case 1: { success: true, data: [...] }
-      // Case 2: [...] (direct array)
-      const responseData: UploadResponse[] =
-        Array.isArray(response.data?.data) ? response.data.data : [];
+      // Handle different response structures using centralized normalizer
+      const responseData: UploadResponse[] = normalizeListResponse<UploadResponse>(response.data);
 
       responseData.forEach((result) => {
         options?.onSuccess?.(result);

@@ -7,8 +7,8 @@ import { EditTarget } from "@/hooks/crud/useFormModal";
 interface EditBannerProps {
   show: boolean;
   target: EditTarget | null;
-  statusEnums?: Array<{ value: string; label?: string; name?: string }>;
-  locationEnums?: Array<{ value: number; label?: string; name?: string }>;
+  statusEnums?: Array<{ value: string; label: string; name?: string }>;
+  locationEnums?: Array<{ value: number; label: string; name?: string }>;
   onSuccess?: () => void;
   onClose?: () => void;
 }

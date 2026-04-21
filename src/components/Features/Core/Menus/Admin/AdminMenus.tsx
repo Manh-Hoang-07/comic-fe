@@ -117,7 +117,7 @@ export default function AdminMenus({ title = "Quản lý menu", createButtonText
         </button>
       </div>
 
-      <MenusFilter initialFilters={filters} statusEnums={BASIC_STATUS} parentMenus={parentMenus} onUpdateFilters={actions.updateFilters} />
+      <MenusFilter initialFilters={filters as Record<string, string>} statusEnums={BASIC_STATUS} parentMenus={parentMenus as any} onUpdateFilters={actions.updateFilters as any} />
 
       <div className="bg-white shadow-md rounded-lg overflow-x-auto">
         {loading ? (

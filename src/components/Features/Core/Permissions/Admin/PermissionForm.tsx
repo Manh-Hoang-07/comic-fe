@@ -8,7 +8,7 @@ import FormField from "@/components/UI/Forms/FormField";
 import SingleSelectEnhanced from "@/components/UI/Forms/SingleSelectEnhanced";
 import { permissionSchema, type PermissionFormValues } from "./permissionSchema";
 
-const getBasicStatusArray = () => [
+const getBasicStatusArray = (): Array<{ value: string; label: string; name?: string }> => [
   { value: "active", label: "Hoạt động" },
   { value: "inactive", label: "Ngừng hoạt động" },
 ];
@@ -25,7 +25,7 @@ interface Permission {
 interface PermissionFormProps {
   show: boolean;
   permission?: Permission | null;
-  statusEnums?: Array<{ value: string; label?: string; name?: string }>;
+  statusEnums?: Array<{ value: string; label: string; name?: string }>;
   apiErrors?: Record<string, string | string[]> | null;
   loading?: boolean;
   onSubmit?: (data: Record<string, unknown>) => void;

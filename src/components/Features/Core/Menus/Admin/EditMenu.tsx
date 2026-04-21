@@ -8,7 +8,7 @@ import { MenuTreeItem } from "@/hooks/data/useMenus";
 interface EditMenuProps {
   show: boolean;
   target: EditTarget | null;
-  statusEnums?: Array<{ value: string; label?: string; name?: string }>;
+  statusEnums?: Array<{ value: string; label: string; name?: string }>;
   parentMenus?: MenuTreeItem[];
   permissions?: Array<{ id: number; name: string; code: string }>;
   onSuccess?: () => void;

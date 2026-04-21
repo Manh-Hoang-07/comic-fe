@@ -1,5 +1,6 @@
 import { api } from "@/lib/api/client";
 import { userEndpoints } from "@/lib/api/endpoints";
+import { normalizeListResponse, normalizeDetailResponse } from "@/lib/api/response-normalizer";
 import { ComicReview } from "@/types/comic";
 
 export interface CreateReviewRequest {
@@ -13,7 +14,7 @@ export const reviewService = {
      */
     getMyReviews: async (): Promise<ComicReview[]> => {
         const response = await api.get<{ data: ComicReview[] }>(userEndpoints.reviews.list);
-        return response.data.data;
+        return normalizeListResponse<ComicReview>(response.data);
     },
 
     /**
@@ -21,7 +22,7 @@ export const reviewService = {
      */
     submitReview: async (comicId: string | number, data: CreateReviewRequest): Promise<ComicReview> => {
         const response = await api.post<{ data: ComicReview }>(userEndpoints.reviews.comic(comicId), data);
-        return response.data.data;
+        return normalizeDetailResponse<ComicReview>(response.data)!;
     },
 
     /**

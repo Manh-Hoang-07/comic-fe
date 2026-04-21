@@ -9,7 +9,7 @@ import { adminEndpoints } from "@/lib/api/endpoints";
 
 interface AssignPermissionsProps {
   show: boolean;
-  role?: Record<string, unknown>;
+  role?: Record<string, any>;
   onPermissionsAssigned?: () => void;
   onClose?: () => void;
 }
@@ -20,7 +20,7 @@ export default function AssignPermissions({
   onPermissionsAssigned,
   onClose,
 }: AssignPermissionsProps) {
-  const [roleDetail, setRoleDetail] = useState<Record<string, unknown> | null>(null);
+  const [roleDetail, setRoleDetail] = useState<Record<string, any> | null>(null);
   const [permissions, setPermissions] = useState<Array<{ id: number | string; name?: string; code?: string }>>([]);
   const [loading, setLoading] = useState(false);
   const [apiErrors, setApiErrors] = useState<Record<string, string | string[]>>({});
@@ -30,7 +30,7 @@ export default function AssignPermissions({
     if (!role?.id) return;
 
     try {
-      const response = await api.get(adminEndpoints.roles.show(role.id));
+      const response = await api.get(adminEndpoints.roles.show(role.id as string | number));
       if (response.data?.success && response.data?.data) {
         const roleData = response.data.data;
         setRoleDetail(roleData);
@@ -83,7 +83,7 @@ export default function AssignPermissions({
   const permissionOptions = useMemo(() => {
     return (permissions || []).map((opt) => ({
       value: opt.id,
-      label: opt.name || opt.code,
+      label: String(opt.name || opt.code || ""),
     }));
   }, [permissions]);
 

@@ -13,7 +13,7 @@ import { AdminComic } from "@/types/comic";
 
 interface EditComicProps {
     show: boolean;
-    target: { fetchApi?: string; initialData?: Record<string, unknown>; updateApi: string } | null;
+    target: { fetchApi?: string; initialData?: any; updateApi: string } | null;
     onSuccess?: () => void;
     onClose?: () => void;
 }

@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import api from "@/lib/api/client";
 import { adminEndpoints } from "@/lib/api/endpoints";
+import { normalizeListResponse } from "@/lib/api/response-normalizer";
 
 export interface MenuTreeItem {
   id: number | string;
@@ -28,7 +29,7 @@ export function useMenus() {
     setError(null);
     try {
       const response = await api.get<MenuTreeItem[]>(adminEndpoints.menus.tree);
-      return response.data || [];
+      return normalizeListResponse<MenuTreeItem>(response.data);
     } catch (err: unknown) {
       const errorMessage = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || "Không thể lấy menu tree";
       setError(errorMessage);
@@ -45,10 +46,7 @@ export function useMenus() {
       const response = await api.get<{ success: boolean; data: MenuTreeItem[] }>(adminEndpoints.userMenus.list, {
         params,
       });
-      if (response.data?.success && Array.isArray(response.data.data)) {
-        return response.data.data;
-      }
-      return Array.isArray(response.data) ? response.data : [];
+      return normalizeListResponse<MenuTreeItem>(response.data);
     } catch (err: unknown) {
       const errorMessage = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || "Không thể lấy menu người dùng";
       setError(errorMessage);

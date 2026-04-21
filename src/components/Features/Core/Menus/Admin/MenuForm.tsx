@@ -31,7 +31,7 @@ interface Menu {
 interface MenuFormProps {
   show: boolean;
   menu?: Menu | null;
-  statusEnums?: Array<{ value: string; label?: string }>;
+  statusEnums?: Array<{ value: string; label: string }>;
   parentMenus?: MenuTreeItem[];
   permissions?: Array<{ id: number; name: string; code: string }>;
   apiErrors?: Record<string, string | string[]> | null;
@@ -100,7 +100,7 @@ export default function MenuForm({
     if (menus.length === 0) return [];
     if (!menu?.id) return flattenMenus(menus);
 
-    const excludeIds = [menu.id];
+    const excludeIds: (string | number)[] = [menu.id];
     const getChildrenIds = (m: MenuTreeItem) => {
       if (m?.children && Array.isArray(m.children) && m.children.length > 0) {
         m.children.forEach((child: MenuTreeItem) => {

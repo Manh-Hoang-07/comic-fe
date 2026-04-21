@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { env } from "@/config/env";
@@ -23,10 +23,16 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login } = useAuthStore();
+  const { login, isAuthenticated, isInitialized } = useAuthStore();
   const { showError } = useToastContext();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    if (isInitialized && isAuthenticated) {
+      router.replace("/user");
+    }
+  }, [isInitialized, isAuthenticated, router]);
 
   // 2. Sử dụng react-hook-form
   const {

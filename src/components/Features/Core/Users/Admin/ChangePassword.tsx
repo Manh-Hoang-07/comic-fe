@@ -37,7 +37,7 @@ export default function ChangePassword({
       if (payload?.errors) {
         const errors: Record<string, string> = {};
         Object.keys(payload.errors).forEach((field) => {
-          const value = payload.errors[field];
+          const value = payload.errors![field];
           errors[field] = Array.isArray(value) ? value[0] : value;
         });
         setApiErrors(errors);

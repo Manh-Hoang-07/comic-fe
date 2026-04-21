@@ -69,7 +69,7 @@ export default function AdminComicCategories() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-200 bg-white">
-                                {items.map((category: AdminComicCategory, index) => (
+                                {(items as unknown as AdminComicCategory[]).map((category, index) => (
                                     <tr key={category.id} className="hover:bg-gray-50 transition-colors">
                                         <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
                                             {getSerialNumber(index)}

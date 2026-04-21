@@ -1,5 +1,8 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } from "axios";
 import { env } from "@/config/env";
+import { createLogger } from "@/lib/logger";
+
+const log = createLogger('api:client');
 
 /**
  * Get token from cookie or localStorage
@@ -119,7 +122,7 @@ apiClient.interceptors.response.use(
 
       // Handle 500 Server Error
       if (status >= 500) {
-        console.error("Server error:", error.response.data);
+        log.error("Server error", error.response.data);
       }
     }
 

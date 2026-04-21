@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { getSystemConfig } from "@/lib/api/public/general";
 import { getPublicMenus } from "@/lib/api/public/menu";
 import { PublicHeader, PublicFooter, PublicLayoutWrapper } from "@/components/Layouts/Public";
+import ErrorBoundary from "@/components/UI/Feedback/ErrorBoundary";
 
 /**
  * Async Server Components để fetch data không blocking children
@@ -14,7 +15,7 @@ async function AsyncHeaderFooter({ children }: { children: React.ReactNode }) {
 
   return (
     <PublicLayoutWrapper
-      contactChannels={systemConfig?.contact_channels}
+      contactChannels={systemConfig?.contact_channels ?? {}}
       header={<PublicHeader key="header" systemConfig={systemConfig} initialMenus={menus} />}
       footer={<PublicFooter key="footer" systemConfig={systemConfig} />}
     >
@@ -57,7 +58,9 @@ export default function PublicLayout({
 }) {
   return (
     <Suspense fallback={<LayoutSkeleton>{children}</LayoutSkeleton>}>
-      <AsyncHeaderFooter>{children}</AsyncHeaderFooter>
+      <AsyncHeaderFooter>
+        <ErrorBoundary>{children}</ErrorBoundary>
+      </AsyncHeaderFooter>
     </Suspense>
   );
 }

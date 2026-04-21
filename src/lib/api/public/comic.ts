@@ -1,6 +1,7 @@
 import { HomepageData, Comic, ComicChapter, ChapterDetail, PaginatedResponse, ComicCategory, ComicPage } from "@/types/comic";
 import { serverFetch } from "@/lib/api/server-client";
 import { publicEndpoints } from "@/lib/api/endpoints";
+import { ADMIN_PAGE_SIZE } from "@/config/constants";
 
 export async function getComicHomepageData(): Promise<HomepageData | null> {
     const { data, error } = await serverFetch<HomepageData>(publicEndpoints.homepage, {
@@ -39,14 +40,14 @@ export async function getComics(params: {
 
     // Chuẩn hóa response data: chấp nhận cả data là mảng trực tiếp hoặc data { data: [] }
     const items = Array.isArray(data) ? data : (Array.isArray(data.data) ? data.data : []);
-    const meta = responseMeta || data.meta || {
+    const meta = (responseMeta || data.meta || {
         page: params.page || 1,
-        limit: params.limit || 20,
+        limit: params.limit || ADMIN_PAGE_SIZE,
         totalItems: items.length,
         totalPages: 1,
         hasNextPage: false,
         hasPreviousPage: false,
-    };
+    }) as PaginatedResponse<Comic>["meta"];
 
     return { data: items, meta };
 }
@@ -68,14 +69,14 @@ export async function getComicChapters(slug: string, page: number = 1): Promise<
     if (error || !data) return null;
 
     const items = Array.isArray(data) ? data : (Array.isArray(data.data) ? data.data : []);
-    const meta = responseMeta || data.meta || {
+    const meta = (responseMeta || data.meta || {
         page: page,
-        limit: 20,
+        limit: ADMIN_PAGE_SIZE,
         totalItems: items.length,
         totalPages: 1,
         hasNextPage: false,
         hasPreviousPage: false,
-    };
+    }) as PaginatedResponse<ComicChapter>["meta"];
 
     return { data: items, meta };
 }

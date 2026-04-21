@@ -24,7 +24,7 @@ interface Role {
 interface RoleFormProps {
   show: boolean;
   role?: Role | null;
-  statusEnums?: Array<{ value: string; label?: string; name?: string }>;
+  statusEnums?: Array<{ value: string; label: string; name?: string }>;
   apiErrors?: Record<string, string | string[]> | null;
   loading?: boolean;
   onSubmit?: (data: Record<string, unknown>) => void;

@@ -1,5 +1,6 @@
 import { api } from "@/lib/api/client";
 import { adminEndpoints } from "@/lib/api/endpoints";
+import { normalizeDetailResponse, normalizeListResponse } from "@/lib/api/response-normalizer";
 import { AdminDashboardAnalytics, AdminAnalyticsComicStat, AdminViewHistoryItem } from "@/types/comic";
 
 export const adminStatsService = {
@@ -8,7 +9,7 @@ export const adminStatsService = {
      */
     getDashboard: async (): Promise<AdminDashboardAnalytics> => {
         const response = await api.get<{ data: AdminDashboardAnalytics }>(adminEndpoints.analytics.dashboard);
-        return response.data.data;
+        return normalizeDetailResponse<AdminDashboardAnalytics>(response.data)!;
     },
 
     /**
@@ -19,7 +20,7 @@ export const adminStatsService = {
         sortBy?: 'views' | 'follows' | 'rating';
     }): Promise<AdminAnalyticsComicStat[]> => {
         const response = await api.get<{ data: AdminAnalyticsComicStat[] }>(adminEndpoints.analytics.comics, { params });
-        return response.data.data;
+        return normalizeListResponse<AdminAnalyticsComicStat>(response.data);
     },
 
     /**
@@ -29,7 +30,7 @@ export const adminStatsService = {
         const response = await api.get<{ data: AdminViewHistoryItem[] }>(adminEndpoints.analytics.views, {
             params: { startDate, endDate }
         });
-        return response.data.data;
+        return normalizeListResponse<AdminViewHistoryItem>(response.data);
     }
 };
 

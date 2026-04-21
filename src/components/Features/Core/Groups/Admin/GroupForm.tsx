@@ -143,8 +143,7 @@ export default function GroupForm({
       }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { metadata_json: _omit, ...submitData } = {
+    const { metadata_json: _, ...submitData } = {
       ...data,
       metadata: finalMetadata,
     };

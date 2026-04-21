@@ -5,6 +5,7 @@ import apiClient from "@/lib/api/client";
 import { publicEndpoints, userEndpoints } from "@/lib/api/endpoints";
 import { setTokenToCookie, clearTokenFromCookie, getTokenFromCookie } from "@/lib/api/utils";
 import { initializeUserGroups } from "@/lib/group/utils";
+import { storage } from "@/lib/storage";
 import type { User, LoginCredentials, RegisterData, ResetPasswordData, AuthResult, AuthState, AuthActions } from "./authTypes";
 import { EMPTY_AUTH_STATE } from "./authTypes";
 
@@ -15,25 +16,22 @@ const FETCH_CACHE_DURATION = 30000; // 30 giây
 
 /** Xóa user data khỏi localStorage */
 function clearLocalUserData() {
-  if (typeof window === "undefined") return;
-  localStorage.removeItem("user");
-  localStorage.removeItem("userPermissions");
+  storage.user.clearData();
+  storage.user.clearPermissions();
 }
 
 /** Xóa tất cả auth + group data khỏi localStorage & cookies */
 function clearAllLocalData() {
   clearLocalUserData();
-  if (typeof window === "undefined") return;
-  localStorage.removeItem("user_groups");
-  localStorage.removeItem("selected_group_id");
+  storage.group.clearGroups();
+  storage.group.clearSelected();
   clearTokenFromCookie("group_id");
 }
 
 /** Lưu user data vào localStorage */
 function persistUserData(user: User) {
-  if (typeof window === "undefined") return;
-  localStorage.setItem("user", JSON.stringify(user));
-  localStorage.setItem("userPermissions", JSON.stringify(user.permissions || []));
+  storage.user.setData(user);
+  storage.user.setPermissions(user.permissions || []);
 }
 
 /** Extract user state từ API user object */
@@ -112,11 +110,9 @@ export const useAuthStore = create<AuthState & AuthActions>()(
             }
 
             // Xóa group cũ khi đăng nhập lại
-            if (typeof window !== "undefined") {
-              localStorage.removeItem("user_groups");
-              localStorage.removeItem("selected_group_id");
-              clearTokenFromCookie("group_id");
-            }
+            storage.group.clearGroups();
+            storage.group.clearSelected();
+            clearTokenFromCookie("group_id");
 
             return { success: true, data: response.data.data, message: response.data.message };
           }
@@ -273,8 +269,8 @@ export const useAuthStore = create<AuthState & AuthActions>()(
         if (typeof window === "undefined") return false;
 
         const token = getTokenFromCookie();
-        const storedUser = localStorage.getItem("user");
-        const storedPermissions = localStorage.getItem("userPermissions");
+        const storedUser = storage.user.getData();
+        const storedPermissions = storage.user.getPermissions();
 
         if (token && storedUser) {
           try {
@@ -292,10 +288,9 @@ export const useAuthStore = create<AuthState & AuthActions>()(
           } catch {
             // Fallback: dùng data từ localStorage nếu API fail
             if (storedUser) {
-              const userData = JSON.parse(storedUser);
               set({
-                ...userToState(userData),
-                userPermissions: JSON.parse(storedPermissions || "[]"),
+                ...userToState(storedUser),
+                userPermissions: storedPermissions,
               });
               return true;
             }

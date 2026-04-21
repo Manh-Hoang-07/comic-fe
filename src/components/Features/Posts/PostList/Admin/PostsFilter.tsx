@@ -6,7 +6,7 @@ import AdminFilter from "@/components/Shared/Admin/AdminFilter";
 
 interface PostsFilterProps {
   initialFilters?: Record<string, any>;
-  statusEnums?: Array<{ value: string; label?: string; name?: string }>;
+  statusEnums?: Array<{ value: string; label: string; name?: string }>;
   categoryEnums?: Array<{ id: number; name: string }>;
   onUpdateFilters?: (filters: Record<string, any>) => void;
   onFilterChange?: () => void;

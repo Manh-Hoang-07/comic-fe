@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { constructMetadata } from "@/lib/metadata";
 import { AdminLayoutClient } from "@/components/Layouts/Admin/AdminLayoutClient";
+import ErrorBoundary from "@/components/UI/Feedback/ErrorBoundary";
 
 export const metadata = constructMetadata({
     title: "Admin Dashboard",
@@ -15,7 +16,9 @@ export default function AdminLayout({
 }) {
     return (
         <Suspense fallback={null}>
-            <AdminLayoutClient>{children}</AdminLayoutClient>
+            <AdminLayoutClient>
+                <ErrorBoundary>{children}</ErrorBoundary>
+            </AdminLayoutClient>
         </Suspense>
     );
 }

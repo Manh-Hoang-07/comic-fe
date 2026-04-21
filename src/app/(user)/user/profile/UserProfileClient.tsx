@@ -392,10 +392,10 @@ export default function UserProfileClient() {
                     </div>
 
                     <LocationSelector
-                        control={controlProfile}
+                        control={controlProfile as unknown as import("react-hook-form").Control<import("react-hook-form").FieldValues>}
                         errors={profileErrors}
-                        watch={watchProfile}
-                        setValue={setValueProfile}
+                        watch={watchProfile as unknown as import("react-hook-form").UseFormWatch<import("react-hook-form").FieldValues>}
+                        setValue={setValueProfile as unknown as import("react-hook-form").UseFormSetValue<import("react-hook-form").FieldValues>}
                         required
                     />
 

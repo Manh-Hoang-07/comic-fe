@@ -9,8 +9,10 @@ interface Action {
   className?: string;
 }
 
+type AnyItem = Record<string, any>;
+
 interface ActionsProps {
-  item: Record<string, unknown>;
+  item: AnyItem;
   showEdit?: boolean;
   showDelete?: boolean;
   showView?: boolean;
@@ -18,10 +20,10 @@ interface ActionsProps {
   deleteTitle?: string;
   viewTitle?: string;
   additionalActions?: Action[];
-  onEdit?: (item: Record<string, unknown>) => void;
-  onDelete?: (item: Record<string, unknown>) => void;
-  onView?: (item: Record<string, unknown>) => void;
-  customSlot?: (item: Record<string, unknown>) => ReactNode;
+  onEdit?: (item: AnyItem) => void;
+  onDelete?: (item: AnyItem) => void;
+  onView?: (item: AnyItem) => void;
+  customSlot?: (item: AnyItem) => ReactNode;
   children?: ReactNode;
 }
 

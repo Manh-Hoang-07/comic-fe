@@ -9,7 +9,7 @@ interface PublicLayoutWrapperProps {
     children: React.ReactNode;
     header: React.ReactNode;
     footer: React.ReactNode;
-    contactChannels: Record<string, unknown>;
+    contactChannels: unknown;
 }
 
 export function PublicLayoutWrapper({
@@ -34,7 +34,7 @@ export function PublicLayoutWrapper({
             </main>
 
             {!isReadingPage && <React.Fragment key="footer-section">{footer}</React.Fragment>}
-            {!isReadingPage && <FloatingContactChannels key="floating-channels" channels={contactChannels} />}
+            {!isReadingPage && <FloatingContactChannels key="floating-channels" channels={contactChannels as Parameters<typeof FloatingContactChannels>[0]["channels"]} />}
             {!isReadingPage && <BackToTop />}
         </div>
     );

@@ -10,8 +10,9 @@ import apiClient from "@/lib/api/client";
 // Types
 // ─────────────────────────────────────────────
 
-/** Item tối thiểu từ API list — có id + các field tuỳ ý */
-export type ListItem = { id: number | string } & Record<string, unknown>;
+/** Item tối thiểu từ API list — có id + các field tuỳ ý.
+ *  Typed as `any` because the hook is entity-agnostic; consumers narrow via callback annotations. */
+export type ListItem = any;
 
 /** Pagination state trả về từ API */
 export interface Pagination {
@@ -35,9 +36,9 @@ export interface UseListPageOptions {
 // ─── Actions ─────────────────────────────────
 
 export interface ListPageActions {
-  updateFilters: (filters: Record<string, unknown>) => void;
+  updateFilters: (filters: Record<string, any>) => void;
   changePage: (page: number) => void;
-  refresh: () => void;
+  refresh: () => Promise<void>;
   clearApiErrors: () => void;
 }
 
@@ -134,5 +135,3 @@ export function useListPage(options: UseListPageOptions): UseListPageResult {
   return { data, actions, ui };
 }
 
-/** Alias cùng implementation — dùng tên nào cũng được */
-export const useAdminListPage = useListPage;

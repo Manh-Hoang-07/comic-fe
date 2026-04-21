@@ -21,10 +21,10 @@ import api from "@/lib/api/client";
 interface PostFormProps {
   show: boolean;
   post?: Record<string, unknown>;
-  statusEnums?: Array<{ value: string; label?: string; name?: string }>;
-  postTypeEnums?: Array<{ value: string; label?: string; name?: string }>;
-  categoryEnums?: Array<{ value: number; label?: string; name?: string }>;
-  tagEnums?: Array<{ value: number; label?: string; name?: string }>;
+  statusEnums?: Array<{ value: string; label: string; name?: string }>;
+  postTypeEnums?: Array<{ value: string; label: string; name?: string }>;
+  categoryEnums?: Array<{ value: number; label: string; name?: string }>;
+  tagEnums?: Array<{ value: number; label: string; name?: string }>;
   apiErrors?: Record<string, string | string[]>;
   loading?: boolean;
   onSubmit?: (data: PostFormValues) => void;

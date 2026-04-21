@@ -6,8 +6,8 @@ import { useFormModal } from "@/hooks";
 interface CreateBannerProps {
   show: boolean;
   createApi: string;
-  statusEnums?: Array<{ value: string; label?: string; name?: string }>;
-  locationEnums?: Array<{ value: number; label?: string; name?: string }>;
+  statusEnums?: Array<{ value: string; label: string; name?: string }>;
+  locationEnums?: Array<{ value: number; label: string; name?: string }>;
   onSuccess?: () => void;
   onClose?: () => void;
 }

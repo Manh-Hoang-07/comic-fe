@@ -58,7 +58,7 @@ export default function SystemConfigForm({ group, fields }: SystemConfigFormProp
     const validate = () => {
         const newErrors: Record<string, string> = {};
         fields.forEach(field => {
-            const value = formData[field.key];
+            const value = formData[field.key] as string;
             if (field.type === "email" && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
                 newErrors[field.key] = "Email không hợp lệ";
             }
@@ -82,7 +82,7 @@ export default function SystemConfigForm({ group, fields }: SystemConfigFormProp
         setIsSubmitting(true);
 
         try {
-            const response = await api.post(adminEndpoints.systemConfigs.update(group), formData);
+            const response = await api.post(adminEndpoints.systemConfigs.update(group), formData) as { data: any };
             if (response.data.success) {
                 showSuccess("Cập nhật cấu hình thành công");
                 refresh();
@@ -146,7 +146,7 @@ export default function SystemConfigForm({ group, fields }: SystemConfigFormProp
                                 helpText={field.description}
                                 error={errors[field.key]}
                                 onChange={(e) => {
-                                    const value = field.type === "checkbox" ? e.target.checked : e.target.value;
+                                    const value = field.type === "checkbox" ? (e.target as HTMLInputElement).checked : e.target.value;
                                     handleChange(field.key, value);
                                 }}
                             />

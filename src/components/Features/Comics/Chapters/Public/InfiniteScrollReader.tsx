@@ -12,12 +12,12 @@ import { fetchChapterFullData } from '@/app/(public)/chapters/actions';
 
 interface ChapterData {
     id: string;
-    chapterDetail: Record<string, unknown>;
-    pages: Record<string, unknown>[];
-    nextChapter: Record<string, unknown> | null;
-    prevChapter: Record<string, unknown> | null;
-    chaptersData: Record<string, unknown>[];
-    commentsData: Record<string, unknown>[];
+    chapterDetail: any;
+    pages: any[];
+    nextChapter: any;
+    prevChapter: any;
+    chaptersData: any[];
+    commentsData: any[];
 }
 
 export default function InfiniteScrollReader({ initialData }: { initialData: ChapterData }) {

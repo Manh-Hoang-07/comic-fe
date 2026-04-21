@@ -1,43 +1,16 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import apiClient from "@/lib/api/client";
-import { publicEndpoints, adminEndpoints } from "@/lib/api/endpoints";
+import { useCallback, useEffect, useRef } from "react";
+import { useSystemConfigFetch } from "./useSystemConfigFetch";
+import { useSystemConfigCache } from "./useSystemConfigCache";
+import { useSystemConfigValue } from "./useSystemConfigValue";
+
+import type { SystemConfigGeneral, SystemConfigCacheData } from "./useSystemConfigCache";
+
+/** @deprecated Use SystemConfigCacheData from useSystemConfigCache instead */
+export type SystemConfigCache = SystemConfigCacheData;
 
 // ===== TYPES =====
-
-export interface SystemConfigGeneral {
-  [key: string]: unknown;
-  site_name?: string;
-  site_description?: string;
-  site_logo?: string | null;
-  site_favicon?: string | null;
-  site_email?: string | null;
-  site_phone?: string | null;
-  site_address?: string | null;
-  site_copyright?: string | null;
-  timezone?: string;
-  locale?: string;
-  currency?: string;
-  contact_channels?: Record<string, unknown>;
-  meta_title?: string | null;
-  meta_description?: string | null;
-  meta_keywords?: string | null;
-  og_title?: string | null;
-  og_description?: string | null;
-  og_image?: string | null;
-  canonical_url?: string | null;
-  google_analytics_id?: string | null;
-  google_search_console?: string | null;
-  facebook_pixel_id?: string | null;
-  twitter_site?: string | null;
-}
-
-export interface SystemConfigCache {
-  data: SystemConfigGeneral;
-  timestamp: number;
-  ttl: number;
-}
 
 export interface SystemConfigOptions {
   forceRefresh?: boolean;
@@ -62,62 +35,13 @@ export interface SystemConfigResult {
   getConfigValue: (key: string, defaultValue?: unknown) => unknown;
 }
 
-// ===== CACHE MANAGEMENT =====
-
-const CACHE_TTL = 60 * 60 * 1000; // 1 giờ
-const CACHE_KEY_PREFIX = "SystemConfig-cache";
-
-const getStorageKey = (group: string) =>
-  group === "general" ? CACHE_KEY_PREFIX : `${CACHE_KEY_PREFIX}:${group}`;
-
-const isCacheExpired = (timestamp: number): boolean => {
-  return Date.now() - timestamp > CACHE_TTL;
-};
-
-const getCacheFromStorage = (group: string): SystemConfigCache | null => {
-  if (typeof window === "undefined") return null;
-
-  try {
-    const cached = localStorage.getItem(getStorageKey(group));
-    if (!cached) return null;
-
-    const parsedCache: SystemConfigCache = JSON.parse(cached);
-
-    // Kiểm tra cache có hết hạn không
-    if (isCacheExpired(parsedCache.timestamp)) {
-      localStorage.removeItem(getStorageKey(group));
-      return null;
-    }
-
-    return parsedCache;
-  } catch (error) {
-    localStorage.removeItem(getStorageKey(group));
-    return null;
-  }
-};
-
-const saveCacheToStorage = (group: string, cache: SystemConfigCache): void => {
-  if (typeof window === "undefined") return;
-
-  try {
-    localStorage.setItem(getStorageKey(group), JSON.stringify(cache));
-  } catch (error) {
-    // Error saving cache to localStorage
-  }
-};
-
-const clearCacheFromStorage = (group: string): void => {
-  if (typeof window === "undefined") return;
-
-  try {
-    localStorage.removeItem(getStorageKey(group));
-  } catch (error) {
-    // Error clearing cache from localStorage
-  }
-};
-
 /**
  * Composable để lấy cấu hình hệ thống với cache 1 giờ
+ *
+ * Composite hook kết hợp:
+ * - useSystemConfigFetch: fetching data từ API
+ * - useSystemConfigCache: TTL caching (memory + localStorage)
+ * - useSystemConfigValue: helper lấy config values
  */
 export function useSystemConfig(
   group: string = "general",
@@ -125,174 +49,60 @@ export function useSystemConfig(
 ): SystemConfigResult {
   const { forceRefresh = false, enableCache = true, isAdmin = false } = options;
 
-  const [data, setData] = useState<SystemConfigGeneral | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<unknown>(null);
-  const [cache, setCache] = useState<SystemConfigCache | null>(null);
+  // --- Sub-hooks ---
+  const fetcher = useSystemConfigFetch({ group, isAdmin });
+  const cacher = useSystemConfigCache({ group, enableCache });
+  const { getConfigValue, systemInfo } = useSystemConfigValue(fetcher.data);
 
-  // Computed để kiểm tra cache có hợp lệ không
-  const isCacheValid = useMemo(() => {
-    if (!enableCache || !cache) return false;
-    return !isCacheExpired(cache.timestamp);
-  }, [enableCache, cache]);
-
-  const resolveEndpoint = useCallback((): string => {
-    // Nếu là admin, ưu tiên dùng adminEndpoints
-    if (isAdmin) {
-      return adminEndpoints.systemConfigs.getByGroup(group);
-    }
-
-    // Sử dụng API mới cho general config
-    if (group === "general") return publicEndpoints.systemConfigs.general;
-    // Fallback về API cũ cho các group khác
-    return publicEndpoints.systemConfigs.getByGroup(group);
-  }, [group, isAdmin]);
-
-  const normalizeConfigData = useCallback(
-    (responseData: unknown): SystemConfigGeneral => {
-      let configData: SystemConfigGeneral;
-
-      // Nếu API trả về format có wrapper { success, data, ... }
-      if (
-        responseData &&
-        typeof responseData === "object" &&
-        !Array.isArray(responseData)
-      ) {
-        const obj = responseData as Record<string, unknown>;
-        // Kiểm tra nếu có structure { success, data, ... }
-        if (
-          obj.data &&
-          typeof obj.data === "object" &&
-          !Array.isArray(obj.data)
-        ) {
-          configData = obj.data as SystemConfigGeneral;
-        } else {
-          // Nếu không có wrapper, dùng trực tiếp responseData
-          configData = obj as SystemConfigGeneral;
-        }
-
-        // Map legacy fields nếu cần
-        if (configData.site_name && !configData.name) {
-          configData.name = configData.site_name;
-        }
-        return configData;
-      }
-
-      // Nếu API trả về array của config items (format cũ)
-      if (Array.isArray(responseData)) {
-        configData = {};
-        (responseData as { key?: string; value?: unknown }[]).forEach((item) => {
-          if (item?.key && item.value !== undefined) {
-            configData[item.key] = item.value;
-          }
-        });
-        return configData;
-      }
-
-      return {};
-    },
-    []
-  );
-
-  const applyConfigData = useCallback(
-    (configData: SystemConfigGeneral): void => {
-      setData(configData);
-
-      if (enableCache) {
-        const cacheData: SystemConfigCache = {
-          data: configData,
-          timestamp: Date.now(),
-          ttl: CACHE_TTL,
-        };
-
-        setCache(cacheData);
-        saveCacheToStorage(group, cacheData);
-      }
-    },
-    [enableCache, group]
-  );
-
-  // Function để fetch data từ API
+  // Function để fetch data từ API và lưu cache
   const fetchData = useCallback(async (): Promise<void> => {
     try {
-      setLoading(true);
-      setError(null);
-
-      const endpoint = resolveEndpoint();
-      const response = await apiClient.get(endpoint);
-      const configData = normalizeConfigData(response.data);
-
-      // Nếu backend trả về rỗng/không hợp lệ, throw error
-      if (group === "general" && (!configData || Object.keys(configData).length === 0)) {
-        throw new Error("Empty system config response from API");
-      }
-
-      applyConfigData(configData);
-    } catch (err) {
-      setError(err);
-    } finally {
-      setLoading(false);
+      const configData = await fetcher.fetchData();
+      cacher.saveToCache(configData);
+    } catch {
+      // Error đã được set trong fetcher
     }
-  }, [resolveEndpoint, normalizeConfigData, applyConfigData, group]);
+  }, [fetcher, cacher]);
 
   // Function để lấy data (từ cache hoặc fetch mới)
   const getData = useCallback(async (): Promise<SystemConfigGeneral | null> => {
     // Nếu tắt cache hoặc force refresh, luôn gọi API mới
     if (!enableCache || forceRefresh) {
       await fetchData();
-      return data;
+      return fetcher.data;
     }
 
     // Kiểm tra cache từ localStorage nếu chưa có trong memory (client only)
-    if (!cache && typeof window !== "undefined") {
-      const cachedData = getCacheFromStorage(group);
+    if (!cacher.cache && typeof window !== "undefined") {
+      const cachedData = cacher.loadFromStorage();
       if (cachedData) {
-        setCache(cachedData);
-        setData(cachedData.data);
+        cacher.setCache(cachedData);
+        fetcher.setData(cachedData.data);
         return cachedData.data;
       }
     }
 
     // Nếu có cache hợp lệ, dùng cache
-    if (isCacheValid && cache) {
-      setData(cache.data);
-      return cache.data;
+    if (cacher.isCacheValid && cacher.cache) {
+      fetcher.setData(cacher.cache.data);
+      return cacher.cache.data;
     }
 
     // Fetch data mới nếu cache không hợp lệ
     await fetchData();
-    return data;
-  }, [enableCache, forceRefresh, cache, isCacheValid, group, fetchData, data]);
+    return fetcher.data;
+  }, [enableCache, forceRefresh, cacher, fetcher, fetchData]);
 
   // Function để clear cache
   const clearCache = useCallback((): void => {
-    setCache(null);
-    setData(null);
-    clearCacheFromStorage(group);
-  }, [group]);
+    cacher.clearCache();
+    fetcher.setData(null);
+  }, [cacher, fetcher]);
 
   // Function để refresh data (force fetch)
   const refresh = useCallback(async (): Promise<void> => {
     await fetchData();
   }, [fetchData]);
-
-  // Function để lấy một config value cụ thể
-  const getConfigValue = useCallback(
-    (key: string, defaultValue: unknown = null): unknown => {
-      if (!data) return defaultValue;
-      return data[key] ?? defaultValue;
-    },
-    [data]
-  );
-
-  const systemInfo = useMemo(
-    () => ({
-      name: getConfigValue("site_name") || getConfigValue("name", ""),
-      version: getConfigValue("version", ""),
-      timezone: getConfigValue("timezone", "Asia/Ho_Chi_Minh"),
-    }),
-    [getConfigValue]
-  );
 
   // Load data on mount — getData phụ thuộc vào `data` (circular dep nếu thêm vào deps).
   // Dùng ref pattern để tránh infinite loop khi dữ liệu load xong trigger effect tiếp.
@@ -300,13 +110,13 @@ export function useSystemConfig(
   getDataRef.current = getData;
   useEffect(() => {
     getDataRef.current();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   return {
-    data,
-    loading,
-    error,
-    isCacheValid,
+    data: fetcher.data,
+    loading: fetcher.loading,
+    error: fetcher.error,
+    isCacheValid: cacher.isCacheValid,
     systemInfo,
     getData,
     fetchData,
@@ -325,6 +135,3 @@ export function useGlobalSystemConfig(): SystemConfigResult {
     forceRefresh: false,
   });
 }
-
-
-

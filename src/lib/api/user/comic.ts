@@ -1,17 +1,17 @@
 import { api } from "@/lib/api/client";
 import { userEndpoints } from "@/lib/api/endpoints";
+import { normalizeListResponse, normalizeDetailResponse } from "@/lib/api/response-normalizer";
 import { Bookmark, ReadingHistory, Follow } from "@/types/comic";
 
 export const userComicService = {
     // Bookmark
     getBookmarks: async (): Promise<Bookmark[]> => {
         const response = await api.get<{ data: Bookmark[] | { data: Bookmark[] } }>(userEndpoints.bookmarks.list);
-        const data = response.data.data;
-        return Array.isArray(data) ? data : (Array.isArray((data as { data: Bookmark[] }).data) ? (data as { data: Bookmark[] }).data : []);
+        return normalizeListResponse<Bookmark>(response.data);
     },
     createBookmark: async (data: { chapter_id: string | number; page_number: number }): Promise<Bookmark> => {
         const response = await api.post<{ data: Bookmark }>(userEndpoints.bookmarks.create, data);
-        return response.data.data;
+        return normalizeDetailResponse<Bookmark>(response.data)!;
     },
     deleteBookmark: async (id: string | number): Promise<{ success: boolean }> => {
         const response = await api.delete<{ success: boolean }>(userEndpoints.bookmarks.delete(id));
@@ -21,12 +21,11 @@ export const userComicService = {
     // Reading History
     getReadingHistory: async (): Promise<ReadingHistory[]> => {
         const response = await api.get<{ data: ReadingHistory[] | { data: ReadingHistory[] } }>(userEndpoints.readingHistory.list);
-        const data = response.data.data;
-        return Array.isArray(data) ? data : (Array.isArray((data as { data: ReadingHistory[] }).data) ? (data as { data: ReadingHistory[] }).data : []);
+        return normalizeListResponse<ReadingHistory>(response.data);
     },
     updateReadingHistory: async (data: { comic_id: string | number; chapter_id: string | number }): Promise<ReadingHistory> => {
         const response = await api.post<{ data: ReadingHistory }>(userEndpoints.readingHistory.update, data);
-        return response.data.data;
+        return normalizeDetailResponse<ReadingHistory>(response.data)!;
     },
     deleteReadingHistory: async (comicId: string | number): Promise<{ success: boolean }> => {
         const response = await api.delete<{ success: boolean }>(userEndpoints.readingHistory.delete(comicId));
@@ -36,8 +35,7 @@ export const userComicService = {
     // Follows
     getFollows: async (): Promise<Follow[]> => {
         const response = await api.get<{ data: Follow[] | { data: Follow[] } }>(userEndpoints.follows.list);
-        const data = response.data.data;
-        return Array.isArray(data) ? data : (Array.isArray((data as { data: Follow[] }).data) ? (data as { data: Follow[] }).data : []);
+        return normalizeListResponse<Follow>(response.data);
     },
     followComic: async (comicId: string | number): Promise<{ success: boolean }> => {
         const response = await api.post<{ success: boolean }>(userEndpoints.follows.follow(comicId));
@@ -49,6 +47,6 @@ export const userComicService = {
     },
     checkFollowStatus: async (comicId: string | number): Promise<{ is_following: boolean }> => {
         const response = await api.get<{ data: { is_following: boolean } }>(userEndpoints.follows.checkStatus(comicId));
-        return response.data.data || { is_following: false };
+        return normalizeDetailResponse<{ is_following: boolean }>(response.data) || { is_following: false };
     }
 };

@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 
-export interface Pagination {
+export interface SerialNumberPagination {
   page?: number;
   current_page?: number;
   limit?: number;
@@ -14,7 +14,7 @@ export interface Pagination {
  * @param pagination - Đối tượng phân trang chứa current_page/page và per_page/limit
  * @returns Function - Hàm tính số thứ tự dựa trên index
  */
-export function useSerialNumber(pagination: Pagination) {
+export function useSerialNumber(pagination: SerialNumberPagination) {
   /**
    * Tính số thứ tự dựa trên index trong mảng và thông tin phân trang
    * @param index - Index của item trong mảng hiện tại

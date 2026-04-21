@@ -15,7 +15,7 @@ const CKEditor = dynamic(() => import("@/components/UI/Forms/CKEditor"), {
 import { userEndpoints } from "@/lib/api/endpoints";
 import SingleSelectEnhanced from "@/components/UI/Forms/SingleSelectEnhanced";
 
-const getBasicStatusArray = () => [
+const getBasicStatusArray = (): Array<{ value: string; label: string; name?: string }> => [
   { value: "active", label: "Hoạt động" },
   { value: "inactive", label: "Ngừng hoạt động" },
 ];
@@ -37,7 +37,7 @@ interface PostCategory {
 interface PostCategoryFormProps {
   show: boolean;
   category?: PostCategory | null;
-  statusEnums?: Array<{ value: string; label?: string; name?: string }>;
+  statusEnums?: Array<{ value: string; label: string; name?: string }>;
   apiErrors?: Record<string, string | string[]> | null;
   loading?: boolean;
   onSubmit?: (data: Record<string, unknown>) => void;

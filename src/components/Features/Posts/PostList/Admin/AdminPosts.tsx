@@ -51,10 +51,10 @@ export default function AdminPosts({
   const { items, loading, pagination, filters, hasData } = data;
   const { getSerialNumber } = ui;
 
-  const [statusEnums, setStatusEnums] = useState<Array<{ value: string; label?: string; name?: string }>>([]);
-  const [postTypeEnums, setPostTypeEnums] = useState<Array<{ value: string; label?: string; name?: string }>>([]);
-  const [categoryEnums, setCategoryEnums] = useState<Array<{ value: string; label?: string; name?: string }>>([]);
-  const [tagEnums, setTagEnums] = useState<Array<{ value: string; label?: string; name?: string }>>([]);
+  const [statusEnums, setStatusEnums] = useState<Array<{ value: string; label: string; name?: string; class?: string; badge_class?: string }>>([]);
+  const [postTypeEnums, setPostTypeEnums] = useState<Array<{ value: string; label: string; name?: string }>>([]);
+  const [categoryEnums, setCategoryEnums] = useState<Array<{ id: number; name: string; value?: number; label?: string }>>([]);
+  const [tagEnums, setTagEnums] = useState<Array<{ id: number; name: string; value?: number; label?: string }>>([]);
 
   const fetchEnums = async () => {
     try {
@@ -80,7 +80,7 @@ export default function AdminPosts({
 
   const handleRestore = async (post: Record<string, unknown>) => {
     try {
-      const response = await api.put(`${adminEndpoints.posts.delete(post.id)}/restore`);
+      const response = await api.put(`${adminEndpoints.posts.delete(post.id as number | string)}/restore`);
       if (response.data?.success) {
         toast.success("Bài viết đã được khôi phục thành công");
         actions.refresh();
@@ -203,8 +203,8 @@ export default function AdminPosts({
           createApi={createModal.data.createApi}
           statusEnums={statusEnums}
           postTypeEnums={postTypeEnums}
-          categoryEnums={categoryEnums}
-          tagEnums={tagEnums}
+          categoryEnums={categoryEnums.map(c => ({ value: c.id, label: c.name, name: c.name }))}
+          tagEnums={tagEnums.map(t => ({ value: t.id, label: t.name, name: t.name }))}
           onClose={createModal.close}
           onSuccess={() => {
             createModal.close();
@@ -219,8 +219,8 @@ export default function AdminPosts({
           target={editModal.data}
           statusEnums={statusEnums}
           postTypeEnums={postTypeEnums}
-          categoryEnums={categoryEnums}
-          tagEnums={tagEnums}
+          categoryEnums={categoryEnums.map(c => ({ value: c.id, label: c.name, name: c.name }))}
+          tagEnums={tagEnums.map(t => ({ value: t.id, label: t.name, name: t.name }))}
           onClose={editModal.close}
           onSuccess={() => {
             editModal.close();

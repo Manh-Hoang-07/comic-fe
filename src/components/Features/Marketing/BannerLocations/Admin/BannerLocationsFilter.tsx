@@ -4,14 +4,14 @@ import { useMemo } from "react";
 import AdminFilter from "@/components/Shared/Admin/AdminFilter";
 import SelectFilter from "@/components/UI/Filters/SelectFilter";
 
-const getBasicStatusArray = () => [
+const getBasicStatusArray = (): Array<{ value: string; label: string; name?: string }> => [
   { value: "active", label: "Hoạt động" },
   { value: "inactive", label: "Ngừng hoạt động" },
 ];
 
 interface BannerLocationsFilterProps {
   initialFilters?: Record<string, any>;
-  statusEnums?: Array<{ value: string; label?: string; name?: string }>;
+  statusEnums?: Array<{ value: string; label: string; name?: string }>;
   onUpdateFilters?: (filters: Record<string, any>) => void;
 }
 

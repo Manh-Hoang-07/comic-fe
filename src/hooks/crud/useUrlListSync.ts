@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import apiClient from "@/lib/api/client";
+import { normalizeListWithMeta, normalizePaginationMeta } from "@/lib/api/response-normalizer";
 
 /**
  * Đồng bộ URL <-> API list (pagination, filters, sort) mà không bao gồm CRUD.
@@ -54,28 +55,8 @@ export function useUrlListSync<T extends { id: number | string } = { id: number 
       const params = getUrlParams();
       const response = await apiClient.get(endpoint, { params });
 
-      // Parse response theo format chuẩn: { success, data: { items, meta }, ... }
-      let itemsData: T[] = [];
-      let metaData: Record<string, unknown> | null = null;
-
-      if (response.data?.success && response.data?.data) {
-        // Format chuẩn: data.data.items và data.data.meta
-        if (response.data.data.items && Array.isArray(response.data.data.items)) {
-          itemsData = response.data.data.items;
-          metaData = response.data.data.meta || null;
-        } else if (Array.isArray(response.data.data)) {
-          // Fallback: nếu data là array trực tiếp
-          itemsData = response.data.data;
-          metaData = response.data.meta || null;
-        }
-      } else if (response.data?.data && Array.isArray(response.data.data)) {
-        // Fallback: format cũ { data: [...], meta: {...} }
-        itemsData = response.data.data;
-        metaData = response.data.meta || null;
-      } else if (Array.isArray(response.data)) {
-        // Fallback: response trực tiếp là array
-        itemsData = response.data;
-      }
+      // Normalize response using centralized utilities
+      const { items: itemsData, meta: metaData } = normalizeListWithMeta<T>(response.data);
 
       const transformedData = transformItem
         ? itemsData.map(transformItem)
@@ -83,38 +64,18 @@ export function useUrlListSync<T extends { id: number | string } = { id: number 
       setItems(transformedData);
 
       if (metaData) {
-        const toNumber = (val: unknown): number | undefined => {
-          if (val === null || val === undefined || val === "") return undefined;
-          const n = typeof val === "number" ? val : parseInt(String(val), 10);
-          return Number.isFinite(n) ? n : undefined;
-        };
+        const urlPage = (typeof params.page === "number" ? params.page : parseInt(String(params.page), 10)) || 1;
+        const urlLimit = (typeof (params.limit ?? params.per_page) === "number"
+          ? (params.limit ?? params.per_page) as number
+          : parseInt(String(params.limit ?? params.per_page), 10)) || 10;
 
-        const urlPage = toNumber(params.page) ?? 1;
-        const urlLimit = toNumber(params.limit ?? params.per_page) ?? 10;
+        const normalized = normalizePaginationMeta(metaData, urlPage, urlLimit);
 
         setPagination((prev) => ({
-          page:
-            toNumber(
-              metaData.page ??
-                metaData.current_page ??
-                metaData.currentPage ??
-                metaData.page_index ??
-                metaData.pageIndex
-            ) ??
-            urlPage ??
-            prev.page,
-          totalPages:
-            toNumber(
-              metaData.totalPages ??
-                metaData.pageCount ??
-                metaData.total_pages ??
-                metaData.lastPage ??
-                metaData.last_page
-            ) ?? prev.totalPages,
-          limit: toNumber(metaData.limit ?? metaData.per_page ?? metaData.perPage) ?? urlLimit ?? prev.limit,
-          totalItems:
-            toNumber(metaData.totalItems ?? metaData.total ?? metaData.total_items) ??
-            prev.totalItems,
+          page: normalized.page ?? prev.page,
+          totalPages: normalized.totalPages ?? prev.totalPages,
+          limit: normalized.limit ?? prev.limit,
+          totalItems: normalized.totalItems ?? prev.totalItems,
         }));
       }
     } catch (err: unknown) {

@@ -6,33 +6,33 @@ import { adminEndpoints } from "@/lib/api/endpoints";
 interface SystemLocationSelectorProps {
     value: unknown;
     onChange: (value: unknown) => void;
-    formData: Record<string, unknown>;
-    onUpdate: (key: string, value: unknown) => void;
+    formData?: Record<string, unknown>;
+    onUpdate?: (key: string, value: unknown) => void;
 }
 
 export default function SystemLocationSelector({
     value,
     onChange,
-    formData,
+    formData = {},
     onUpdate,
 }: SystemLocationSelectorProps) {
-    const countryId = formData.site_country_id as string | number | null | undefined;
-    const provinceId = formData.site_province_id as string | number | null | undefined;
-    const wardId = formData.site_ward_id as string | number | null | undefined;
+    const countryId = formData?.site_country_id as string | number | null | undefined;
+    const provinceId = formData?.site_province_id as string | number | null | undefined;
+    const wardId = formData?.site_ward_id as string | number | null | undefined;
 
     const handleCountryChange = (val: string | number | null) => {
-        onUpdate("site_country_id", val);
-        onUpdate("site_province_id", null);
-        onUpdate("site_ward_id", null);
+        onUpdate?.("site_country_id", val);
+        onUpdate?.("site_province_id", null);
+        onUpdate?.("site_ward_id", null);
     };
 
     const handleProvinceChange = (val: string | number | null) => {
-        onUpdate("site_province_id", val);
-        onUpdate("site_ward_id", null);
+        onUpdate?.("site_province_id", val);
+        onUpdate?.("site_ward_id", null);
     };
 
     const handleWardChange = (val: string | number | null) => {
-        onUpdate("site_ward_id", val);
+        onUpdate?.("site_ward_id", val);
     };
 
     return (

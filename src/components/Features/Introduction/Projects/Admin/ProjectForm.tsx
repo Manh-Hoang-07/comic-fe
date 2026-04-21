@@ -49,7 +49,7 @@ interface Project {
 interface ProjectFormProps {
   show: boolean;
   project?: Project | null;
-  statusEnums?: Array<{ value: string; label?: string; name?: string }>;
+  statusEnums?: Array<{ value: string; label: string; name?: string }>;
   apiErrors?: Record<string, string | string[]> | null;
   loading?: boolean;
   onSubmit?: (data: Record<string, unknown>) => void;
@@ -102,7 +102,7 @@ export default function ProjectForm({
     const statusArray = statusEnums.length > 0 ? statusEnums : getProjectStatusArray();
     return statusArray.map((opt) => ({
       value: opt.value,
-      label: opt.label || opt.name || String(opt.value),
+      label: opt.label || String(opt.value),
     }));
   }, [statusEnums]);
 

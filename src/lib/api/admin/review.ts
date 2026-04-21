@@ -1,5 +1,6 @@
 import { api } from "@/lib/api/client";
 import { adminEndpoints } from "@/lib/api/endpoints";
+import { normalizeDetailResponse } from "@/lib/api/response-normalizer";
 import { ComicReview, ReviewStatistics, ReviewQueryParams, AdminResponse } from "@/types/comic";
 
 export const adminReviewService = {
@@ -16,7 +17,7 @@ export const adminReviewService = {
      */
     getStatistics: async (): Promise<ReviewStatistics> => {
         const response = await api.get<{ data: ReviewStatistics }>(adminEndpoints.reviews.statistics);
-        return response.data.data;
+        return normalizeDetailResponse<ReviewStatistics>(response.data)!;
     },
 
     /**
@@ -24,7 +25,7 @@ export const adminReviewService = {
      */
     update: async (id: string | number, data: Partial<ComicReview>): Promise<ComicReview> => {
         const response = await api.put<{ data: ComicReview }>(adminEndpoints.reviews.update(id), data);
-        return response.data.data;
+        return normalizeDetailResponse<ComicReview>(response.data)!;
     },
 
     /**

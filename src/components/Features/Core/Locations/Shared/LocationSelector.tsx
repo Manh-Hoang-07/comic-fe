@@ -5,13 +5,13 @@ import SingleSelectEnhanced from "@/components/UI/Forms/SingleSelectEnhanced";
 import { adminEndpoints, publicEndpoints } from "@/lib/api/endpoints";
 
 interface LocationSelectorProps {
-    control: Control<FieldValues>;
-    errors: FieldErrors<FieldValues>;
+    control: Control<any>;
+    errors: FieldErrors<any>;
     countryFieldName?: string;
     provinceFieldName?: string;
     wardFieldName?: string;
-    watch: UseFormWatch<FieldValues>;
-    setValue: UseFormSetValue<FieldValues>;
+    watch: UseFormWatch<any>;
+    setValue: UseFormSetValue<any>;
     isAdmin?: boolean;
     required?: boolean;
 }
@@ -58,7 +58,7 @@ export default function LocationSelector({
                         labelField="name"
                         valueField="id"
                         placeholder="Chọn quốc gia"
-                        error={errors[countryFieldName]?.message}
+                        error={errors[countryFieldName]?.message as string | undefined}
                         required={required}
                         onChange={(val) => {
                             field.onChange(val);
@@ -83,7 +83,7 @@ export default function LocationSelector({
                         labelField="name"
                         valueField="id"
                         placeholder={countryId ? "Chọn tỉnh / thành phố" : "Vui lòng chọn quốc gia trước"}
-                        error={errors[provinceFieldName]?.message}
+                        error={errors[provinceFieldName]?.message as string | undefined}
                         required={required}
                         disabled={!countryId}
                         onChange={(val) => {
@@ -109,7 +109,7 @@ export default function LocationSelector({
                         labelField="name"
                         valueField="id"
                         placeholder={provinceId ? "Chọn phường / xã" : "Vui lòng chọn tỉnh / thành phố trước"}
-                        error={errors[wardFieldName]?.message}
+                        error={errors[wardFieldName]?.message as string | undefined}
                         required={required}
                         disabled={!provinceId}
                     />

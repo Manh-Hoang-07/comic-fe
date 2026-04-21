@@ -46,13 +46,13 @@ function toNumId(v: Id): number {
 
 function parseTreePayload(raw: unknown): GroupTreeRow[] {
   const rows = Array.isArray(raw) ? raw : [];
-  return rows.map((g: Record<string, unknown>) => ({
+  return rows.map((g: Record<string, any>) => ({
     group_id: g.group_id ?? g.groupId,
     group_name: g.group_name ?? g.groupName,
     checked: g.checked,
     indeterminate: g.indeterminate,
     roles: Array.isArray(g.roles)
-      ? (g.roles as Record<string, unknown>[]).map((r: Record<string, unknown>) => ({
+      ? (g.roles as Record<string, any>[]).map((r: Record<string, any>) => ({
           role_id: r.role_id ?? r.roleId,
           role_name: r.role_name ?? r.roleName,
           checked: r.checked,

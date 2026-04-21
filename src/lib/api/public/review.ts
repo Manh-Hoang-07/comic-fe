@@ -17,14 +17,14 @@ export async function getComicReviews(comicId: string, params: {
     if (error || !data) return null;
 
     const items = Array.isArray(data) ? data : [];
-    const meta = responseMeta || {
+    const meta = (responseMeta || {
         page: params.page || 1,
         limit: params.limit || 20,
         totalItems: items.length,
         totalPages: 1,
         hasNextPage: false,
         hasPreviousPage: false,
-    };
+    }) as PaginatedResponse<ComicReview>["meta"];
 
     return { data: items, meta };
 }

@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import apiClient from "@/lib/api/client";
 import { publicEndpoints } from "@/lib/api/endpoints";
+import { normalizeDetailResponse } from "@/lib/api/response-normalizer";
 import { useToastContext } from "@/contexts/ToastContext";
 import { useAuthStore } from "@/lib/store/authStore";
 
@@ -64,12 +65,13 @@ export function useUserManagement() {
     try {
       setLoading(true);
       const response = await apiClient.get(publicEndpoints.users.me);
+      const userData = normalizeDetailResponse<UserProfile>(response.data);
 
-      if (response.data.success && response.data.data) {
-        setUser(response.data.data);
-        return response.data.data;
+      if (userData) {
+        setUser(userData);
+        return userData;
       } else {
-        showError(response.data.message || "Không thể lấy thông tin user");
+        showError(response.data?.message || "Không thể lấy thông tin user");
         return null;
       }
     } catch (error: unknown) {
@@ -92,12 +94,14 @@ export function useUserManagement() {
           data
         );
 
+        const profileData = normalizeDetailResponse<UserProfile>(response.data);
+
         if (response.data.success) {
           // Cập nhật user trong store
-          if (response.data.data) {
-            setUser(response.data.data);
+          if (profileData) {
+            setUser(profileData);
             // Cập nhật auth store
-            authStore.setUser(response.data.data);
+            authStore.setUser(profileData as any);
             // Refresh user info trong store
             await authStore.refreshUserInfo();
           }
@@ -108,7 +112,7 @@ export function useUserManagement() {
           return {
             success: true,
             message: response.data.message || "Cập nhật thông tin thành công",
-            data: response.data.data,
+            data: profileData as unknown as Record<string, unknown> | undefined,
           };
         } else {
           const errorMessage =

@@ -15,6 +15,7 @@ import CreateUser from "./CreateUser";
 import EditUser from "./EditUser";
 import ChangePassword from "./ChangePassword";
 import AssignRole from "./AssignRole";
+import type { AssignRoleTarget } from "./AssignRole";
 
 const endpoints = adminEndpoints.users;
 
@@ -39,11 +40,11 @@ export default function AdminUsers({
   const { items, loading, pagination, filters, hasData } = data;
   const { getSerialNumber } = ui;
 
-  const [statusEnums, setStatusEnums] = useState<Array<{ value: string; label?: string; name?: string }>>([]);
-  const [genderEnums, setGenderEnums] = useState<Array<{ value: string; label?: string; name?: string }>>([]);
+  const [statusEnums, setStatusEnums] = useState<Array<{ value: string; id?: string; label: string; name?: string }>>([]);
+  const [genderEnums, setGenderEnums] = useState<Array<{ value: string; label: string; name?: string }>>([]);
 
   const passwordModal = useModal<{ passApi: string; user: Record<string, unknown> }>();
-  const roleModal = useModal<{ user: Record<string, unknown> }>();
+  const roleModal = useModal<AssignRoleTarget>();
 
   const loadEnums = async () => {
     try {

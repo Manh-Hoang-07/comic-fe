@@ -15,7 +15,7 @@ export interface CreateModalData {
 
 export interface EditModalData {
   fetchApi?: string;
-  initialData?: Record<string, unknown>;
+  initialData?: any;
   updateApi: string;
 }
 
@@ -111,5 +111,3 @@ export function useCrudList(options: UseCrudListOptions) {
   };
 }
 
-/** @deprecated Dùng useCrudList thay thế */
-export const useAdminCrud = useCrudList;

@@ -15,14 +15,15 @@ interface ContactChannel {
 }
 
 interface ContactChannelsManagerProps {
-    value: ContactChannel[];
-    onChange: (value: ContactChannel[]) => void;
+    value: unknown;
+    onChange: (value: unknown) => void;
 }
 
 const DEFAULT_VALUE: ContactChannel[] = [];
 
-export default function ContactChannelsManager({ value = DEFAULT_VALUE, onChange }: ContactChannelsManagerProps) {
-    const [channels, setChannels] = useState<ContactChannel[]>(value || DEFAULT_VALUE);
+export default function ContactChannelsManager({ value: rawValue = DEFAULT_VALUE, onChange }: ContactChannelsManagerProps) {
+    const value = Array.isArray(rawValue) ? rawValue as ContactChannel[] : DEFAULT_VALUE;
+    const [channels, setChannels] = useState<ContactChannel[]>(value);
 
     // Sync internal state when value prop changes (e.g. after API fetch)
     useEffect(() => {
@@ -144,7 +145,7 @@ export default function ContactChannelsManager({ value = DEFAULT_VALUE, onChange
                                     type="checkbox"
                                     label="Kích hoạt"
                                     value={channel.enabled}
-                                    onChange={(e) => handleUpdate(index, { enabled: e.target.checked })}
+                                    onChange={(e) => handleUpdate(index, { enabled: (e.target as HTMLInputElement).checked })}
                                 />
 
                                 <div className="flex items-center gap-2">

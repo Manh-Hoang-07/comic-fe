@@ -183,8 +183,8 @@ export default function AdminPostComments({
             </div>
 
             <PostCommentsFilter
-                initialFilters={filters}
-                onUpdateFilters={actions.updateFilters}
+                initialFilters={filters as Record<string, string | number>}
+                onUpdateFilters={actions.updateFilters as (filters: Record<string, string | number>) => void}
             />
 
             <div className="bg-white shadow-md rounded-lg overflow-hidden mt-6 border border-gray-100">

@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import SelectFilter from "@/components/UI/Filters/SelectFilter";
 import AdminFilter from "@/components/Shared/Admin/AdminFilter";
 
-const getBasicStatusArray = () => [
+const getBasicStatusArray = (): Array<{ value: string; label: string; name?: string }> => [
   { value: "active", label: "Hoạt động" },
   { value: "inactive", label: "Ngừng hoạt động" },
 ];

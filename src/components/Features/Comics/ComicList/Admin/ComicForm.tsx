@@ -221,7 +221,7 @@ export default function ComicForm({
                                             </span>
                                         }
                                         value={value}
-                                        onChange={(e) => onChange(e.target.checked)}
+                                        onChange={(e) => onChange((e.target as HTMLInputElement).checked)}
                                     />
                                 )}
                             />
