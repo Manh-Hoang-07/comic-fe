@@ -3,10 +3,11 @@
 import ChapterForm from "./ChapterForm";
 import Modal from "@/components/UI/Feedback/Modal";
 import { useFormModal } from "@/hooks";
+import { EditTarget } from "@/hooks/crud/useFormModal";
 
 interface EditChapterProps {
     show: boolean;
-    target: { fetchApi?: string; initialData?: any; updateApi: string } | null;
+    target: EditTarget | null;
     onSuccess?: () => void;
     onClose?: () => void;
 }

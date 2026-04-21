@@ -60,9 +60,9 @@ export default function MultipleImageUploader({
       const newUrls = [...imageUrls, ...uploadedUrls];
       setImageUrls(newUrls);
       onChange?.(newUrls);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Upload error:", error);
-      alert(error?.message || "Có lỗi xảy ra khi upload ảnh");
+      alert(error instanceof Error ? error.message : "Có lỗi xảy ra khi upload ảnh");
     }
 
     // Reset input

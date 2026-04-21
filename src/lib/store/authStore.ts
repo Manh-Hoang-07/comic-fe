@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import type { AxiosError } from "axios";
 import apiClient from "@/lib/api/client";
 import { publicEndpoints, userEndpoints } from "@/lib/api/endpoints";
 import { setTokenToCookie, clearTokenFromCookie, getTokenFromCookie } from "@/lib/api/utils";
@@ -45,21 +46,24 @@ function userToState(user: User) {
   };
 }
 
+type ApiError = AxiosError<{ message?: string; errors?: Record<string, string[]> }>;
+
 /** Xử lý error response thành AuthResult */
-function handleAuthError(error: any, defaultMessage: string): AuthResult {
-  if (error.response?.status === 401) {
-    return { success: false, message: error.response?.data?.message || "Email hoặc mật khẩu không chính xác." };
+function handleAuthError(error: unknown, defaultMessage: string): AuthResult {
+  const e = error as ApiError;
+  if (e.response?.status === 401) {
+    return { success: false, message: e.response?.data?.message || "Email hoặc mật khẩu không chính xác." };
   }
-  if (error.response?.status === 400 || error.response?.status === 422) {
-    return { success: false, message: error.response?.data?.message || "Dữ liệu không hợp lệ", errors: error.response?.data?.errors };
+  if (e.response?.status === 400 || e.response?.status === 422) {
+    return { success: false, message: e.response?.data?.message || "Dữ liệu không hợp lệ", errors: e.response?.data?.errors };
   }
-  if (error.code === "ECONNABORTED") {
+  if (e.code === "ECONNABORTED") {
     return { success: false, message: "Kết nối bị timeout, vui lòng thử lại" };
   }
-  if (!error.response) {
+  if (!e.response) {
     return { success: false, message: "Không thể kết nối đến server" };
   }
-  return { success: false, message: error.response?.data?.message || error.userMessage || defaultMessage };
+  return { success: false, message: e.response?.data?.message || defaultMessage };
 }
 
 export const useAuthStore = create<AuthState & AuthActions>()(
@@ -118,7 +122,7 @@ export const useAuthStore = create<AuthState & AuthActions>()(
           }
 
           return { success: false, message: response.data.message || "Đăng nhập thất bại" };
-        } catch (error: any) {
+        } catch (error: unknown) {
           return handleAuthError(error, "Lỗi kết nối");
         }
       },
@@ -132,7 +136,7 @@ export const useAuthStore = create<AuthState & AuthActions>()(
           }
 
           return { success: false, message: response.data.message || "Đăng ký thất bại", errors: response.data.errors };
-        } catch (error: any) {
+        } catch (error: unknown) {
           return handleAuthError(error, "Lỗi kết nối");
         }
       },
@@ -141,11 +145,12 @@ export const useAuthStore = create<AuthState & AuthActions>()(
         try {
           const response = await apiClient.post(userEndpoints.auth.sendOtpRegister, { email });
           return { success: true, message: response.data.message || "Mã OTP đã được gửi đến email của bạn." };
-        } catch (error: any) {
+        } catch (error: unknown) {
+          const e = error as ApiError;
           return {
             success: false,
-            message: error.response?.data?.message || "Không thể gửi OTP. Vui lòng thử lại sau.",
-            errors: error.response?.data?.errors,
+            message: e.response?.data?.message || "Không thể gửi OTP. Vui lòng thử lại sau.",
+            errors: e.response?.data?.errors,
           };
         }
       },
@@ -154,11 +159,12 @@ export const useAuthStore = create<AuthState & AuthActions>()(
         try {
           const response = await apiClient.post(userEndpoints.auth.sendOtpForgotPassword, { email });
           return { success: true, message: response.data.message || "Mã OTP đã được gửi đến email của bạn." };
-        } catch (error: any) {
+        } catch (error: unknown) {
+          const e = error as ApiError;
           return {
             success: false,
-            message: error.response?.data?.message || "Email không tồn tại hoặc lỗi server.",
-            errors: error.response?.data?.errors,
+            message: e.response?.data?.message || "Email không tồn tại hoặc lỗi server.",
+            errors: e.response?.data?.errors,
           };
         }
       },
@@ -167,11 +173,12 @@ export const useAuthStore = create<AuthState & AuthActions>()(
         try {
           const response = await apiClient.post(userEndpoints.auth.resetPassword, data);
           return { success: true, message: response.data.message || "Đổi mật khẩu thành công." };
-        } catch (error: any) {
+        } catch (error: unknown) {
+          const e = error as ApiError;
           return {
             success: false,
-            message: error.response?.data?.message || "Mã OTP sai hoặc hết hạn.",
-            errors: error.response?.data?.errors,
+            message: e.response?.data?.message || "Mã OTP sai hoặc hết hạn.",
+            errors: e.response?.data?.errors,
           };
         }
       },
@@ -208,10 +215,11 @@ export const useAuthStore = create<AuthState & AuthActions>()(
             set(EMPTY_AUTH_STATE);
             clearTokenFromCookie();
           }
-        } catch (error: any) {
-          if (error.response?.status === 401 || error.response?.status === 403) {
+        } catch (error: unknown) {
+          const e = error as ApiError;
+          if (e.response?.status === 401 || e.response?.status === 403) {
             set(EMPTY_AUTH_STATE);
-            if (error.response?.status === 401) clearTokenFromCookie();
+            if (e.response?.status === 401) clearTokenFromCookie();
             clearLocalUserData();
           }
         } finally {
@@ -251,12 +259,13 @@ export const useAuthStore = create<AuthState & AuthActions>()(
           }
 
           return { success: false, message: response.data.message || "Làm mới token thất bại" };
-        } catch (error: any) {
-          if (error.response?.status === 401) {
+        } catch (error: unknown) {
+          const e = error as ApiError;
+          if (e.response?.status === 401) {
             await get().logout();
             return { success: false, message: "Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại" };
           }
-          return { success: false, message: error.userMessage || "Lỗi khi làm mới token" };
+          return { success: false, message: "Lỗi khi làm mới token" };
         }
       },
 

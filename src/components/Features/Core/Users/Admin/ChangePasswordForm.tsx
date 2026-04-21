@@ -9,9 +9,9 @@ import { changePasswordSchema, type ChangePasswordFormValues } from "./changePas
 
 interface ChangePasswordFormProps {
   show: boolean;
-  user?: any;
-  apiErrors?: Record<string, string | string[]>;
-  onSubmit?: (data: any) => void;
+  user?: Record<string, unknown>;
+  apiErrors?: Record<string, string | string[]> | null;
+  onSubmit?: (data: Record<string, unknown>) => void;
   onCancel?: () => void;
 }
 

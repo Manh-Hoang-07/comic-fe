@@ -9,11 +9,11 @@ import apiClient from "@/lib/api/client";
  * - Lấy list theo query URL (page, limit, filter, sort)
  * - Hỗ trợ CRUD cơ bản nếu truyền endpoint tương ứng
  */
-export function useUrlApiSync<T extends { id: any } = any>(config: {
+export function useUrlApiSync<T extends { id: number | string } = { id: number | string } & Record<string, unknown>>(config: {
   endpoint: string;
   createEndpoint?: string;
-  updateEndpoint?: (id: any) => string;
-  deleteEndpoint?: (id: any) => string;
+  updateEndpoint?: (id: number | string) => string;
+  deleteEndpoint?: (id: number | string) => string;
   transformItem?: (item: T) => T;
 }) {
   const {
@@ -27,12 +27,13 @@ export function useUrlApiSync<T extends { id: any } = any>(config: {
   // Base list composable (URL sync, pagination, filters...)
   const listComposable = useUrlListSync<T>({ endpoint, transformItem });
 
-  const [apiErrors, setApiErrors] = useState<any>({});
+  const [apiErrors, setApiErrors] = useState<Record<string, string | string[]>>({});
   const [isMutating, setIsMutating] = useState(false);
 
   // CRUD (chỉ tạo nếu có endpoint)
+  type ApiErr = { response?: { data?: Record<string, string | string[]> } };
   const createItem = createEndpoint
-    ? async (itemData: any) => {
+    ? async (itemData: Record<string, unknown>) => {
       setIsMutating(true);
       setApiErrors({});
 
@@ -53,8 +54,8 @@ export function useUrlApiSync<T extends { id: any } = any>(config: {
         await listComposable.refresh();
 
         return newItem;
-      } catch (err: any) {
-        setApiErrors(err.response?.data || err);
+      } catch (err: unknown) {
+        setApiErrors((err as ApiErr).response?.data ?? {});
         throw err;
       } finally {
         setIsMutating(false);
@@ -63,7 +64,7 @@ export function useUrlApiSync<T extends { id: any } = any>(config: {
     : undefined;
 
   const updateItem = updateEndpoint
-    ? async (id: any, itemData: any) => {
+    ? async (id: number | string, itemData: Record<string, unknown>) => {
       setIsMutating(true);
       setApiErrors({});
 
@@ -85,8 +86,8 @@ export function useUrlApiSync<T extends { id: any } = any>(config: {
         await listComposable.refresh();
 
         return updatedItem;
-      } catch (err: any) {
-        setApiErrors(err.response?.data || err);
+      } catch (err: unknown) {
+        setApiErrors((err as ApiErr).response?.data ?? {});
         throw err;
       } finally {
         setIsMutating(false);
@@ -95,7 +96,7 @@ export function useUrlApiSync<T extends { id: any } = any>(config: {
     : undefined;
 
   const deleteItem = deleteEndpoint
-    ? async (id: any) => {
+    ? async (id: number | string) => {
       setIsMutating(true);
       setApiErrors({});
 
@@ -106,8 +107,8 @@ export function useUrlApiSync<T extends { id: any } = any>(config: {
         await listComposable.refresh();
 
         return true;
-      } catch (err: any) {
-        setApiErrors(err.response?.data || err);
+      } catch (err: unknown) {
+        setApiErrors((err as ApiErr).response?.data ?? {});
         throw err;
       } finally {
         setIsMutating(false);

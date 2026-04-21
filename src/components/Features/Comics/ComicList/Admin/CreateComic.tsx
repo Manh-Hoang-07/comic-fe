@@ -23,11 +23,11 @@ export default function CreateComic({
     onSuccess,
     onClose,
 }: CreateComicProps) {
-    const [apiErrors, setApiErrors] = useState<any>(null);
+    const [apiErrors, setApiErrors] = useState<Record<string, string | string[]> | null>(null);
     const [loading, setLoading] = useState(false);
     const { showError, showSuccess } = useToastContext();
 
-    const handleSubmit = async (formData: any) => {
+    const handleSubmit = async (formData: Record<string, unknown>) => {
         setApiErrors(null);
         setLoading(true);
         try {
@@ -50,10 +50,11 @@ export default function CreateComic({
             }
 
             onSuccess?.();
-        } catch (error: any) {
-            const errors = error.response?.data?.errors || error.response?.data || error;
-            setApiErrors(errors);
-            showError(error.response?.data?.message || "Có lỗi xảy ra khi tạo mới");
+        } catch (error: unknown) {
+            const e = error as { response?: { data?: { errors?: Record<string, string | string[]>; message?: string } } };
+            const errors = e.response?.data?.errors || e.response?.data || {};
+            setApiErrors(errors as Record<string, string | string[]>);
+            showError(e.response?.data?.message || "Có lỗi xảy ra khi tạo mới");
         } finally {
             setLoading(false);
         }

@@ -2,10 +2,11 @@
 
 import TagForm from "./TagForm";
 import { useFormModal } from "@/hooks";
+import { EditTarget } from "@/hooks/crud/useFormModal";
 
 interface EditTagProps {
   show: boolean;
-  target: { fetchApi?: string; initialData?: any; updateApi: string } | null;
+  target: EditTarget | null;
   statusEnums?: Array<{ value: string; label?: string; name?: string }>;
   onSuccess?: () => void;
   onClose?: () => void;

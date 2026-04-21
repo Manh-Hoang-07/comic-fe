@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export const revalidate = 3600;
 
 export default async function GalleryPage() {
-  const { data: galleryItems } = await serverFetch<any[]>("/api/gallery", { revalidate: 3600 });
+  const { data: galleryItems } = await serverFetch<Record<string, unknown>[]>("/api/gallery", { revalidate: 3600 });
 
   return (
     <Suspense fallback={<div className="text-center py-10 text-gray-500">Đang tải thư viện...</div>}>

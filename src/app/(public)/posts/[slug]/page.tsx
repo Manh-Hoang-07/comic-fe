@@ -95,7 +95,7 @@ export default async function PostDetailPage({ params }: { params: Promise<{ slu
             {/* Tags */}
             {post.tags && post.tags.length > 0 && (
               <div className="flex flex-wrap gap-2">
-                {post.tags.map((tag: any) => (
+                {post.tags.map((tag: { id: number | string; name?: string; slug?: string }) => (
                   <span
                     key={tag.id}
                     className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium hover:bg-primary/10 hover:text-primary transition-colors cursor-default"

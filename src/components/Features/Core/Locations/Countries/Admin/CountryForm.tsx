@@ -21,7 +21,7 @@ export interface AdminCountryFormEntity {
 interface CountryFormProps {
   show: boolean;
   country?: AdminCountryFormEntity | null;
-  apiErrors?: Record<string, string | string[]>;
+  apiErrors?: Record<string, string | string[]> | null;
   loading?: boolean;
   onSubmit?: (data: CountryFormValues) => void;
   onCancel?: () => void;
@@ -63,7 +63,7 @@ export default function CountryForm({
           official_name: country.official_name || "",
           phone_code: country.phone_code || "",
           currency_code: country.currency_code || "",
-          status: (country.status as any) || "active",
+          status: (country.status === "active" || country.status === "inactive" ? country.status : "active"),
         });
       } else {
         reset({

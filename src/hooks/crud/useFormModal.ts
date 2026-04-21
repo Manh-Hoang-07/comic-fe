@@ -25,23 +25,29 @@ export interface CreateModeProps {
   createApi: string;
 }
 
+export interface EditTarget {
+  fetchApi?: string;
+  initialData?: Record<string, unknown>;
+  updateApi: string;
+}
+
 export interface EditModeProps {
   mode: "edit";
   show: boolean;
-  target: { fetchApi?: string; initialData?: any; updateApi: string } | null;
+  target: EditTarget | null;
 }
 
 export type FormModalProps = CreateModeProps | EditModeProps;
 
 export interface UseFormModalResult {
   /** Dữ liệu entity (chỉ có ở edit mode, sau khi fetch) */
-  entityData: any;
+  entityData: Record<string, unknown> | null;
   /** Đang loading (fetch hoặc submit) */
   loading: boolean;
   /** Lỗi từ API */
-  apiErrors: any;
+  apiErrors: Record<string, string | string[]> | null;
   /** Handler submit form - tự detect create/edit */
-  handleSubmit: (formData: any) => Promise<void>;
+  handleSubmit: (formData: Record<string, unknown>) => Promise<void>;
   /** True nếu đang ở edit mode */
   isEditMode: boolean;
 }
@@ -78,9 +84,9 @@ export function useFormModal(
     onClose,
   } = options;
 
-  const [entityData, setEntityData] = useState<any>(null);
+  const [entityData, setEntityData] = useState<Record<string, unknown> | null>(null);
   const [loading, setLoading] = useState(false);
-  const [apiErrors, setApiErrors] = useState<any>(null);
+  const [apiErrors, setApiErrors] = useState<Record<string, string | string[]> | null>(null);
   const { showSuccess, showError } = useToastContext();
 
   const isEditMode = props.mode === "edit";
@@ -116,7 +122,7 @@ export function useFormModal(
   }, [isEditMode, props.show, isEditMode ? (props as EditModeProps).target : null]);
 
   const handleSubmit = useCallback(
-    async (formData: any) => {
+    async (formData: Record<string, unknown>) => {
       setApiErrors(null);
       setLoading(true);
 
@@ -132,10 +138,10 @@ export function useFormModal(
           showSuccess(createSuccessMessage);
         }
         onSuccess?.();
-      } catch (error: any) {
-        const errors = error.response?.data?.errors || error.response?.data || error;
-        setApiErrors(errors);
-        showError(error.response?.data?.message || "Có lỗi xảy ra");
+      } catch (error: unknown) {
+        const e = error as { response?: { data?: { errors?: Record<string, string | string[]>; message?: string } } };
+        setApiErrors(e.response?.data?.errors ?? null);
+        showError(e.response?.data?.message || "Có lỗi xảy ra");
       } finally {
         setLoading(false);
       }

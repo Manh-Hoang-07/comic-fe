@@ -13,22 +13,22 @@ interface CreateUserProps {
   onClose?: () => void;
 }
 
-const buildUserPayload = (formData: any) => {
+const buildUserPayload = (formData: Record<string, unknown>) => {
   const data = formData || {};
   const baseKeys = ["username", "email", "phone", "status", "password", "name", "image"] as const;
   const profileKeys = ["gender", "birthday", "address", "about", "country_id", "province_id", "ward_id"] as const;
 
-  const payload: Record<string, any> = {};
+  const payload: Record<string, unknown> = {};
   baseKeys.forEach((key) => {
-    const value = (data as any)[key];
+    const value = data[key];
     if (value !== undefined && value !== null && value !== "") {
       payload[key] = value;
     }
   });
 
-  const profile: Record<string, any> = {};
+  const profile: Record<string, unknown> = {};
   profileKeys.forEach((key) => {
-    const value = (data as any)[key];
+    const value = data[key];
     if (value !== undefined && value !== null && value !== "") {
       profile[key] = value;
     }
@@ -55,7 +55,7 @@ export default function CreateUser({
   );
 
   const handleFormSubmit = useCallback(
-    (formData: any) => handleSubmit(buildUserPayload(formData)),
+    (formData: Record<string, unknown>) => handleSubmit(buildUserPayload(formData)),
     [handleSubmit]
   );
 

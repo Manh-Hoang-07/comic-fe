@@ -6,6 +6,7 @@
 export interface StatusOption {
   value: string;
   label: string;
+  name?: string;
 }
 
 export interface StatusBadge {

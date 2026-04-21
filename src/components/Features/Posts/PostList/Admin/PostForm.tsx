@@ -20,7 +20,7 @@ import api from "@/lib/api/client";
 
 interface PostFormProps {
   show: boolean;
-  post?: any;
+  post?: Record<string, unknown>;
   statusEnums?: Array<{ value: string; label?: string; name?: string }>;
   postTypeEnums?: Array<{ value: string; label?: string; name?: string }>;
   categoryEnums?: Array<{ value: number; label?: string; name?: string }>;
@@ -112,11 +112,11 @@ export default function PostForm({
 
             if (!categoryEnums) {
               const catData = catRes.data?.data || [];
-              setCategoryOptions(catData.map((c: any) => ({ value: c.id, label: c.name })));
+              setCategoryOptions(catData.map((c: { id: number | string; name?: string }) => ({ value: c.id as number, label: c.name ?? "" })));
             }
             if (!tagEnums) {
               const tagData = tagRes.data?.data || [];
-              setTagOptions(tagData.map((t: any) => ({ value: t.id, label: t.name })));
+              setTagOptions(tagData.map((t: { id: number | string; name?: string }) => ({ value: t.id as number, label: t.name ?? "" })));
             }
           } catch (err) {
             console.error("Failed to load options", err);
@@ -132,27 +132,27 @@ export default function PostForm({
     if (show) {
       if (post) {
         reset({
-          name: post.name || "",
-          excerpt: post.excerpt || "",
-          content: post.content || "",
-          cover_image: post.cover_image || "",
-          image: post.image || "",
-          post_type: post.post_type || "text",
-          video_url: post.video_url || "",
-          audio_url: post.audio_url || "",
-          status: post.status || "draft",
-          published_at: post.published_at ? formatDateTimeForInput(post.published_at) : "",
-          primary_postcategory_id: post.primary_postcategory_id,
-          category_ids: post.categories?.map((c: any) => c.id) || [],
-          tag_ids: post.tags?.map((t: any) => t.id) || [],
+          name: (post.name as string) || "",
+          excerpt: (post.excerpt as string) || "",
+          content: (post.content as string) || "",
+          cover_image: (post.cover_image as string) || "",
+          image: (post.image as string) || "",
+          post_type: (post.post_type as string) || "text",
+          video_url: (post.video_url as string) || "",
+          audio_url: (post.audio_url as string) || "",
+          status: (post.status as string) || "draft",
+          published_at: post.published_at ? formatDateTimeForInput(post.published_at as string) : "",
+          primary_postcategory_id: post.primary_postcategory_id as number | undefined,
+          category_ids: (post.categories as { id: number | string }[] | undefined)?.map((c) => c.id as number) || [],
+          tag_ids: (post.tags as { id: number | string }[] | undefined)?.map((t) => t.id as number) || [],
           is_featured: !!post.is_featured,
           is_pinned: !!post.is_pinned,
-          meta_title: post.meta_title || "",
-          meta_description: post.meta_description || "",
-          canonical_url: post.canonical_url || "",
-          og_title: post.og_title || "",
-          og_description: post.og_description || "",
-          og_image: post.og_image || "",
+          meta_title: (post.meta_title as string) || "",
+          meta_description: (post.meta_description as string) || "",
+          canonical_url: (post.canonical_url as string) || "",
+          og_title: (post.og_title as string) || "",
+          og_description: (post.og_description as string) || "",
+          og_image: (post.og_image as string) || "",
         });
       } else {
         reset({
@@ -193,12 +193,12 @@ export default function PostForm({
   }, [apiErrors, setError]);
 
   const statusOptions = useMemo(() =>
-    statusEnums.map(opt => ({ value: opt.value, label: opt.label || (opt as any).name || opt.value })),
+    statusEnums.map(opt => ({ value: opt.value, label: opt.label || opt.name || opt.value })),
     [statusEnums]
   );
 
   const postTypeOptions = useMemo(() =>
-    postTypeEnums.map(opt => ({ value: opt.value, label: opt.label || (opt as any).name || opt.value })),
+    postTypeEnums.map(opt => ({ value: opt.value, label: opt.label || opt.name || opt.value })),
     [postTypeEnums]
   );
 

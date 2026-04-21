@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { adminStatsService } from "@/lib/api/admin/analytics";
 import {
@@ -178,7 +178,7 @@ export default function ComicStatsPage() {
                                     { label: "Lượt theo dõi", value: "follows" },
                                     { label: "Đánh giá", value: "rating" },
                                 ]}
-                                onChange={(val) => setTopFilter(prev => ({ ...prev, sortBy: val as any }))}
+                                onChange={(val) => setTopFilter(prev => ({ ...prev, sortBy: val as 'views' | 'follows' | 'rating' }))}
                             />
                             <SelectFilter
                                 value={topFilter.limit.toString()}
@@ -242,7 +242,15 @@ export default function ComicStatsPage() {
     );
 }
 
-function StatCard({ title, value, icon, color, loading }: any) {
+interface StatCardProps {
+    title: string;
+    value: number;
+    icon: React.ReactNode;
+    color: string;
+    loading?: boolean;
+}
+
+function StatCard({ title, value, icon, color, loading }: StatCardProps) {
     if (loading) {
         return (
             <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm animate-pulse">

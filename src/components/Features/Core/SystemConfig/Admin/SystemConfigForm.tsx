@@ -15,10 +15,10 @@ interface ConfigField {
     placeholder?: string;
     description?: string;
     component?: React.ComponentType<{
-        value: any;
-        onChange: (value: any) => void;
-        formData?: Record<string, any>;
-        onUpdate?: (key: string, value: any) => void;
+        value: unknown;
+        onChange: (value: unknown) => void;
+        formData?: Record<string, unknown>;
+        onUpdate?: (key: string, value: unknown) => void;
     }>;
 }
 
@@ -30,7 +30,7 @@ interface SystemConfigFormProps {
 export default function SystemConfigForm({ group, fields }: SystemConfigFormProps) {
     const { data: configData, loading, refresh } = useSystemConfig(group, { isAdmin: true, enableCache: false });
     const { showSuccess, showError } = useToastContext();
-    const [formData, setFormData] = useState<Record<string, any>>({});
+    const [formData, setFormData] = useState<Record<string, unknown>>({});
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -40,8 +40,8 @@ export default function SystemConfigForm({ group, fields }: SystemConfigFormProp
         }
     }, [configData]);
 
-    const handleChange = (key: string, value: any) => {
-        setFormData((prev: any) => ({
+    const handleChange = (key: string, value: unknown) => {
+        setFormData((prev) => ({
             ...prev,
             [key]: value,
         }));
@@ -89,9 +89,10 @@ export default function SystemConfigForm({ group, fields }: SystemConfigFormProp
             } else {
                 showError(response.data.message || "Đã có lỗi xảy ra");
             }
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("Failed to update config:", error);
-            showError(error.response?.data?.message || "Lỗi kết nối server");
+            const e = error as { response?: { data?: { message?: string } } };
+            showError(e.response?.data?.message || "Lỗi kết nối server");
         } finally {
             setIsSubmitting(false);
         }
@@ -122,8 +123,8 @@ export default function SystemConfigForm({ group, fields }: SystemConfigFormProp
                                     )}
                                 </label>
                                 <ImageUploader
-                                    value={formData[field.key]}
-                                    defaultUrl={formData[field.key] || undefined}
+                                    value={formData[field.key] as string | null}
+                                    defaultUrl={(formData[field.key] as string) || undefined}
                                     onChange={(value) => handleChange(field.key, value)}
                                     onRemove={() => handleChange(field.key, null)}
                                 />
@@ -140,7 +141,7 @@ export default function SystemConfigForm({ group, fields }: SystemConfigFormProp
                             <FormField
                                 label={field.label}
                                 type={field.type === "textarea" ? "textarea" : field.type}
-                                value={field.type === "checkbox" ? !!formData[field.key] : formData[field.key] ?? ""}
+                                value={field.type === "checkbox" ? !!formData[field.key] : (formData[field.key] as string) ?? ""}
                                 placeholder={field.placeholder}
                                 helpText={field.description}
                                 error={errors[field.key]}

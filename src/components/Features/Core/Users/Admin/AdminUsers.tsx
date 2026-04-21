@@ -39,11 +39,11 @@ export default function AdminUsers({
   const { items, loading, pagination, filters, hasData } = data;
   const { getSerialNumber } = ui;
 
-  const [statusEnums, setStatusEnums] = useState<any[]>([]);
-  const [genderEnums, setGenderEnums] = useState<any[]>([]);
+  const [statusEnums, setStatusEnums] = useState<Array<{ value: string; label?: string; name?: string }>>([]);
+  const [genderEnums, setGenderEnums] = useState<Array<{ value: string; label?: string; name?: string }>>([]);
 
-  const passwordModal = useModal<{ passApi: string; user: any }>();
-  const roleModal = useModal<{ user: any }>();
+  const passwordModal = useModal<{ passApi: string; user: Record<string, unknown> }>();
+  const roleModal = useModal<{ user: Record<string, unknown> }>();
 
   const loadEnums = async () => {
     try {

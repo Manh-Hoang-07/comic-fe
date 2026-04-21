@@ -22,7 +22,7 @@ export interface AdminProvinceFormEntity {
 interface ProvinceFormProps {
   show: boolean;
   province?: AdminProvinceFormEntity | null;
-  apiErrors?: Record<string, string | string[]>;
+  apiErrors?: Record<string, string | string[]> | null;
   loading?: boolean;
   onSubmit?: (data: ProvinceFormValues) => void;
   onCancel?: () => void;
@@ -69,7 +69,7 @@ export default function ProvinceForm({
           type: province.type || "Province",
           phone_code: province.phone_code || "",
           country_id: province.country_id || 1,
-          status: (province.status as any) || "active",
+          status: (province.status === "active" || province.status === "inactive" ? province.status : "active"),
         });
       } else {
         reset({

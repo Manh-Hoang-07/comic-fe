@@ -41,11 +41,12 @@ export function ContactForm() {
             await submitContact(data);
             showSuccess("Cảm ơn bạn đã liên hệ! Chúng tôi sẽ phản hồi sớm nhất có thể.");
             reset();
-        } catch (error: any) {
+        } catch (error: unknown) {
+            const e = error as { response?: { data?: { message?: string | string[] } } };
             console.error("Submit contact error:", error);
 
-            if (error.response?.data?.message) {
-                const msg = error.response.data.message;
+            if (e.response?.data?.message) {
+                const msg = e.response.data.message;
 
                 if (Array.isArray(msg)) {
                     const otherErrors: string[] = [];

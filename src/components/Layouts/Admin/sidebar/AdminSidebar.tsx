@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useMenus, MenuTreeItem } from "@/hooks";
 import { initializeUserGroups, getUserGroups, getSelectedGroup, Group } from "@/lib/group/utils";
 import { useAuthStore } from "@/lib/store/authStore";
@@ -89,10 +89,12 @@ export function AdminSidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: 
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
 
-  // Close sidebar on path change
+  // Dùng ref để tránh phụ thuộc vào onClose prop — chỉ muốn đóng khi pathname thay đổi
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+
   useEffect(() => {
-    if (onClose) onClose();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    onCloseRef.current?.();
   }, [pathname]);
 
   // Initialize groups and menus

@@ -37,7 +37,7 @@ export default function AdminRoles({
   const { items, loading, pagination, filters, hasData } = data;
   const { getSerialNumber } = ui;
 
-  const permissionsModal = useModal<{ role: any }>();
+  const permissionsModal = useModal<{ role: Record<string, unknown> }>();
 
   return (
     <div className="admin-roles">

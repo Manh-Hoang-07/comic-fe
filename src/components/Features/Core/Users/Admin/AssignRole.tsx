@@ -46,13 +46,13 @@ function toNumId(v: Id): number {
 
 function parseTreePayload(raw: unknown): GroupTreeRow[] {
   const rows = Array.isArray(raw) ? raw : [];
-  return rows.map((g: any) => ({
+  return rows.map((g: Record<string, unknown>) => ({
     group_id: g.group_id ?? g.groupId,
     group_name: g.group_name ?? g.groupName,
     checked: g.checked,
     indeterminate: g.indeterminate,
     roles: Array.isArray(g.roles)
-      ? g.roles.map((r: any) => ({
+      ? (g.roles as Record<string, unknown>[]).map((r: Record<string, unknown>) => ({
           role_id: r.role_id ?? r.roleId,
           role_name: r.role_name ?? r.roleName,
           checked: r.checked,
@@ -201,8 +201,9 @@ export default function AssignRole({
       setBaseline(JSON.parse(JSON.stringify(selectionByGroup)) as Record<string, number[]>);
       onSuccess?.();
       onClose?.();
-    } catch (error: any) {
-      const payload = error?.response?.data;
+    } catch (error: unknown) {
+      const e = error as { response?: { data?: { message?: string } } };
+      const payload = e?.response?.data;
       showError(payload?.message || "Có lỗi khi lưu phân quyền");
     } finally {
       setIsSubmitting(false);

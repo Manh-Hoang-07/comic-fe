@@ -47,7 +47,7 @@ export interface SeoResult {
     articleTag?: string | string[];
   };
   linkTags: Array<{ rel: string; href: string }>;
-  structuredData: any;
+  structuredData: Record<string, unknown>;
 }
 
 /**
@@ -59,7 +59,7 @@ export function useSeo(options: SeoOptions = {}): SeoResult {
   const { getConfigValue } = useSystemConfig("general", { enableCache: true });
 
   // Helper để kiểm tra giá trị có thực sự tồn tại không (không phải null/undefined/empty)
-  const hasValue = (val: any): boolean => {
+  const hasValue = (val: unknown): boolean => {
     if (val === null || val === undefined) return false;
     if (typeof val === "string") return val.trim() !== "";
     return true;
@@ -230,7 +230,7 @@ export function useSeo(options: SeoOptions = {}): SeoResult {
       env.siteName ||
       "Cửa hàng";
 
-    const baseData: any = {
+    const baseData: Record<string, unknown> = {
       "@context": "https://schema.org",
       "@type":
         seoType === "product"

@@ -4,19 +4,29 @@ import { useMemo, useCallback } from "react";
 import { useUrlApiSync } from "./useUrlApiSync";
 import { useToastContext } from "@/contexts/ToastContext";
 import { useSerialNumber } from "../ui-ux/useSerialNumber";
-import { useModals } from "./useModals";
 import apiClient from "@/lib/api/client";
 
 // ─────────────────────────────────────────────
 // Types
 // ─────────────────────────────────────────────
 
+/** Item tối thiểu từ API list — có id + các field tuỳ ý */
+export type ListItem = { id: number | string } & Record<string, unknown>;
+
+/** Pagination state trả về từ API */
+export interface Pagination {
+  page: number;
+  totalPages: number;
+  limit: number;
+  totalItems: number;
+}
+
 export interface UseListPageOptions {
   /** Endpoint để lấy danh sách dữ liệu */
   endpoint: string;
 
   /** Transform item trước khi hiển thị (optional) */
-  transformItem?: (item: any) => any;
+  transformItem?: (item: ListItem) => ListItem;
 
   /** Tùy chọn prefix cho serial number */
   serialNumberPrefix?: string;
@@ -25,7 +35,7 @@ export interface UseListPageOptions {
 // ─── Actions ─────────────────────────────────
 
 export interface ListPageActions {
-  updateFilters: (filters: any) => void;
+  updateFilters: (filters: Record<string, unknown>) => void;
   changePage: (page: number) => void;
   refresh: () => void;
   clearApiErrors: () => void;
@@ -35,11 +45,11 @@ export interface ListPageActions {
 
 /** State danh sách */
 export interface ListPageData {
-  items: any[];
+  items: ListItem[];
   loading: boolean;
-  pagination: any;
-  filters: any;
-  apiErrors: any;
+  pagination: Pagination;
+  filters: Record<string, unknown>;
+  apiErrors: Record<string, string | string[]>;
   hasData: boolean;
 }
 

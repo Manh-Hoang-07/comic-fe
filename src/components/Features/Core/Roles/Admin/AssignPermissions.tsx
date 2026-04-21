@@ -9,7 +9,7 @@ import { adminEndpoints } from "@/lib/api/endpoints";
 
 interface AssignPermissionsProps {
   show: boolean;
-  role?: any;
+  role?: Record<string, unknown>;
   onPermissionsAssigned?: () => void;
   onClose?: () => void;
 }
@@ -20,8 +20,8 @@ export default function AssignPermissions({
   onPermissionsAssigned,
   onClose,
 }: AssignPermissionsProps) {
-  const [roleDetail, setRoleDetail] = useState<any>(null);
-  const [permissions, setPermissions] = useState<any[]>([]);
+  const [roleDetail, setRoleDetail] = useState<Record<string, unknown> | null>(null);
+  const [permissions, setPermissions] = useState<Array<{ id: number | string; name?: string; code?: string }>>([]);
   const [loading, setLoading] = useState(false);
   const [apiErrors, setApiErrors] = useState<Record<string, string | string[]>>({});
   const [formData, setFormData] = useState<{ permission_ids: number[] }>({ permission_ids: [] });
@@ -37,7 +37,7 @@ export default function AssignPermissions({
         // Extract permission_ids from permissions array if exists
         let permissionIds: number[] = [];
         if (roleData.permissions && Array.isArray(roleData.permissions)) {
-          permissionIds = roleData.permissions.map((p: any) => p.id);
+          permissionIds = roleData.permissions.map((p: { id: number | string }) => p.id);
         }
         setFormData({ permission_ids: permissionIds });
       } else {
@@ -98,7 +98,7 @@ export default function AssignPermissions({
     return Object.keys(errors).length === 0;
   };
 
-  const handleSubmit = async (data: Record<string, any>) => {
+  const handleSubmit = async (data: Record<string, unknown>) => {
     if (!validateForm() || !role?.id) return;
 
     setLoading(true);
@@ -112,9 +112,10 @@ export default function AssignPermissions({
       await api.post(adminEndpoints.roles.assignPermissions(role.id), dataToSubmit);
       onPermissionsAssigned?.();
       onClose?.();
-    } catch (err: any) {
-      if (err.response?.data?.errors) {
-        setApiErrors(err.response.data.errors);
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { errors?: Record<string, string | string[]> } } };
+      if (e.response?.data?.errors) {
+        setApiErrors(e.response.data.errors);
       } else {
         setApiErrors({ general: "Không thể gán quyền" });
       }

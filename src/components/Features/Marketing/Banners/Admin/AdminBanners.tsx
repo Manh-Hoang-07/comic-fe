@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import api from "@/lib/api/client";
 import { env } from "@/config/env";
@@ -66,7 +66,7 @@ export default function AdminBanners({ title = "Quản lý banner", createButton
   const { items, loading, pagination, filters, hasData } = data;
   const { getSerialNumber } = ui;
 
-  const [locationEnums, setLocationEnums] = useState<any[]>([]);
+  const [locationEnums, setLocationEnums] = useState<Array<{ id: number; name: string }>>([]);
 
   useEffect(() => {
     const fetchLocationEnums = async () => {
@@ -113,7 +113,7 @@ export default function AdminBanners({ title = "Quản lý banner", createButton
     }
   };
 
-  const handleImageError = (e: any) => {
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
     const target = e.target as HTMLImageElement;
     if (target) {
       target.onerror = null;

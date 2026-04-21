@@ -4,11 +4,13 @@ import { useMemo } from "react";
 import SelectFilter from "@/components/UI/Filters/SelectFilter";
 import AdminFilter from "@/components/Shared/Admin/AdminFilter";
 
+type ParentMenuItem = { id: number; name: string; children?: ParentMenuItem[] };
+
 interface MenusFilterProps {
-  initialFilters?: Record<string, any>;
+  initialFilters?: Record<string, string>;
   statusEnums?: Array<{ value: string; label?: string; name?: string }>;
-  parentMenus?: Array<{ id: number; name: string; children?: any[] }>;
-  onUpdateFilters?: (filters: Record<string, any>) => void;
+  parentMenus?: ParentMenuItem[];
+  onUpdateFilters?: (filters: Record<string, string>) => void;
   onFilterChange?: () => void;
 }
 
@@ -25,7 +27,7 @@ export default function MenusFilter({
       statusEnums.forEach((item) => {
         options.push({
           value: item.value,
-          label: item.label || (item as any).name || item.value,
+          label: item.label || item.name || item.value,
         });
       });
     }
@@ -38,8 +40,8 @@ export default function MenusFilter({
       { value: "null", label: "Root (Không có menu cha)" },
     ];
     if (parentMenus && Array.isArray(parentMenus)) {
-      const flattenMenus = (menus: any[], level = 0): any[] => {
-        const result: any[] = [];
+      const flattenMenus = (menus: Array<{ id: number; name: string; children?: typeof menus }>, level = 0): Array<{ value: string; label: string }> => {
+        const result: Array<{ value: string; label: string }> = [];
         menus.forEach((menu) => {
           const prefix = "  ".repeat(level);
           result.push({

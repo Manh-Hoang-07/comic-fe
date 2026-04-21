@@ -3,7 +3,7 @@ import { serverFetch } from "@/lib/api/server-client";
 import { publicEndpoints } from "@/lib/api/endpoints";
 
 export async function getComicComments(comicId: string, page: number = 1): Promise<PaginatedResponse<Comment> | null> {
-    const { data, meta: responseMeta, error } = await serverFetch<any>(
+    const { data, meta: responseMeta, error } = await serverFetch<Record<string, unknown>>(
         `${publicEndpoints.comments.comic(comicId)}?page=${page}`,
         {
             skipCookies: true,
@@ -28,7 +28,7 @@ export async function getComicComments(comicId: string, page: number = 1): Promi
 }
 
 export async function getChapterComments(chapterId: string, page: number = 1): Promise<PaginatedResponse<Comment> | null> {
-    const { data, meta: responseMeta, error } = await serverFetch<any>(
+    const { data, meta: responseMeta, error } = await serverFetch<Record<string, unknown>>(
         `${publicEndpoints.comments.chapter(chapterId)}?page=${page}`,
         {
             skipCookies: true,

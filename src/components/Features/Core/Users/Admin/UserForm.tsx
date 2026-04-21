@@ -33,9 +33,9 @@ interface UserFormProps {
   user?: User | null;
   statusEnums?: Array<{ value: string; label?: string; name?: string }>;
   genderEnums?: Array<{ value: string; label?: string; name?: string }>;
-  apiErrors?: Record<string, string | string[]>;
+  apiErrors?: Record<string, string | string[]> | null;
   loading?: boolean;
-  onSubmit?: (data: any) => void;
+  onSubmit?: (data: Record<string, unknown>) => void;
   onCancel?: () => void;
 }
 
@@ -132,11 +132,11 @@ export default function UserForm({
   }, [apiErrors, setError]);
 
   const statusOptions = useMemo(() =>
-    statusEnums.map(opt => ({ value: opt.value, label: opt.label || (opt as any).name || opt.value })),
+    statusEnums.map(opt => ({ value: opt.value, label: opt.label || opt.name || opt.value })),
     [statusEnums]);
 
   const genderOptions = useMemo(() =>
-    genderEnums.map(opt => ({ value: opt.value, label: opt.label || (opt as any).name || opt.value })),
+    genderEnums.map(opt => ({ value: opt.value, label: opt.label || opt.name || opt.value })),
     [genderEnums]);
 
   if (!show) return null;

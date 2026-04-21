@@ -10,7 +10,7 @@ export interface Group {
   status?: string;
   context_id?: number;
   owner_id?: number;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   joined_at?: string;
   roles?: Array<{
     id: number;
@@ -37,7 +37,7 @@ export async function initializeUserGroups(token?: string): Promise<Group[]> {
     const response = await apiClient.get(userEndpoints.groups.list);
 
     // Parse response (có thể là array trực tiếp hoặc { success: true, data: [...] })
-    let groupsData: any[] = [];
+    let groupsData: Group[] = [];
     if (Array.isArray(response.data)) {
       groupsData = response.data;
     } else if (response.data?.success && Array.isArray(response.data.data)) {
@@ -47,7 +47,7 @@ export async function initializeUserGroups(token?: string): Promise<Group[]> {
     }
 
     // Normalize group IDs (đảm bảo là number)
-    const groups: Group[] = (groupsData || []).map((g: any) => ({
+    const groups: Group[] = (groupsData || []).map((g) => ({
       ...g,
       id: typeof g.id === "string" ? parseInt(g.id, 10) : g.id,
     }));

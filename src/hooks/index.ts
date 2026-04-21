@@ -2,7 +2,6 @@
 export * from "./crud/useListPage";
 export * from "./crud/useCrudList";
 export * from "./crud/useFormModal";
-export * from "./crud/useModals";
 export * from "./crud/useUrlApiSync";
 export * from "./crud/useUrlListSync";
 export * from "./crud/usePagination";

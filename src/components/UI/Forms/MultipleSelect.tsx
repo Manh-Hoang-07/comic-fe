@@ -27,7 +27,7 @@ export default function MultipleSelect({
   const [showDropdown, setShowDropdown] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const isValueEqual = (a: any, b: any): boolean => {
+  const isValueEqual = (a: unknown, b: unknown): boolean => {
     return String(a) === String(b);
   };
 

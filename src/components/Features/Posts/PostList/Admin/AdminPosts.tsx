@@ -51,10 +51,10 @@ export default function AdminPosts({
   const { items, loading, pagination, filters, hasData } = data;
   const { getSerialNumber } = ui;
 
-  const [statusEnums, setStatusEnums] = useState<any[]>([]);
-  const [postTypeEnums, setPostTypeEnums] = useState<any[]>([]);
-  const [categoryEnums, setCategoryEnums] = useState<any[]>([]);
-  const [tagEnums, setTagEnums] = useState<any[]>([]);
+  const [statusEnums, setStatusEnums] = useState<Array<{ value: string; label?: string; name?: string }>>([]);
+  const [postTypeEnums, setPostTypeEnums] = useState<Array<{ value: string; label?: string; name?: string }>>([]);
+  const [categoryEnums, setCategoryEnums] = useState<Array<{ value: string; label?: string; name?: string }>>([]);
+  const [tagEnums, setTagEnums] = useState<Array<{ value: string; label?: string; name?: string }>>([]);
 
   const fetchEnums = async () => {
     try {
@@ -78,7 +78,7 @@ export default function AdminPosts({
     fetchEnums();
   }, []);
 
-  const handleRestore = async (post: any) => {
+  const handleRestore = async (post: Record<string, unknown>) => {
     try {
       const response = await api.put(`${adminEndpoints.posts.delete(post.id)}/restore`);
       if (response.data?.success) {

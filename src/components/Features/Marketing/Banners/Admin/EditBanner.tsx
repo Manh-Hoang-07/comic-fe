@@ -2,10 +2,11 @@
 
 import BannerForm from "./BannerForm";
 import { useFormModal } from "@/hooks";
+import { EditTarget } from "@/hooks/crud/useFormModal";
 
 interface EditBannerProps {
   show: boolean;
-  target: { fetchApi?: string; initialData?: any; updateApi: string } | null;
+  target: EditTarget | null;
   statusEnums?: Array<{ value: string; label?: string; name?: string }>;
   locationEnums?: Array<{ value: number; label?: string; name?: string }>;
   onSuccess?: () => void;

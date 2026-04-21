@@ -50,9 +50,9 @@ interface ProjectFormProps {
   show: boolean;
   project?: Project | null;
   statusEnums?: Array<{ value: string; label?: string; name?: string }>;
-  apiErrors?: Record<string, string | string[]>;
+  apiErrors?: Record<string, string | string[]> | null;
   loading?: boolean;
-  onSubmit?: (data: any) => void;
+  onSubmit?: (data: Record<string, unknown>) => void;
   onCancel?: () => void;
 }
 
@@ -102,7 +102,7 @@ export default function ProjectForm({
     const statusArray = statusEnums.length > 0 ? statusEnums : getProjectStatusArray();
     return statusArray.map((opt) => ({
       value: opt.value,
-      label: opt.label || (opt as any).name || String(opt.value),
+      label: opt.label || opt.name || String(opt.value),
     }));
   }, [statusEnums]);
 
@@ -368,7 +368,7 @@ export default function ProjectForm({
                   <button
                     type="button"
                     onClick={() => {
-                      const newImgs = control._formValues.images.filter((_: any, i: number) => i !== idx);
+                      const newImgs = control._formValues.images.filter((_: unknown, i: number) => i !== idx);
                       setValue("images", newImgs);
                     }}
                     className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"

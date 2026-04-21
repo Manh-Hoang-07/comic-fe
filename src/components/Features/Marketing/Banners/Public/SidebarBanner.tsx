@@ -37,7 +37,7 @@ export default function SidebarBanner({ locationCode, limit = 3 }: SidebarBanner
     return path;
   };
 
-  const { data: rawData, isLoading: loading, error: queryError } = useApiQuery<any>(
+  const { data: rawData, isLoading: loading, error: queryError } = useApiQuery<Record<string, unknown>>(
     ["banners", "sidebar", locationCode],
     publicEndpoints.banners.getByLocation(locationCode),
     undefined,

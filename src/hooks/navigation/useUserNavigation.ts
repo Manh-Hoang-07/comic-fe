@@ -23,7 +23,7 @@ export interface MenuItem {
   badge?: {
     text: string;
     color?: string;
-    variant?: "primary" | "secondary" | "succes" | "warning" | "danger" | "info";
+    variant?: "primary" | "secondary" | "success" | "warning" | "danger" | "info";
   };
   tooltip?: string;
   disabled?: boolean;

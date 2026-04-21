@@ -9,10 +9,11 @@ const ComicForm = dynamic(() => import("./ComicForm"), {
 import api from "@/lib/api/client";
 import { useToastContext } from "@/contexts/ToastContext";
 import { adminComicService } from "@/lib/api/admin/comic";
+import { AdminComic } from "@/types/comic";
 
 interface EditComicProps {
     show: boolean;
-    target: { fetchApi?: string; initialData?: any; updateApi: string } | null;
+    target: { fetchApi?: string; initialData?: Record<string, unknown>; updateApi: string } | null;
     onSuccess?: () => void;
     onClose?: () => void;
 }
@@ -23,9 +24,9 @@ export default function EditComic({
     onSuccess,
     onClose,
 }: EditComicProps) {
-    const [data, setData] = useState<any>(null);
+    const [data, setData] = useState<AdminComic | null>(null);
     const [loading, setLoading] = useState(false);
-    const [apiErrors, setApiErrors] = useState<any>(null);
+    const [apiErrors, setApiErrors] = useState<Record<string, string | string[]> | null>(null);
     const { showError, showSuccess } = useToastContext();
 
     useEffect(() => {
@@ -53,7 +54,7 @@ export default function EditComic({
         }
     }, [show, target, showError, onClose]);
 
-    const handleSubmit = async (formData: any) => {
+    const handleSubmit = async (formData: Record<string, unknown>) => {
         if (!target?.updateApi) return;
         
         setApiErrors(null);
@@ -78,10 +79,11 @@ export default function EditComic({
             }
 
             onSuccess?.();
-        } catch (error: any) {
-            const errors = error.response?.data?.errors || error.response?.data || error;
-            setApiErrors(errors);
-            showError(error.response?.data?.message || "Có lỗi xảy ra khi cập nhật");
+        } catch (error: unknown) {
+            const e = error as { response?: { data?: { errors?: Record<string, string | string[]>; message?: string } } };
+            const errors = e.response?.data?.errors || e.response?.data || {};
+            setApiErrors(errors as Record<string, string | string[]>);
+            showError(e.response?.data?.message || "Có lỗi xảy ra khi cập nhật");
         } finally {
             setLoading(false);
         }

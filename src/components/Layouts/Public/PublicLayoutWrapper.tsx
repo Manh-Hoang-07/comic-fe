@@ -9,7 +9,7 @@ interface PublicLayoutWrapperProps {
     children: React.ReactNode;
     header: React.ReactNode;
     footer: React.ReactNode;
-    contactChannels: any;
+    contactChannels: Record<string, unknown>;
 }
 
 export function PublicLayoutWrapper({

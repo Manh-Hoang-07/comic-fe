@@ -2,10 +2,11 @@
 
 import CertificateForm from "./CertificateForm";
 import { useFormModal } from "@/hooks";
+import { EditTarget } from "@/hooks/crud/useFormModal";
 
 interface EditCertificateProps {
   show: boolean;
-  target: { fetchApi?: string; initialData?: any; updateApi: string } | null;
+  target: EditTarget | null;
   onSuccess?: () => void;
   onClose?: () => void;
 }

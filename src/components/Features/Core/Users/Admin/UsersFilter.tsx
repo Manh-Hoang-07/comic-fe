@@ -23,7 +23,7 @@ export default function UsersFilter({
       statusEnums.forEach((item) => {
         options.push({
           value: item.value,
-          label: item.label || (item as any).name || item.value,
+          label: item.label || item.name || item.value,
         });
       });
     }

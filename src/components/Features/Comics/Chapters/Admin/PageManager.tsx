@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { adminComicService } from "@/lib/api/admin/comic";
 import { AdminChapter, AdminChapterPage } from "@/types/comic";
 import { useToastContext } from "@/contexts/ToastContext";
@@ -19,26 +19,26 @@ export default function PageManager({ chapter, onClose }: PageManagerProps) {
     const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
     const { showSuccess, showError } = useToastContext();
 
-    useEffect(() => {
-        fetchPages();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [chapter.id]);
-
-    const fetchPages = async () => {
+    const fetchPages = useCallback(async () => {
         try {
             setLoading(true);
             const response = await adminComicService.getChapter(chapter.id);
             // Handle possibility of wrapped response: { data: { pages: [...] } } or { pages: [...] }
-            const chapterData = (response as any).data || response;
-            const sortedPages = (chapterData.pages || []).sort((a: any, b: any) => a.page_number - b.page_number);
+            const chapterData = (response as AdminChapter & { data?: AdminChapter }).data || response;
+            const sortedPages = (chapterData.pages || []).sort((a: { page_number: number }, b: { page_number: number }) => a.page_number - b.page_number);
             setPages(sortedPages);
             setSelectedIds([]); // Reset selection on refresh
-        } catch (error: any) {
-            showError(error?.response?.data?.message || "Không thể tải danh sách trang");
+        } catch (error: unknown) {
+            const e = error as { response?: { data?: { message?: string } } };
+            showError(e?.response?.data?.message || "Không thể tải danh sách trang");
         } finally {
             setLoading(false);
         }
-    };
+    }, [chapter.id, showError]);
+
+    useEffect(() => {
+        fetchPages();
+    }, [fetchPages]);
 
     const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || []);
@@ -54,8 +54,9 @@ export default function PageManager({ chapter, onClose }: PageManagerProps) {
             await adminComicService.uploadPages(chapter.id, files);
             showSuccess(`Đã tải lên ${files.length} trang thành công`);
             fetchPages();
-        } catch (error: any) {
-            showError(error?.response?.data?.message || "Lỗi khi tải ảnh lên");
+        } catch (error: unknown) {
+            const e = error as { response?: { data?: { message?: string } } };
+            showError(e?.response?.data?.message || "Lỗi khi tải ảnh lên");
         } finally {
             setUploading(false);
         }
@@ -85,7 +86,7 @@ export default function PageManager({ chapter, onClose }: PageManagerProps) {
             await adminComicService.updatePages(chapter.id, reindexedPages);
             setPages(reindexedPages);
             return true;
-        } catch (error: any) {
+        } catch (error: unknown) {
             showError("Không thể đồng bộ thay đổi về server");
             return false;
         }

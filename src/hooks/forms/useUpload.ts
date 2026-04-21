@@ -82,14 +82,7 @@ export function useUpload() {
         }
       );
 
-      let responseData: UploadResponse;
-      if (response.data?.data) {
-        responseData = response.data.data;
-      } else if (response.data?.url || response.data?.path) {
-        responseData = response.data as UploadResponse;
-      } else {
-        responseData = response.data as UploadResponse;
-      }
+      const responseData: UploadResponse = response.data?.data ?? (response.data as UploadResponse);
 
       if (!responseData || (!responseData.url && !responseData.path)) {
         throw new Error("Invalid response from server");
@@ -103,9 +96,9 @@ export function useUpload() {
       }, 500);
 
       return responseData;
-    } catch (err: any) {
-      const errorMessage =
-        err.response?.data?.message || err.message || "Upload thất bại";
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { message?: string } }; message?: string };
+      const errorMessage = e.response?.data?.message || e.message || "Upload thất bại";
       setError(errorMessage);
       options?.onError?.(new Error(errorMessage));
       throw new Error(errorMessage);
@@ -140,7 +133,7 @@ export function useUpload() {
         formData.append("files", file);
       });
 
-      const response = await api.post<any>(
+      const response = await api.post<{ success?: boolean; data?: UploadResponse[] }>(
         userEndpoints.uploads.files,
         formData,
         {
@@ -162,12 +155,8 @@ export function useUpload() {
       // Handle different response structures
       // Case 1: { success: true, data: [...] }
       // Case 2: [...] (direct array)
-      let responseData: UploadResponse[] = [];
-      if (response.data?.data && Array.isArray(response.data.data)) {
-        responseData = response.data.data;
-      } else if (Array.isArray(response.data)) {
-        responseData = response.data;
-      }
+      const responseData: UploadResponse[] =
+        Array.isArray(response.data?.data) ? response.data.data : [];
 
       responseData.forEach((result) => {
         options?.onSuccess?.(result);
@@ -179,9 +168,9 @@ export function useUpload() {
       }, 500);
 
       return responseData;
-    } catch (err: any) {
-      const errorMessage =
-        err.response?.data?.message || err.message || "Upload thất bại";
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { message?: string } }; message?: string };
+      const errorMessage = e.response?.data?.message || e.message || "Upload thất bại";
       setError(errorMessage);
       options?.onError?.(new Error(errorMessage));
       throw new Error(errorMessage);

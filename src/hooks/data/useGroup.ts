@@ -56,8 +56,8 @@ export function useGroup() {
       if (typeof window !== "undefined") {
         localStorage.setItem("user_groups", JSON.stringify(fetchedGroups));
       }
-    } catch (err: any) {
-      setError(err.message || "Không thể tải danh sách groups");
+    } catch (err: unknown) {
+      setError((err as { message?: string }).message || "Không thể tải danh sách groups");
       setGroups([]);
 
       // Fallback: Load from localStorage if available
@@ -97,8 +97,8 @@ export function useGroup() {
       showSuccess("Đã chuyển group thành công");
 
       return group;
-    } catch (err: any) {
-      setError(err.message || "Không thể chuyển group");
+    } catch (err: unknown) {
+      setError((err as { message?: string }).message || "Không thể chuyển group");
       showError("Không thể chuyển group");
       return null;
     } finally {

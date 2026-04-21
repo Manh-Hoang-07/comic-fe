@@ -7,7 +7,7 @@ export interface SystemConfig {
   site_phone?: string | null;
   site_address?: string | null;
   site_copyright?: string | null;
-  contact_channels?: any;
+  contact_channels?: Record<string, unknown>;
   timezone?: string;
   meta_title?: string | null;
   meta_keywords?: string | null;
@@ -15,7 +15,7 @@ export interface SystemConfig {
   og_description?: string | null;
   og_image?: string | null;
   canonical_url?: string | null;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface ContactPayload {
@@ -43,8 +43,8 @@ export interface ContentTemplate {
   type: 'email' | 'telegram' | 'zalo' | 'sms' | 'pdf_generated' | 'file_word' | 'file_excel' | 'file_pdf' | string;
   content?: string;
   file_path?: string;
-  metadata?: Record<string, any>;
-  variables?: string[] | Record<string, any>;
+  metadata?: Record<string, unknown>;
+  variables?: string[] | Record<string, unknown>;
   status: 'active' | 'inactive';
   created_at: string;
   updated_at?: string;

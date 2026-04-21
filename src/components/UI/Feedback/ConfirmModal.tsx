@@ -6,7 +6,7 @@ import Modal from '@/components/UI/Feedback/Modal';
 interface ConfirmModalProps {
   show: boolean;
   onClose: () => void;
-  onConfirm: () => void | Promise<any>;
+  onConfirm: () => void | Promise<void>;
   title?: string;
   message?: string;
   confirmText?: string;

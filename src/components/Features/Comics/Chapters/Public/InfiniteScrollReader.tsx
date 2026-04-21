@@ -12,12 +12,12 @@ import { fetchChapterFullData } from '@/app/(public)/chapters/actions';
 
 interface ChapterData {
     id: string;
-    chapterDetail: any;
-    pages: any[];
-    nextChapter: any;
-    prevChapter: any;
-    chaptersData: any[];
-    commentsData: any[];
+    chapterDetail: Record<string, unknown>;
+    pages: Record<string, unknown>[];
+    nextChapter: Record<string, unknown> | null;
+    prevChapter: Record<string, unknown> | null;
+    chaptersData: Record<string, unknown>[];
+    commentsData: Record<string, unknown>[];
 }
 
 export default function InfiniteScrollReader({ initialData }: { initialData: ChapterData }) {
@@ -44,7 +44,7 @@ export default function InfiniteScrollReader({ initialData }: { initialData: Cha
         loadingRef.current = true;
         setLoading(true);
         try {
-            const nextData = await fetchChapterFullData(lastChapter.nextChapter.id);
+            const nextData = await fetchChapterFullData(lastChapter.nextChapter.id as string);
             if (nextData) {
                 setChapters(prev => [...prev, nextData as ChapterData]);
                 if (!nextData.nextChapter) {
@@ -133,15 +133,15 @@ export default function InfiniteScrollReader({ initialData }: { initialData: Cha
                                 Chuyển sang chương tiếp theo
                             </h3>
                             <p className="text-gray-900 font-black text-2xl mt-2">
-                                {chapter.chapterDetail?.chapter_label}: {chapter.chapterDetail?.title}
+                                {chapter.chapterDetail?.chapter_label as string}: {chapter.chapterDetail?.title as string}
                             </p>
                         </div>
                     )}
 
                     {/* Always render ReadingHistoryTracker for each chapter to update history when it mounts */}
-                    {(chapter.chapterDetail?.comic?.id || chapter.chapterDetail?.comic_id) && (
+                    {((chapter.chapterDetail?.comic as Record<string, unknown> | undefined)?.id || chapter.chapterDetail?.comic_id) && (
                         <ReadingHistoryTracker
-                            comicId={chapter.chapterDetail?.comic?.id || chapter.chapterDetail?.comic_id}
+                            comicId={(chapter.chapterDetail?.comic as Record<string, unknown> | undefined)?.id as string || chapter.chapterDetail?.comic_id as string}
                             chapterId={chapter.id}
                         />
                     )}
@@ -152,8 +152,8 @@ export default function InfiniteScrollReader({ initialData }: { initialData: Cha
                             {chapter.pages && chapter.pages.map((page, pageIndex) => (
                                 <div key={`${chapter.id}-page-${pageIndex}`} className="relative w-full overflow-hidden bg-white flex justify-center">
                                     <Image
-                                        src={page.image_url}
-                                        alt={`Page ${page.page_number}`}
+                                        src={page.image_url as string}
+                                        alt={`Page ${page.page_number as number}`}
                                         width={800}
                                         height={1200}
                                         className="w-full h-auto object-contain select-none"
@@ -167,15 +167,15 @@ export default function InfiniteScrollReader({ initialData }: { initialData: Cha
                         <div className="mt-16 mb-20 flex flex-col items-center px-4 w-full">
                             {/* Toolbar specifically for this chapter context */}
                             <ReadingToolbar
-                                nextChapter={chapter.nextChapter}
-                                prevChapter={chapter.prevChapter}
+                                nextChapter={chapter.nextChapter as { id: string } | null}
+                                prevChapter={chapter.prevChapter as { id: string } | null}
                                 chapters={chapter.chaptersData}
                                 currentChapterId={chapter.id}
                             />
 
                             <div className="w-full mt-16 border-t border-gray-100 pt-12">
                                 <CommentSection
-                                    comicId={chapter.chapterDetail?.comic?.id || chapter.chapterDetail?.comic_id || ""}
+                                    comicId={(chapter.chapterDetail?.comic as Record<string, unknown> | undefined)?.id as string || chapter.chapterDetail?.comic_id as string || ""}
                                     chapterId={chapter.id}
                                     comments={chapter.commentsData}
                                 />

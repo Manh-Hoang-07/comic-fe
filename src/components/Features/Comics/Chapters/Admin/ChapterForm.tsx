@@ -13,9 +13,9 @@ import { adminComicService } from "@/lib/api/admin/comic";
 interface ChapterFormProps {
     chapter?: AdminChapter | null;
     comicId?: number | string | null;
-    apiErrors?: any;
+    apiErrors?: Record<string, string | string[]> | null;
     loading?: boolean;
-    onSubmit?: (data: any) => void;
+    onSubmit?: (data: Record<string, unknown>) => void;
     onCancel: () => void;
 }
 
@@ -58,7 +58,7 @@ export default function ChapterForm({
         try {
             setLoadingComics(true);
             const response = await adminComicService.getComics({ limit: 1000 });
-            setComics(response.data as any);
+            setComics(response.data);
         } catch (error) {
             console.error("Failed to fetch comics:", error);
         } finally {

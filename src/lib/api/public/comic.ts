@@ -21,7 +21,7 @@ export async function getComics(params: {
     search?: string;
     comic_category_id?: string;
     is_featured?: boolean;
-    [key: string]: any;
+    [key: string]: string | number | boolean | undefined | null;
 }): Promise<PaginatedResponse<Comic> | null> {
     const query = new URLSearchParams();
 
@@ -32,7 +32,7 @@ export async function getComics(params: {
         }
     });
 
-    const { data, meta: responseMeta, error } = await serverFetch<any>(`${publicEndpoints.comics.list}?${query.toString()}`, {
+    const { data, meta: responseMeta, error } = await serverFetch<Record<string, unknown>>(`${publicEndpoints.comics.list}?${query.toString()}`, {
         skipCookies: true,
     });
     if (error || !data) return null;
@@ -61,7 +61,7 @@ export async function getComicDetail(slug: string): Promise<Comic | null> {
 }
 
 export async function getComicChapters(slug: string, page: number = 1): Promise<PaginatedResponse<ComicChapter> | null> {
-    const { data, meta: responseMeta, error } = await serverFetch<any>(`${publicEndpoints.comics.chapters(slug)}?page=${page}`, {
+    const { data, meta: responseMeta, error } = await serverFetch<Record<string, unknown>>(`${publicEndpoints.comics.chapters(slug)}?page=${page}`, {
         revalidate: 120, // Cache 2 phut
         skipCookies: true,
     });
@@ -97,7 +97,7 @@ export async function getChapterNavigation(chapterId: string, direction: 'next' 
 }
 
 export async function getComicCategories(): Promise<ComicCategory[]> {
-    const { data, error } = await serverFetch<any>(publicEndpoints.comicCategories.list, {
+    const { data, error } = await serverFetch<Record<string, unknown>>(publicEndpoints.comicCategories.list, {
         skipCookies: true,
     });
     if (error || !data) return [];
@@ -113,7 +113,7 @@ export async function trackView(chapterId: string): Promise<void> {
 }
 
 export async function getChapterDetail(chapterId: string): Promise<any | null> {
-    const { data, error } = await serverFetch<any>(`/public/chapters/${chapterId}`, {
+    const { data, error } = await serverFetch<Record<string, unknown>>(`/public/chapters/${chapterId}`, {
         skipCookies: true
     });
     if (error) return null;

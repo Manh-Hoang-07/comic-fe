@@ -297,7 +297,7 @@ export function CommentSection({ comicId, chapterId, comments: initialComments, 
                         const replyToAdd = {
                             ...newReply,
                             replies: [],
-                            user: (newReply as any).user || {
+                            user: newReply.user || {
                                 id: user?.id || "",
                                 name: user?.name || user?.username || "Người dùng",
                                 image: user?.image || user?.avatar || null,

@@ -29,8 +29,8 @@ export function useMenus() {
     try {
       const response = await api.get<MenuTreeItem[]>(adminEndpoints.menus.tree);
       return response.data || [];
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.message || "Không thể lấy menu tree";
+    } catch (err: unknown) {
+      const errorMessage = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || "Không thể lấy menu tree";
       setError(errorMessage);
       throw err;
     } finally {
@@ -49,8 +49,8 @@ export function useMenus() {
         return response.data.data;
       }
       return Array.isArray(response.data) ? response.data : [];
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.message || "Không thể lấy menu người dùng";
+    } catch (err: unknown) {
+      const errorMessage = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || "Không thể lấy menu người dùng";
       setError(errorMessage);
       return [];
     } finally {

@@ -2,13 +2,15 @@
 
 import MenuForm from "./MenuForm";
 import { useFormModal } from "@/hooks";
+import { EditTarget } from "@/hooks/crud/useFormModal";
+import { MenuTreeItem } from "@/hooks/data/useMenus";
 
 interface EditMenuProps {
   show: boolean;
-  target: { fetchApi?: string; initialData?: any; updateApi: string } | null;
+  target: EditTarget | null;
   statusEnums?: Array<{ value: string; label?: string; name?: string }>;
-  parentMenus?: Array<any>;
-  permissions?: Array<any>;
+  parentMenus?: MenuTreeItem[];
+  permissions?: Array<{ id: number; name: string; code: string }>;
   onSuccess?: () => void;
   onClose?: () => void;
 }

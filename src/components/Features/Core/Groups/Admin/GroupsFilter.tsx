@@ -32,7 +32,7 @@ export default function GroupsFilter({
       statusEnums.forEach((item) => {
         options.push({
           value: item.value || String(item.id),
-          label: item.label || (item as any).name || item.value,
+          label: item.label || item.name || item.value,
         });
       });
     }

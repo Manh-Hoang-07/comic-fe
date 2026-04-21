@@ -42,7 +42,7 @@ export interface ResetPasswordData {
 
 export interface AuthResult {
   success: boolean;
-  data?: any;
+  data?: Record<string, unknown>;
   message?: string;
   errors?: Record<string, string[]>;
 }

@@ -58,8 +58,9 @@ export default function UserChangePasswordPage() {
         showSuccess(response.message || "Đổi mật khẩu thành công!");
         reset();
       }
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.message || err.message || "Có lỗi xảy ra, vui lòng thử lại";
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { message?: string } }; message?: string };
+      const errorMessage = e.response?.data?.message || e.message || "Có lỗi xảy ra, vui lòng thử lại";
       showError(errorMessage);
     } finally {
       setIsLoading(false);

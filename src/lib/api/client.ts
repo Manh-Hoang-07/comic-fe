@@ -47,7 +47,7 @@ function getGroupId(): string | null {
 // Create axios instance with default configuration
 const apiClient: AxiosInstance = axios.create({
   baseURL: env.apiUrl,
-  timeout: 5000, // Giam tu 10s xuong 5s - fail nhanh hon thay vi doi lau
+  timeout: 10000,
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
@@ -63,6 +63,10 @@ apiClient.interceptors.request.use(
     if (token) {
       config.headers = config.headers || {};
       config.headers.Authorization = `Bearer ${token}`;
+      // Xóa flag redirect khi user đã có token hợp lệ (đã đăng nhập lại)
+      if (typeof window !== "undefined") {
+        sessionStorage.removeItem("auth_redirect");
+      }
     }
 
     // Tự động thêm X-Group-Id header nếu có
@@ -79,9 +83,6 @@ apiClient.interceptors.request.use(
   }
 );
 
-// Tranh nhieu request 401 cung redirect cung luc
-let isRedirecting = false;
-
 // Response interceptor to handle common errors
 apiClient.interceptors.response.use(
   (response: AxiosResponse) => {
@@ -93,9 +94,10 @@ apiClient.interceptors.response.use(
       const status = error.response.status;
 
       // Handle 401 Unauthorized: Token hết hạn → logout
-      if (status === 401) {
-        if (typeof window !== "undefined" && !isRedirecting) {
-          isRedirecting = true;
+      if (status === 401 && typeof window !== "undefined") {
+        const alreadyHandled = sessionStorage.getItem("auth_redirect");
+        if (!alreadyHandled && window.location.pathname !== "/login") {
+          sessionStorage.setItem("auth_redirect", "1");
 
           // Xóa token và group_id
           localStorage.removeItem("auth_token");
@@ -106,12 +108,7 @@ apiClient.interceptors.response.use(
           document.cookie = "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
           document.cookie = "group_id=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
 
-          // Redirect về login (chi 1 lan)
-          if (window.location.pathname !== "/login") {
-            window.location.href = "/login";
-          } else {
-            isRedirecting = false;
-          }
+          window.location.href = "/login";
         }
       }
 
@@ -135,13 +132,13 @@ export const api = {
   get: <T = any>(url: string, config?: AxiosRequestConfig) =>
     apiClient.get<T>(url, config),
 
-  post: <T = any>(url: string, data?: any, config?: AxiosRequestConfig) =>
+  post: <T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig) =>
     apiClient.post<T>(url, data, config),
 
-  put: <T = any>(url: string, data?: any, config?: AxiosRequestConfig) =>
+  put: <T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig) =>
     apiClient.put<T>(url, data, config),
 
-  patch: <T = any>(url: string, data?: any, config?: AxiosRequestConfig) =>
+  patch: <T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig) =>
     apiClient.patch<T>(url, data, config),
 
   delete: <T = any>(url: string, config?: AxiosRequestConfig) =>

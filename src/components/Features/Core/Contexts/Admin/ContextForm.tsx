@@ -27,8 +27,8 @@ interface ContextFormProps {
   context?: Context | null;
   loading?: boolean;
   statusEnums?: Array<{ value: string; label?: string; name?: string }>;
-  apiErrors?: Record<string, string | string[]>;
-  onSubmit?: (data: any) => void;
+  apiErrors?: Record<string, string | string[]> | null;
+  onSubmit?: (data: Record<string, unknown>) => void;
   onCancel?: () => void;
 }
 
@@ -62,7 +62,7 @@ export default function ContextForm({
     const statusArray = statusEnums && statusEnums.length > 0 ? statusEnums : getBasicStatusArray();
     return statusArray.map((opt) => ({
       value: opt.value,
-      label: opt.label || (opt as any).name || opt.value,
+      label: opt.label || opt.name || opt.value,
     }));
   }, [statusEnums]);
 

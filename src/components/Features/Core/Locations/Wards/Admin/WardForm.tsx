@@ -21,7 +21,7 @@ export interface AdminWardFormEntity {
 interface WardFormProps {
   show: boolean;
   ward?: AdminWardFormEntity | null;
-  apiErrors?: Record<string, string | string[]>;
+  apiErrors?: Record<string, string | string[]> | null;
   loading?: boolean;
   onSubmit?: (data: WardFormValues) => void;
   onCancel?: () => void;
@@ -67,7 +67,7 @@ export default function WardForm({
           name: ward.name || "",
           type: ward.type || "Ward",
           province_id: ward.province_id || 1,
-          status: (ward.status as any) || "active",
+          status: (ward.status === "active" || ward.status === "inactive" ? ward.status : "active"),
         });
       } else {
         reset({

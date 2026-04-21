@@ -41,9 +41,10 @@ export async function POST(request: NextRequest) {
             message: `Revalidated tag: ${tag}`,
             timestamp: new Date().toISOString(),
         });
-    } catch (error: any) {
+    } catch (error: unknown) {
+        const e = error as { message?: string };
         return NextResponse.json(
-            { success: false, message: error.message },
+            { success: false, message: e.message },
             { status: 500 }
         );
     }

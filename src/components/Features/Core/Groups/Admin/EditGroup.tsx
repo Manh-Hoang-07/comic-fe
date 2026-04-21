@@ -2,10 +2,11 @@
 
 import GroupForm from "./GroupForm";
 import { useFormModal } from "@/hooks";
+import { EditTarget } from "@/hooks/crud/useFormModal";
 
 interface EditGroupProps {
   show: boolean;
-  target: { fetchApi?: string; initialData?: any; updateApi: string } | null;
+  target: EditTarget | null;
   onSuccess?: () => void;
   onClose?: () => void;
 }

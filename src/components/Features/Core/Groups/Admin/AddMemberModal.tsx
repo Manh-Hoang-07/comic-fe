@@ -2,16 +2,22 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Modal from "@/components/UI/Feedback/Modal";
-import FormWrapper from "@/components/UI/Forms/FormWrapper";
+import FormWrapper, { type FormChildProps } from "@/components/UI/Forms/FormWrapper";
 import SearchableSelect from "@/components/UI/Forms/SearchableSelect";
 import MultipleSelect from "@/components/UI/Forms/MultipleSelect";
 import api from "@/lib/api/client";
 import { adminEndpoints } from "@/lib/api/endpoints";
 
+interface Role {
+  id: number;
+  name?: string;
+  code?: string;
+}
+
 interface AddMemberModalProps {
   show: boolean;
   groupId: number;
-  apiErrors?: Record<string, any>;
+  apiErrors?: Record<string, string | string[]>;
   onMemberAdded?: () => void;
   onClose?: () => void;
 }
@@ -25,14 +31,12 @@ export default function AddMemberModal({
   onMemberAdded,
   onClose,
 }: AddMemberModalProps) {
-  const [roles, setRoles] = useState<any[]>([]);
-  const [localApiErrors, setLocalApiErrors] = useState<Record<string, any>>(apiErrors || DEFAULT_API_ERRORS);
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [localApiErrors, setLocalApiErrors] = useState<Record<string, string | string[]>>(apiErrors || DEFAULT_API_ERRORS);
 
   useEffect(() => {
-    if (JSON.stringify(apiErrors) !== JSON.stringify(localApiErrors)) {
-      setLocalApiErrors(apiErrors || DEFAULT_API_ERRORS);
-    }
-  }, [apiErrors, localApiErrors]);
+    setLocalApiErrors(apiErrors || DEFAULT_API_ERRORS);
+  }, [apiErrors]);
 
   useEffect(() => {
     if (show) {
@@ -67,7 +71,7 @@ export default function AddMemberModal({
     }));
   }, [roles]);
 
-  const handleSubmit = async (formData: any) => {
+  const handleSubmit = async (formData: Record<string, unknown>) => {
     if (!groupId) return;
 
     // Validate
@@ -95,8 +99,8 @@ export default function AddMemberModal({
       await api.post(adminEndpoints.groups.members.add(groupId), dataToSubmit);
       onMemberAdded?.();
       onClose?.();
-    } catch (err: any) {
-      const payload = err?.response?.data;
+    } catch (err: unknown) {
+      const payload = (err as { response?: { data?: { errors?: Record<string, string[]>; message?: string | string[] } } })?.response?.data;
       if (payload?.errors) {
         setLocalApiErrors(payload.errors);
       } else if (Array.isArray(payload?.message) && payload.message.length) {
@@ -123,14 +127,14 @@ export default function AddMemberModal({
           onSubmit={handleSubmit}
           onCancel={handleClose}
         >
-          {({ form, errors, clearError }: any) => (
+          {({ form, errors, clearError, setField }: FormChildProps) => (
             <>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">User</label>
                 <SearchableSelect
-                  value={form.user_id}
-                  onChange={(value: string | number | null) => {
-                    form.user_id = value;
+                  value={form.user_id as string | number | null}
+                  onChange={(value) => {
+                    setField("user_id", value);
                     clearError("user_id");
                   }}
                   searchApi={adminEndpoints.users.list}
@@ -141,14 +145,14 @@ export default function AddMemberModal({
               </div>
 
               <MultipleSelect
-                value={form.role_ids || []}
-                onChange={(value: Array<string | number>) => {
-                  form.role_ids = value;
+                value={(form.role_ids as Array<string | number>) || []}
+                onChange={(value) => {
+                  setField("role_ids", value);
                   clearError("role_ids");
                 }}
                 label="Roles"
                 options={roleOptions}
-                error={errors.role_ids}
+                error={Array.isArray(errors.role_ids) ? errors.role_ids.join(", ") : errors.role_ids}
                 placeholder="Chọn roles..."
               />
             </>

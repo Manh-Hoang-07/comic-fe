@@ -10,13 +10,13 @@ export const metadata: Metadata = {
   description: "Cập nhật những thông tin mới nhất về ngành xây dựng, kiến trúc và hoạt động của công ty.",
 };
 
-async function getPostsData(searchParams: any) {
+async function getPostsData(searchParams: Record<string, string | undefined>) {
   const page = searchParams?.page || 1;
   const category = searchParams?.category;
   const search = searchParams?.search;
   const sort = searchParams?.sort || 'newest';
 
-  const postsParams: any = {
+  const postsParams: Record<string, string | number | undefined> = {
     page,
     limit: 9,
     sort: sort === 'popular' ? 'view_count:desc' : 'created_at:desc',

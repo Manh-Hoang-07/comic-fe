@@ -2,12 +2,13 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useAuthStore } from "@/lib/store/authStore";
+import type { User } from "@/lib/store/authTypes";
 
 export interface AuthState {
   isAuthenticated: boolean;
   isAdmin: boolean;
   isUser: boolean;
-  user: any;
+  user: User | null;
 }
 
 export interface AuthInitResult {
@@ -44,6 +45,7 @@ export function useAuthInit(): AuthInitResult {
     } else {
       setTimeout(() => initializeAuth(), 100);
     }
+  // Chạy 1 lần khi mount — authStore methods là Zustand actions ổn định, không cần deps
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Computed để kiểm tra xem có nên render auth-dependent content không

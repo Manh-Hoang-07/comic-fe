@@ -4,6 +4,16 @@ import { Editor } from "@tinymce/tinymce-react";
 import { useRef } from "react";
 import "./CKEditor.css";
 
+interface TinyMCEEditor {
+  getContent: () => string;
+  on: (event: string, callback: () => void) => void;
+}
+
+interface BlobInfo {
+  blob: () => Blob;
+  filename: () => string;
+}
+
 interface CKEditorProps {
   value?: string;
   placeholder?: string;
@@ -13,7 +23,7 @@ interface CKEditorProps {
   uploadUrl?: string;
   maxFileSize?: number;
   onChange?: (value: string) => void;
-  onReady?: (editor: any) => void;
+  onReady?: (editor: TinyMCEEditor) => void;
 }
 
 /**
@@ -31,9 +41,9 @@ export default function CKEditor({
   onChange,
   onReady,
 }: CKEditorProps) {
-  const editorRef = useRef<any>(null);
+  const editorRef = useRef<TinyMCEEditor | null>(null);
 
-  const handleImageUpload = (blobInfo: any, progress: any): Promise<string> => {
+  const handleImageUpload = (blobInfo: BlobInfo, progress: (pct: number) => void): Promise<string> => {
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
       xhr.withCredentials = false;
@@ -73,9 +83,9 @@ export default function CKEditor({
     <div className="tiny-editor-container border border-gray-300 rounded-lg overflow-hidden shadow-sm">
       <Editor
         tinymceScriptSrc="https://cdnjs.cloudflare.com/ajax/libs/tinymce/7.1.1/tinymce.min.js"
-        onInit={(evt, editor) => {
-          editorRef.current = editor;
-          onReady?.(editor);
+        onInit={(_evt, editor) => {
+          editorRef.current = editor as unknown as TinyMCEEditor;
+          onReady?.(editor as unknown as TinyMCEEditor);
         }}
         value={value}
         disabled={disabled || readonly}
@@ -97,7 +107,7 @@ export default function CKEditor({
           promotion: false,
           statusbar: false,
           images_upload_handler: handleImageUpload,
-          setup: (editor: any) => {
+          setup: (editor: TinyMCEEditor) => {
             editor.on('change', () => {
               const content = editor.getContent();
               onChange?.(content);

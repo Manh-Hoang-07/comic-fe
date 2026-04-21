@@ -9,7 +9,7 @@ interface PublicFooterProps {
 export function PublicFooter({ systemConfig }: PublicFooterProps) {
   const systemInfo = {
     name: systemConfig?.site_name || "Hệ thống",
-    version: (systemConfig as any)?.version || "1.0.0",
+    version: (systemConfig as Record<string, unknown>)?.version as string || "1.0.0",
     timezone: systemConfig?.timezone || "Asia/Ho_Chi_Minh",
   };
 

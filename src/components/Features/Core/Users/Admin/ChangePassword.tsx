@@ -7,7 +7,7 @@ import { useToastContext } from "@/contexts/ToastContext";
 
 interface ChangePasswordProps {
   show: boolean;
-  target: { passApi: string; user: any } | null;
+  target: { passApi: string; user: Record<string, unknown> } | null;
   onSuccess?: () => void;
   onClose?: () => void;
 }
@@ -21,7 +21,7 @@ export default function ChangePassword({
   const [apiErrors, setApiErrors] = useState<Record<string, string>>({});
   const { showError, showSuccess } = useToastContext();
 
-  const handleSubmit = async (formData: Record<string, any>) => {
+  const handleSubmit = async (formData: Record<string, unknown>) => {
     if (!target?.passApi) return;
 
     setApiErrors({});
@@ -29,8 +29,9 @@ export default function ChangePassword({
       await api.patch(target.passApi, formData);
       showSuccess("Mật khẩu đã được thay đổi thành công");
       onSuccess?.();
-    } catch (error: any) {
-      const response = error?.response;
+    } catch (error: unknown) {
+      const e = error as { response?: { data?: { errors?: Record<string, string | string[]>; message?: string | string[] } } };
+      const response = e?.response;
       const payload = response?.data;
 
       if (payload?.errors) {

@@ -1,12 +1,13 @@
 "use client";
 
 import { useCallback } from "react";
-import { useListPage, type UseListPageOptions } from "./useListPage";
+import { useListPage, type UseListPageOptions, type ListItem } from "./useListPage";
 import useModal from "../ui-ux/useModal";
 import { useToastContext } from "@/contexts/ToastContext";
 import apiClient from "@/lib/api/client";
 
 // ===== TYPES =====
+
 
 export interface CreateModalData {
   createApi: string;
@@ -14,7 +15,7 @@ export interface CreateModalData {
 
 export interface EditModalData {
   fetchApi?: string;
-  initialData?: any;
+  initialData?: Record<string, unknown>;
   updateApi: string;
 }
 
@@ -28,9 +29,9 @@ export interface DeleteModalData {
 export interface CrudEndpoints {
   list: string;
   create: string;
-  show: (id: any) => string;
-  update: (id: any) => string;
-  delete: (id: any) => string;
+  show: (id: number | string) => string;
+  update: (id: number | string) => string;
+  delete: (id: number | string) => string;
 }
 
 export interface UseCrudListOptions extends UseListPageOptions {
@@ -61,8 +62,9 @@ export function useCrudList(options: UseCrudListOptions) {
       showSuccess(deleteSuccessMessage);
       deleteModal.close();
       actions.refresh();
-    } catch (error: any) {
-      showError(error.response?.data?.message || "Có lỗi xảy ra khi xóa");
+    } catch (error: unknown) {
+      const msg = (error as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      showError(msg || "Có lỗi xảy ra khi xóa");
     }
   }, [deleteModal, showSuccess, showError, deleteSuccessMessage, actions]);
 
@@ -74,7 +76,7 @@ export function useCrudList(options: UseCrudListOptions) {
   );
 
   const openEdit = useCallback(
-    (item: any, endpoints: CrudEndpoints) => {
+    (item: ListItem, endpoints: CrudEndpoints) => {
       editModal.open({
         fetchApi: endpoints.show(item.id),
         updateApi: endpoints.update(item.id),
@@ -84,10 +86,10 @@ export function useCrudList(options: UseCrudListOptions) {
   );
 
   const openDelete = useCallback(
-    (item: any, endpoints: CrudEndpoints, displayNameField = "name") => {
+    (item: ListItem, endpoints: CrudEndpoints, displayNameField = "name") => {
       deleteModal.open({
         id: item.id,
-        displayName: item[displayNameField] || item.name || item.title || "",
+        displayName: String(item[displayNameField] ?? item.name ?? item.title ?? ""),
         deleteApi: endpoints.delete(item.id),
       });
     },

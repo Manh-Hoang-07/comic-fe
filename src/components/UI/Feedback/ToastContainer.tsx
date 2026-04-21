@@ -17,7 +17,7 @@ export default function ToastContainer() {
             <div className="flex items-start">
               <div className="flex-shrink-0">
                 {/* Success Icon */}
-                {(toast.type === "success" || toast.type === "succes") && (
+                {toast.type === "success" && (
                   <svg
                     className="h-6 w-6 text-green-400"
                     fill="none"

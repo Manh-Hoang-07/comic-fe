@@ -167,8 +167,9 @@ export default function UserProfileClient() {
 
                 showSuccess(response.message || "Cập nhật thông tin thành công!");
             }
-        } catch (error: any) {
-            showError(error.response?.data?.message || "Có lỗi xảy ra khi cập nhật thông tin");
+        } catch (error: unknown) {
+            const e = error as { response?: { data?: { message?: string } }; message?: string };
+            showError(e.response?.data?.message || "Có lỗi xảy ra khi cập nhật thông tin");
         } finally {
             setIsUpdating(false);
         }
@@ -193,8 +194,9 @@ export default function UserProfileClient() {
 
                 showSuccess(response.message || "Đổi mật khẩu thành công!");
             }
-        } catch (error: any) {
-            showError(error.response?.data?.message || "Có lỗi xảy ra khi đổi mật khẩu");
+        } catch (error: unknown) {
+            const e = error as { response?: { data?: { message?: string } }; message?: string };
+            showError(e.response?.data?.message || "Có lỗi xảy ra khi đổi mật khẩu");
         } finally {
             setIsChangingPassword(false);
         }

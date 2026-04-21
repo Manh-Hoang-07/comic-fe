@@ -42,11 +42,11 @@ export const adminComicService = {
         const { data } = await api.get<AdminComic>(adminEndpoints.comics.show(id));
         return data;
     },
-    createComic: async (body: any) => {
+    createComic: async (body: Partial<AdminComic>) => {
         const { data } = await api.post<AdminComic>(adminEndpoints.comics.create, body);
         return data;
     },
-    updateComic: async (id: number, body: any) => {
+    updateComic: async (id: number, body: Partial<AdminComic>) => {
         const { data } = await api.put<AdminComic>(adminEndpoints.comics.update(id), body);
         return data;
     },
@@ -72,11 +72,11 @@ export const adminComicService = {
         const { data } = await api.get<AdminChapter>(adminEndpoints.chapters.show(id));
         return data;
     },
-    createChapter: async (body: any) => {
+    createChapter: async (body: Partial<AdminChapter>) => {
         const { data } = await api.post<AdminChapter>(adminEndpoints.chapters.create, body);
         return data;
     },
-    updateChapter: async (id: number, body: any) => {
+    updateChapter: async (id: number, body: Partial<AdminChapter>) => {
         const { data } = await api.put<AdminChapter>(adminEndpoints.chapters.update(id), body);
         return data;
     },
@@ -92,7 +92,7 @@ export const adminComicService = {
         });
         return data;
     },
-    updatePages: async (id: number, pages: any[]) => {
+    updatePages: async (id: number, pages: Partial<AdminChapterPage>[]) => {
         const { data } = await api.put(adminEndpoints.chapters.updatePages(id), { pages });
         return data;
     },

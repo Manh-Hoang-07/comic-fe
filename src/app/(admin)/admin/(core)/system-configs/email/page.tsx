@@ -1,13 +1,21 @@
 import { Metadata } from "next";
 import SystemConfigForm from "@/components/Features/Core/SystemConfig/Admin/SystemConfigForm";
 
+interface ConfigField {
+  key: string;
+  label: string;
+  type: "text" | "number" | "textarea" | "image" | "email" | "password" | "checkbox" | "custom";
+  placeholder?: string;
+  description?: string;
+}
+
 export const metadata: Metadata = {
   title: "Cấu hình Email | Admin",
   description: "Cấu hình SMTP gửi email",
 };
 
 export default function AdminSystemConfigEmailPage() {
-  const fields: any[] = [
+  const fields: ConfigField[] = [
     { key: "smtp_host", label: "SMTP Host", type: "text", placeholder: "smtp.gmail.com" },
     { key: "smtp_port", label: "SMTP Port", type: "number", placeholder: "587" },
     { key: "smtp_username", label: "SMTP Username", type: "text", placeholder: "your-email@gmail.com" },

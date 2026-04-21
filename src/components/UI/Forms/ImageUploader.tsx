@@ -3,7 +3,13 @@
 import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from "react";
 import Image from "next/image";
 import { useUpload } from "@/hooks";
+import type { UploadResponse } from "@/hooks";
 import { env } from "@/config/env";
+
+export interface ImageUploaderHandle {
+  focus: () => void;
+  click: () => void;
+}
 
 interface ImageUploaderProps {
   value?: File | string | null;
@@ -12,12 +18,12 @@ interface ImageUploaderProps {
   autoUpload?: boolean;
   onChange?: (value: string | File | null) => void;
   onRemove?: () => void;
-  onUploaded?: (response: any) => void;
+  onUploaded?: (response: UploadResponse) => void;
   onError?: (error: Error) => void;
   name?: string;
 }
 
-const ImageUploader = forwardRef<any, ImageUploaderProps>(
+const ImageUploader = forwardRef<ImageUploaderHandle, ImageUploaderProps>(
   ({
     value,
     defaultUrl,

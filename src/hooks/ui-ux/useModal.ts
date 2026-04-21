@@ -6,12 +6,12 @@ export interface ModalOptions {
   initialState?: boolean;
   closeOnEscape?: boolean;
   closeOnOverlay?: boolean;
-  onOpen?: (data: any) => void;
-  onClose?: (data: any) => void;
-  beforeClose?: (data: any) => Promise<boolean> | boolean;
+  onOpen?: (data: unknown) => void;
+  onClose?: (data: unknown) => void;
+  beforeClose?: (data: unknown) => Promise<boolean> | boolean;
 }
 
-export interface ModalResult<T = any> {
+export interface ModalResult<T = unknown> {
   isOpen: boolean;
   isLoading: boolean;
   data: T | null;
@@ -45,7 +45,7 @@ function shouldCloseModal(
   return false;
 }
 
-export default function useModal<T = any>(
+export default function useModal<T = unknown>(
   options: ModalOptions = {}
 ): ModalResult<T> {
   const {

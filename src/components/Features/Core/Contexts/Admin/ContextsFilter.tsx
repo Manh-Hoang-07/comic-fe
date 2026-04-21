@@ -24,7 +24,7 @@ export default function ContextsFilter({
     const options = [{ value: "", label: "Tất cả" }];
     const statusArray = statusEnums && statusEnums.length > 0 ? statusEnums : getBasicStatusArray();
     statusArray.forEach((item) => {
-      options.push({ value: item.value, label: item.label || (item as any).name || item.value });
+      options.push({ value: item.value, label: item.label || item.name || item.value });
     });
     return options;
   }, [statusEnums]);

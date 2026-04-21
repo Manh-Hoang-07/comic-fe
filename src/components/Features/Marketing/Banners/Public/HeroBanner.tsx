@@ -71,25 +71,26 @@ export default function HeroBanner({
         return path;
     };
 
-    const transformApiBanner = (apiBanner: any): HeroBannerData | null => {
+    const transformApiBanner = (apiBanner: Record<string, unknown>): HeroBannerData | null => {
         if (!apiBanner.title || (!apiBanner.image && !apiBanner.mobile_image)) {
             return null;
         }
+        const metadata = apiBanner.metadata as Record<string, unknown> | undefined;
 
         return {
-            id: apiBanner.id,
-            title: apiBanner.title,
-            subtitle: apiBanner.subtitle || "",
-            description: apiBanner.description || "",
-            image: apiBanner.image,
-            mobile_image: apiBanner.mobile_image || apiBanner.image_mobile,
-            button_text: apiBanner.button_text || "",
-            link: apiBanner.link || "",
-            link_target: apiBanner.link_target || "_self",
-            titleColor: apiBanner.title_color || apiBanner.metadata?.title_color,
-            subtitleColor: apiBanner.subtitle_color || apiBanner.metadata?.subtitle_color,
-            descriptionColor: apiBanner.description_color || apiBanner.metadata?.description_color,
-            backgroundColor: apiBanner.background_color || apiBanner.metadata?.background_color,
+            id: apiBanner.id as number | undefined,
+            title: apiBanner.title as string,
+            subtitle: (apiBanner.subtitle as string) || "",
+            description: (apiBanner.description as string) || "",
+            image: apiBanner.image as string,
+            mobile_image: (apiBanner.mobile_image as string) || (apiBanner.image_mobile as string),
+            button_text: (apiBanner.button_text as string) || "",
+            link: (apiBanner.link as string) || "",
+            link_target: (apiBanner.link_target as string) || "_self",
+            titleColor: (apiBanner.title_color as string) || (metadata?.title_color as string),
+            subtitleColor: (apiBanner.subtitle_color as string) || (metadata?.subtitle_color as string),
+            descriptionColor: (apiBanner.description_color as string) || (metadata?.description_color as string),
+            backgroundColor: (apiBanner.background_color as string) || (metadata?.background_color as string),
         };
     };
 
@@ -100,7 +101,7 @@ export default function HeroBanner({
             ? `${publicEndpoints.banners.list}?locationCode=${locationCode}`
             : "";
 
-    const { data: rawData, isLoading } = useApiQuery<any>(
+    const { data: rawData, isLoading } = useApiQuery<Record<string, unknown>>(
         ["banners", "hero", locationCode || "", String(bannerId || "")],
         apiUrl,
         undefined,
@@ -118,7 +119,7 @@ export default function HeroBanner({
             return transformed ? [transformed] : [];
         }
 
-        let bannersData: any[] = [];
+        let bannersData: Record<string, unknown>[] = [];
         if (rawData?.success && rawData?.data) {
             bannersData = Array.isArray(rawData.data) ? rawData.data : [];
         } else if (Array.isArray(rawData)) {

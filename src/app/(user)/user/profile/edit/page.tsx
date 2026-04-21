@@ -100,9 +100,10 @@ export default function UserProfileEditPage() {
           useAuthStore.getState().setUser(updatedUser);
         }
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { message?: string } }; message?: string };
       console.error("Update profile error:", err);
-      showError(err.response?.data?.message || "Có lỗi xảy ra khi cập nhật thông tin");
+      showError(e.response?.data?.message || "Có lỗi xảy ra khi cập nhật thông tin");
     } finally {
       setIsLoading(false);
     }

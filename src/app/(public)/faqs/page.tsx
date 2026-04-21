@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export const revalidate = 3600;
 
 export default async function FAQsPage() {
-  const { data: faqs } = await serverFetch<any[]>("/api/faqs", { revalidate: 3600 });
+  const { data: faqs } = await serverFetch<Record<string, unknown>[]>("/api/faqs", { revalidate: 3600 });
 
   return (
     <Suspense fallback={<div className="text-center py-10 text-gray-500">Đang tải câu hỏi...</div>}>

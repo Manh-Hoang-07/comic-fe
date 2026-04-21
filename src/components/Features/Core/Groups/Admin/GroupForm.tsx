@@ -17,15 +17,15 @@ interface Group {
   code?: string;
   name?: string;
   description?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 interface GroupFormProps {
   show: boolean;
   group?: Group | null;
-  apiErrors?: Record<string, string | string[]>;
+  apiErrors?: Record<string, string | string[]> | null;
   loading?: boolean;
-  onSubmit?: (data: any) => void;
+  onSubmit?: (data: Record<string, unknown>) => void;
   onCancel?: () => void;
 }
 
@@ -143,13 +143,11 @@ export default function GroupForm({
       }
     }
 
-    const submitData = {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { metadata_json: _omit, ...submitData } = {
       ...data,
       metadata: finalMetadata,
     };
-
-    // Cleanup metadata_json from submit
-    delete (submitData as any).metadata_json;
 
     onSubmit?.(submitData);
   };

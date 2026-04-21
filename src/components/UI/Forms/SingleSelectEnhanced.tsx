@@ -24,7 +24,7 @@ interface SingleSelectEnhancedProps {
   onChange?: (value: string | number | null) => void;
   onSelectOption?: (option: Option | null) => void;
   name?: string;
-  onBlur?: (e: any) => void;
+  onBlur?: React.FocusEventHandler<HTMLSelectElement>;
 }
 
 const SingleSelectEnhanced = forwardRef<HTMLSelectElement, SingleSelectEnhancedProps>(
@@ -61,7 +61,7 @@ const SingleSelectEnhanced = forwardRef<HTMLSelectElement, SingleSelectEnhancedP
       setIsLoading(true);
       try {
         const response = await api.get(searchApi);
-        let data: any[] = [];
+        let data: Record<string, unknown>[] = [];
 
         // Hỗ trợ nhiều format response
         if (response.data?.success && response.data?.data) {
@@ -80,9 +80,9 @@ const SingleSelectEnhanced = forwardRef<HTMLSelectElement, SingleSelectEnhancedP
         }
 
         setLocalOptions(
-          data.map((item: any) => ({
-            value: item[valueField],
-            label: item[labelField] || String(item[valueField] || ""),
+          data.map((item) => ({
+            value: item[valueField] as string | number,
+            label: String(item[labelField] ?? item[valueField] ?? ""),
           }))
         );
       } catch (error) {

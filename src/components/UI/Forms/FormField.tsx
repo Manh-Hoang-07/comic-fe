@@ -24,9 +24,9 @@ interface FormFieldProps {
   autocomplete?: string;
 
   // Value/Change props (for controlled usage)
-  value?: any;
-  onChange?: (e: any) => void;
-  onBlur?: (e: any) => void;
+  value?: string | number | boolean | readonly string[];
+  onChange?: React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>;
+  onBlur?: React.FocusEventHandler<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>;
 
   // Text/Input specific
   maxlength?: number | string;
@@ -95,7 +95,7 @@ const FormField = forwardRef<HTMLInputElement | HTMLTextAreaElement | HTMLSelect
         ...rest,
       };
 
-      const handleInputChange = (e: React.ChangeEvent<any>) => {
+      const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         onChange?.(e);
       };
 
@@ -103,7 +103,7 @@ const FormField = forwardRef<HTMLInputElement | HTMLTextAreaElement | HTMLSelect
         return (
           <input
             {...commonProps}
-            ref={ref as any}
+            ref={ref as React.Ref<HTMLInputElement>}
             type={type}
             {...(value !== undefined ? { value: value ?? "" } : {})}
             onChange={handleInputChange}
@@ -120,7 +120,7 @@ const FormField = forwardRef<HTMLInputElement | HTMLTextAreaElement | HTMLSelect
         return (
           <textarea
             {...commonProps}
-            ref={ref as any}
+            ref={ref as React.Ref<HTMLTextAreaElement>}
             {...(value !== undefined ? { value: value ?? "" } : {})}
             onChange={handleInputChange}
             maxLength={typeof maxlength === "number" ? maxlength : undefined}
@@ -134,7 +134,7 @@ const FormField = forwardRef<HTMLInputElement | HTMLTextAreaElement | HTMLSelect
         return (
           <select
             {...commonProps}
-            ref={ref as any}
+            ref={ref as React.Ref<HTMLSelectElement>}
             {...(value !== undefined ? { value: value ?? (multiple ? [] : "") } : {})}
             onChange={handleInputChange}
             multiple={multiple}
@@ -155,7 +155,7 @@ const FormField = forwardRef<HTMLInputElement | HTMLTextAreaElement | HTMLSelect
           <div className="flex items-center group cursor-pointer">
             <input
               {...commonProps}
-              ref={ref as any}
+              ref={ref as React.Ref<HTMLInputElement>}
               type="checkbox"
               checked={Boolean(value)}
               onChange={handleInputChange}

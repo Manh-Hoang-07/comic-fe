@@ -82,7 +82,7 @@ export default function GroupMembers({ groupId }: GroupMembersProps) {
       }
 
       setMembers(membersData);
-    } catch (error: any) {
+    } catch (error: unknown) {
       showError("Không thể tải danh sách members");
       setMembers([]);
     } finally {
@@ -160,7 +160,7 @@ export default function GroupMembers({ groupId }: GroupMembersProps) {
       showSuccess("Xóa member thành công");
       closeDeleteModal();
       await loadMembers();
-    } catch (error: any) {
+    } catch (error: unknown) {
       showError("Không thể xóa member");
     } finally {
       setLoading(false);

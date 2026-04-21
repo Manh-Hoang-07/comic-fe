@@ -5,8 +5,8 @@ import api from "@/lib/api/client";
 import { adminEndpoints } from "@/lib/api/endpoints";
 
 interface PostCommentsFilterProps {
-    initialFilters: any;
-    onUpdateFilters: (filters: any) => void;
+    initialFilters: Record<string, string | number>;
+    onUpdateFilters: (filters: Record<string, string | number>) => void;
 }
 
 export default function PostCommentsFilter({
@@ -24,9 +24,9 @@ export default function PostCommentsFilter({
                 const response = await api.get(adminEndpoints.posts.list, { params: { limit: 100 } });
                 const data = response.data.data || response.data;
                 if (Array.isArray(data)) {
-                    setPosts(data.map((post: any) => ({
-                        value: post.id.toString(),
-                        label: post.name || post.title,
+                    setPosts(data.map((post: Record<string, unknown>) => ({
+                        value: String(post.id),
+                        label: (post.name || post.title) as string,
                     })));
                 }
             } catch (error) {

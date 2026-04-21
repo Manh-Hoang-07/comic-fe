@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { adminComicService } from "@/lib/api/admin/comic";
 import { AdminComicCategory, AdminMeta } from "@/types/comic";
 import { useToastContext } from "@/contexts/ToastContext";
@@ -18,23 +18,23 @@ export default function ComicCategoryList({ onEdit, refreshTrigger }: ComicCateg
     const [search, setSearch] = useState("");
     const { showSuccess, showError } = useToastContext();
 
-    const fetchCategories = async () => {
+    const fetchCategories = useCallback(async () => {
         try {
             setLoading(true);
             const response = await adminComicService.getCategories({ page, limit: 10, search });
-            setCategories(response.data as any);
+            setCategories(response.data);
             setMeta(response.meta || null);
-        } catch (error: any) {
-            showError(error?.response?.data?.message || "Không thể tải danh mục");
+        } catch (error: unknown) {
+            const e = error as { response?: { data?: { message?: string } } };
+            showError(e?.response?.data?.message || "Không thể tải danh mục");
         } finally {
             setLoading(false);
         }
-    };
+    }, [page, search, refreshTrigger, showError]);
 
     useEffect(() => {
         fetchCategories();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [page, search, refreshTrigger]);
+    }, [fetchCategories]);
 
     const handleDelete = async (id: number) => {
         if (!confirm("Bạn có chắc muốn xóa danh mục này?")) return;
@@ -43,8 +43,9 @@ export default function ComicCategoryList({ onEdit, refreshTrigger }: ComicCateg
             await adminComicService.deleteCategory(id);
             showSuccess("Xóa danh mục thành công");
             fetchCategories();
-        } catch (error: any) {
-            showError(error?.response?.data?.message || "Không thể xóa danh mục");
+        } catch (error: unknown) {
+            const e = error as { response?: { data?: { message?: string } } };
+            showError(e?.response?.data?.message || "Không thể xóa danh mục");
         }
     };
 

@@ -1,18 +1,17 @@
 "use client";
 
-import { useEffect } from "react";
-import { Controller } from "react-hook-form";
+import { Controller, Control, FieldValues, UseFormWatch, UseFormSetValue, FieldErrors } from "react-hook-form";
 import SingleSelectEnhanced from "@/components/UI/Forms/SingleSelectEnhanced";
 import { adminEndpoints, publicEndpoints } from "@/lib/api/endpoints";
 
 interface LocationSelectorProps {
-    control: any;
-    errors: any;
+    control: Control<FieldValues>;
+    errors: FieldErrors<FieldValues>;
     countryFieldName?: string;
     provinceFieldName?: string;
     wardFieldName?: string;
-    watch: any;
-    setValue: any;
+    watch: UseFormWatch<FieldValues>;
+    setValue: UseFormSetValue<FieldValues>;
     isAdmin?: boolean;
     required?: boolean;
 }
@@ -37,12 +36,12 @@ export default function LocationSelector({
     const countryId = watch(countryFieldName);
     const provinceId = watch(provinceFieldName);
 
-    const handleCountryChange = (val: any) => {
+    const handleCountryChange = (_val: unknown) => {
         setValue(provinceFieldName, null);
         setValue(wardFieldName, null);
     };
 
-    const handleProvinceChange = (val: any) => {
+    const handleProvinceChange = (_val: unknown) => {
         setValue(wardFieldName, null);
     };
 

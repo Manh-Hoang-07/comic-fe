@@ -51,7 +51,7 @@ export function PublicHeader({
     handleClose();
   };
 
-  const { data: fetchedMenus } = useApiQuery<any>(
+  const { data: fetchedMenus } = useApiQuery<Record<string, unknown>>(
     ["menus", "public"],
     publicEndpoints.menus.list,
     undefined,

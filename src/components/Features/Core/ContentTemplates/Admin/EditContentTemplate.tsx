@@ -2,10 +2,11 @@
 
 import ContentTemplateForm from "./ContentTemplateForm";
 import { useFormModal } from "@/hooks";
+import { EditTarget } from "@/hooks/crud/useFormModal";
 
 interface EditContentTemplateProps {
     show: boolean;
-    target: { fetchApi?: string; initialData?: any; updateApi: string } | null;
+    target: EditTarget | null;
     onSuccess?: () => void;
     onClose?: () => void;
 }

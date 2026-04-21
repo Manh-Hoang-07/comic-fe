@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { adminComicService } from "@/lib/api/admin/comic";
 import { AdminChapter, AdminMeta } from "@/types/comic";
 import { useToastContext } from "@/contexts/ToastContext";
@@ -19,7 +19,7 @@ export default function ChapterList({ comicId, onEdit, onManagePages, refreshTri
     const [page, setPage] = useState(1);
     const { showSuccess, showError } = useToastContext();
 
-    const fetchChapters = async () => {
+    const fetchChapters = useCallback(async () => {
         try {
             setLoading(true);
             const response = await adminComicService.getChapters({
@@ -27,19 +27,19 @@ export default function ChapterList({ comicId, onEdit, onManagePages, refreshTri
                 limit: 20,
                 comic_id: comicId
             });
-            setChapters(response.data as any);
+            setChapters(response.data);
             setMeta(response.meta || null);
-        } catch (error: any) {
-            showError(error?.response?.data?.message || "Không thể tải danh sách chương");
+        } catch (error: unknown) {
+            const e = error as { response?: { data?: { message?: string } } };
+            showError(e?.response?.data?.message || "Không thể tải danh sách chương");
         } finally {
             setLoading(false);
         }
-    };
+    }, [page, comicId, refreshTrigger, showError]);
 
     useEffect(() => {
         fetchChapters();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [page, comicId, refreshTrigger]);
+    }, [fetchChapters]);
 
     const handleDelete = async (id: number) => {
         if (!confirm("Bạn có chắc muốn xóa chương này?")) return;
@@ -48,8 +48,9 @@ export default function ChapterList({ comicId, onEdit, onManagePages, refreshTri
             await adminComicService.deleteChapter(id);
             showSuccess("Xóa chương thành công");
             fetchChapters();
-        } catch (error: any) {
-            showError(error?.response?.data?.message || "Không thể xóa chương");
+        } catch (error: unknown) {
+            const e = error as { response?: { data?: { message?: string } } };
+            showError(e?.response?.data?.message || "Không thể xóa chương");
         }
     };
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Modal from "@/components/UI/Feedback/Modal";
-import FormWrapper from "@/components/UI/Forms/FormWrapper";
+import FormWrapper, { FormChildProps } from "@/components/UI/Forms/FormWrapper";
 import MultipleSelect from "@/components/UI/Forms/MultipleSelect";
 import api from "@/lib/api/client";
 import { adminEndpoints } from "@/lib/api/endpoints";
@@ -31,7 +31,7 @@ interface EditMemberRolesModalProps {
   show: boolean;
   groupId: number;
   member?: GroupMember | null;
-  apiErrors?: Record<string, any>;
+  apiErrors?: Record<string, string | string[]>;
   onRolesUpdated?: () => void;
   onClose?: () => void;
 }
@@ -46,8 +46,8 @@ export default function EditMemberRolesModal({
   onRolesUpdated,
   onClose,
 }: EditMemberRolesModalProps) {
-  const [roles, setRoles] = useState<any[]>([]);
-  const [localApiErrors, setLocalApiErrors] = useState<Record<string, any>>(apiErrors);
+  const [roles, setRoles] = useState<Record<string, unknown>[]>([]);
+  const [localApiErrors, setLocalApiErrors] = useState<Record<string, string | string[]>>(apiErrors);
 
   useEffect(() => {
     if (JSON.stringify(apiErrors) !== JSON.stringify(localApiErrors)) {
@@ -98,12 +98,12 @@ export default function EditMemberRolesModal({
 
   const roleOptions = useMemo(() => {
     return (roles || []).map((opt) => ({
-      value: opt.id,
-      label: opt.name || opt.code || String(opt.id),
+      value: opt.id as string | number,
+      label: ((opt.name || opt.code || String(opt.id)) as string),
     }));
   }, [roles]);
 
-  const handleSubmit = async (formData: any) => {
+  const handleSubmit = async (formData: Record<string, unknown>) => {
     if (!groupId || !member?.user_id) return;
 
     setLocalApiErrors({});
@@ -116,8 +116,9 @@ export default function EditMemberRolesModal({
       await api.put(adminEndpoints.groups.members.updateRoles(groupId, member.user_id), dataToSubmit);
       onRolesUpdated?.();
       onClose?.();
-    } catch (err: any) {
-      const payload = err?.response?.data;
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { errors?: Record<string, string>; message?: string | string[] } } };
+      const payload = e?.response?.data;
       if (payload?.errors) {
         setLocalApiErrors(payload.errors);
       } else if (Array.isArray(payload?.message) && payload.message.length) {
@@ -155,7 +156,7 @@ export default function EditMemberRolesModal({
           onSubmit={handleSubmit}
           onCancel={handleClose}
         >
-          {({ form, errors, clearError }: any) => (
+          {({ form, errors, clearError }: FormChildProps) => (
             <MultipleSelect
               value={form.role_ids || []}
               onChange={(value: Array<string | number>) => {

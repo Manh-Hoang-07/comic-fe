@@ -1,8 +1,23 @@
+import React from "react";
 import { Metadata } from "next";
 import SystemConfigForm from "@/components/Features/Core/SystemConfig/Admin/SystemConfigForm";
 import ContactChannelsManager from "@/components/Features/Core/SystemConfig/Admin/ContactChannelsManager";
 import SystemLocationSelector from "@/components/Features/Core/SystemConfig/Admin/SystemLocationSelector";
 import PageMeta from "@/components/UI/Navigation/PageMeta";
+
+interface ConfigField {
+  key: string;
+  label: string;
+  type: "text" | "number" | "textarea" | "image" | "email" | "password" | "checkbox" | "custom";
+  placeholder?: string;
+  description?: string;
+  component?: React.ComponentType<{
+    value: unknown;
+    onChange: (value: unknown) => void;
+    formData?: Record<string, unknown>;
+    onUpdate?: (key: string, value: unknown) => void;
+  }>;
+}
 
 export const metadata: Metadata = {
   title: "Cấu hình chung | Admin",
@@ -10,7 +25,7 @@ export const metadata: Metadata = {
 };
 
 export default function AdminSystemConfigGeneralPage() {
-  const fields: any[] = [
+  const fields: ConfigField[] = [
     { key: "site_name", label: "Tên Website", type: "text", placeholder: "Nhập tên website" },
     { key: "site_description", label: "Mô tả Website", type: "textarea", placeholder: "Nhập mô tả ngắn về website" },
     { key: "site_logo", label: "Logo", type: "image", description: "Logo hiển thị trên Header và các trang" },

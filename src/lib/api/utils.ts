@@ -135,7 +135,7 @@ export function createEnhancedError(
  */
 export function getUserFriendlyMessage(error: AxiosError): string {
   const status = error.response?.status
-  const data = error.response?.data as any
+  const data = error.response?.data as { message?: string; error?: string } | undefined
 
   // Custom error messages from API
   if (data?.message) {
@@ -273,12 +273,12 @@ export function mergeConfigs(
  * Create request tracker
  */
 export function createRequestTracker() {
-  const activeRequests = new Map<string, any>()
-  
+  const activeRequests = new Map<string, unknown>()
+
   return {
     has: (key: string) => activeRequests.has(key),
     get: (key: string) => activeRequests.get(key),
-    set: (key: string, value: any) => activeRequests.set(key, value),
+    set: (key: string, value: unknown) => activeRequests.set(key, value),
     delete: (key: string) => activeRequests.delete(key),
     clear: () => activeRequests.clear(),
     size: () => activeRequests.size

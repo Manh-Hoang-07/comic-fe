@@ -55,7 +55,7 @@ export default function BannerSlider({
     return path;
   };
 
-  const { data: rawData, isLoading: loading, error: queryError } = useApiQuery<any>(
+  const { data: rawData, isLoading: loading, error: queryError } = useApiQuery<Record<string, unknown>>(
     ["banners", "slider", locationCode],
     publicEndpoints.banners.getByLocation(locationCode),
     undefined,

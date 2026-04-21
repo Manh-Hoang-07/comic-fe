@@ -12,6 +12,7 @@ import Pagination from "@/components/UI/DataDisplay/Pagination";
 import MenusFilter from "./MenusFilter";
 import CreateMenu from "./CreateMenu";
 import EditMenu from "./EditMenu";
+import { MenuTreeItem } from "@/hooks/data/useMenus";
 
 const endpoints = adminEndpoints.menus;
 
@@ -57,8 +58,8 @@ export default function AdminMenus({ title = "Quản lý menu", createButtonText
   const { items, loading, pagination, filters, hasData } = data;
   const { getSerialNumber } = ui;
 
-  const [parentMenus, setParentMenus] = useState<any[]>([]);
-  const [permissions, setPermissions] = useState<any[]>([]);
+  const [parentMenus, setParentMenus] = useState<MenuTreeItem[]>([]);
+  const [permissions, setPermissions] = useState<Array<{ id: number; name: string; code: string }>>([]);
 
   const fetchRelatedData = useCallback(async () => {
     try {

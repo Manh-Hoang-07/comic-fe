@@ -53,8 +53,8 @@ export const contentTemplateService = {
         return response.data;
     },
 
-    test: async (id: string | number, payload: { to: string; variables: Record<string, any> }): Promise<{ success: boolean; data: any }> => {
-        const response = await api.post<{ success: boolean; data: any }>(adminEndpoints.contentTemplates.test(id), payload);
+    test: async (id: string | number, payload: { to: string; variables: Record<string, unknown> }): Promise<{ success: boolean; data: unknown }> => {
+        const response = await api.post<{ success: boolean; data: unknown }>(adminEndpoints.contentTemplates.test(id), payload);
         return response.data;
     },
 };

@@ -26,9 +26,9 @@ interface PermissionFormProps {
   show: boolean;
   permission?: Permission | null;
   statusEnums?: Array<{ value: string; label?: string; name?: string }>;
-  apiErrors?: Record<string, string | string[]>;
+  apiErrors?: Record<string, string | string[]> | null;
   loading?: boolean;
-  onSubmit?: (data: any) => void;
+  onSubmit?: (data: Record<string, unknown>) => void;
   onCancel?: () => void;
 }
 
@@ -63,7 +63,7 @@ export default function PermissionForm({
     const statusArray = statusEnums && statusEnums.length > 0 ? statusEnums : getBasicStatusArray();
     return statusArray.map((opt) => ({
       value: opt.value,
-      label: opt.label || (opt as any).name || opt.value,
+      label: opt.label || opt.name || opt.value,
     }));
   }, [statusEnums]);
 

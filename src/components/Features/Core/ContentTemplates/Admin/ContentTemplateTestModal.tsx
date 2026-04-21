@@ -45,10 +45,11 @@ export default function ContentTemplateTestModal({
                 variables,
             });
             setResult({ success: res.success || true, message: "Gửi thử thành công!" });
-        } catch (err: any) {
+        } catch (err: unknown) {
+            const e = err as { response?: { data?: { message?: string } }; message?: string };
             setResult({
                 success: false,
-                message: err.response?.data?.message || err.message || "Gửi thử thất bại"
+                message: e.response?.data?.message || e.message || "Gửi thử thất bại"
             });
         } finally {
             setLoading(false);

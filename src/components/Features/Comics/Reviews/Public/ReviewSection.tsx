@@ -10,7 +10,7 @@ import { formatDate } from "@/utils/formatters";
 
 interface ReviewSectionProps {
     comicId: string;
-    reviews: any[];
+    reviews: Record<string, unknown>[];
     onReviewSuccess?: () => void;
 }
 
@@ -77,33 +77,36 @@ export function ReviewSection({ comicId, reviews, onReviewSuccess }: ReviewSecti
 
             {/* List */}
             <div className="space-y-4">
-                {reviews.map((review) => (
-                    <div key={review.id} className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex gap-4">
+                {reviews.map((review) => {
+                    const user = review.user as Record<string, unknown> | undefined;
+                    return (
+                    <div key={review.id as string} className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex gap-4">
                         <div className="w-10 h-10 rounded-full bg-gray-100 overflow-hidden flex-shrink-0">
-                            {review.user?.avatar ? (
-                                <Image src={review.user.avatar} alt="" width={40} height={40} className="w-full h-full object-cover" />
+                            {user?.avatar ? (
+                                <Image src={user.avatar as string} alt="" width={40} height={40} className="w-full h-full object-cover" />
                             ) : (
                                 <div className="w-full h-full flex items-center justify-center text-gray-400 font-bold">
-                                    {review.user?.full_name?.charAt(0) || "U"}
+                                    {(user?.full_name as string | undefined)?.charAt(0) || "U"}
                                 </div>
                             )}
                         </div>
                         <div className="flex-1">
                             <div className="flex justify-between items-start mb-1">
-                                <h4 className="font-bold text-gray-900 text-sm">{review.user?.full_name}</h4>
+                                <h4 className="font-bold text-gray-900 text-sm">{user?.full_name as string}</h4>
                                 <div className="flex gap-0.5">
                                     {[1, 2, 3, 4, 5].map((s) => (
-                                        <StarIcon key={s} className={`w-3 h-3 ${s <= review.rating ? "text-yellow-500" : "text-gray-200"}`} />
+                                        <StarIcon key={s} className={`w-3 h-3 ${s <= (review.rating as number) ? "text-yellow-500" : "text-gray-200"}`} />
                                     ))}
                                 </div>
                             </div>
-                            <p className="text-gray-600 text-sm leading-relaxed">{review.content}</p>
+                            <p className="text-gray-600 text-sm leading-relaxed">{review.content as string}</p>
                             <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-2 block">
-                                {formatDate(review.created_at)}
+                                {formatDate(review.created_at as string)}
                             </span>
                         </div>
                     </div>
-                ))}
+                    );
+                })}
             </div>
         </div>
     );

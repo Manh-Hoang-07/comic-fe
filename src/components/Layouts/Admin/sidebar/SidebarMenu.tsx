@@ -38,7 +38,7 @@ export default function SidebarMenu({
   const [expandedMenus, setExpandedMenus] = useState<string[]>([]);
 
   const menuItemsArray = useMemo(
-    () => Array.isArray(menuItems) ? menuItems : (menuItems as any).value || [],
+    () => Array.isArray(menuItems) ? menuItems : (menuItems as { value: MenuItem[] }).value || [],
     [menuItems]
   );
 
@@ -86,7 +86,7 @@ export default function SidebarMenu({
 
   useEffect(() => {
     const currentSubmenu = menuItemsArray.find(
-      (item: any) => item.children && item.children.some((child: any) => isActivePath(child.path))
+      (item) => item.children && item.children.some((child) => isActivePath(child.path))
     );
     if (currentSubmenu && !expandedMenus.includes(currentSubmenu.name)) {
       setExpandedMenus((prev) => [...prev, currentSubmenu.name]);
@@ -143,7 +143,7 @@ export default function SidebarMenu({
         {/* Menu Items */}
         {!loading && !error && (
           <>
-            {menuItemsArray.map((item: any) => (
+            {menuItemsArray.map((item) => (
               <div key={item.name}>
                 {/* Menu with children */}
                 {item.children ? (
@@ -179,7 +179,7 @@ export default function SidebarMenu({
                     {/* Submenu */}
                     {expandedMenus.includes(item.name) && (
                       <div className="ml-6 space-y-1 transition-all duration-200">
-                        {item.children.map((child: any) => (
+                        {item.children.map((child) => (
                           <Link
                             key={child.path}
                             href={child.path}

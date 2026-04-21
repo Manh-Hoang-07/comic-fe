@@ -10,7 +10,11 @@
       "Bash(bash /tmp/count_imports.sh)",
       "Bash(bash /tmp/check_validations.sh)",
       "Bash(for schema:*)",
-      "Bash(uniq done:*)"
+      "Bash(uniq done:*)",
+      "Bash(for f:*)",
+      "Bash(do)",
+      "Bash(sed -i 's/\\(item as any\\)\\\\.name/item.name/g' \"$f\")",
+      "Bash(echo \"Fixed: $f\")"
     ]
   }
 }

@@ -8,8 +8,8 @@ import SingleSelectEnhanced from "@/components/UI/Forms/SingleSelectEnhanced";
 
 interface FormProps {
     initialData?: Partial<ContentTemplate>;
-    onSubmit: (data: any) => void;
-    apiErrors?: any;
+    onSubmit: (data: Record<string, unknown>) => void;
+    apiErrors?: Record<string, string | string[]> | null;
     loading?: boolean;
     onCancel?: () => void;
 }
@@ -66,7 +66,7 @@ export default function ContentTemplateForm({
         }
     }, [apiErrors, setError]);
 
-    const onFormSubmit = (data: any) => {
+    const onFormSubmit = (data: Record<string, unknown>) => {
         const formattedData = { ...data };
 
         // Parse variables if they are a string
@@ -265,11 +265,9 @@ export default function ContentTemplateForm({
             </section>
 
             {/* ERROR DISPLAY */}
-            {apiErrors && (typeof apiErrors === 'string' || apiErrors.message || apiErrors.error) && (
+            {apiErrors && (apiErrors["message"] || apiErrors["error"]) && (
                 <div className="p-4 bg-red-50 text-red-600 rounded-xl text-sm border border-red-100 font-medium animate-in fade-in slide-in-from-top-1">
-                    {typeof apiErrors === 'string'
-                        ? apiErrors
-                        : (apiErrors.message || apiErrors.error || 'Đã xảy ra lỗi, vui lòng kiểm tra lại.')}
+                    {String(apiErrors["message"] || apiErrors["error"] || 'Đã xảy ra lỗi, vui lòng kiểm tra lại.')}
                 </div>
             )}
 

@@ -26,8 +26,9 @@ export function BookmarkButton({ chapterId, pageNumber = 1, className = "" }: Bo
             if (existing) {
                 setBookmarkId(existing.id);
             }
-        } catch (error: any) {
-            if (error.response?.status !== 401 && error.response?.status !== 403) {
+        } catch (error: unknown) {
+            const e = error as { response?: { status?: number } };
+            if (e.response?.status !== 401 && e.response?.status !== 403) {
                 console.error("Failed to check bookmark status", error);
             }
         } finally {

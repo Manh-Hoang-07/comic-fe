@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import apiClient from "@/lib/api/client";
 import { publicEndpoints, adminEndpoints } from "@/lib/api/endpoints";
 
 // ===== TYPES =====
 
 export interface SystemConfigGeneral {
-  [key: string]: any;
+  [key: string]: unknown;
   site_name?: string;
   site_description?: string;
   site_logo?: string | null;
@@ -19,7 +19,7 @@ export interface SystemConfigGeneral {
   timezone?: string;
   locale?: string;
   currency?: string;
-  contact_channels?: any;
+  contact_channels?: Record<string, unknown>;
   meta_title?: string | null;
   meta_description?: string | null;
   meta_keywords?: string | null;
@@ -48,7 +48,7 @@ export interface SystemConfigOptions {
 export interface SystemConfigResult {
   data: SystemConfigGeneral | null;
   loading: boolean;
-  error: any;
+  error: unknown;
   isCacheValid: boolean;
   systemInfo: {
     name: string;
@@ -59,7 +59,7 @@ export interface SystemConfigResult {
   fetchData: () => Promise<void>;
   refresh: () => Promise<void>;
   clearCache: () => void;
-  getConfigValue: (key: string, defaultValue?: any) => any;
+  getConfigValue: (key: string, defaultValue?: unknown) => unknown;
 }
 
 // ===== CACHE MANAGEMENT =====
@@ -127,7 +127,7 @@ export function useSystemConfig(
 
   const [data, setData] = useState<SystemConfigGeneral | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<any>(null);
+  const [error, setError] = useState<unknown>(null);
   const [cache, setCache] = useState<SystemConfigCache | null>(null);
 
   // Computed để kiểm tra cache có hợp lệ không
@@ -149,7 +149,7 @@ export function useSystemConfig(
   }, [group, isAdmin]);
 
   const normalizeConfigData = useCallback(
-    (responseData: any): SystemConfigGeneral => {
+    (responseData: unknown): SystemConfigGeneral => {
       let configData: SystemConfigGeneral;
 
       // Nếu API trả về format có wrapper { success, data, ... }
@@ -158,21 +158,22 @@ export function useSystemConfig(
         typeof responseData === "object" &&
         !Array.isArray(responseData)
       ) {
+        const obj = responseData as Record<string, unknown>;
         // Kiểm tra nếu có structure { success, data, ... }
         if (
-          responseData.data &&
-          typeof responseData.data === "object" &&
-          !Array.isArray(responseData.data)
+          obj.data &&
+          typeof obj.data === "object" &&
+          !Array.isArray(obj.data)
         ) {
-          configData = responseData.data;
+          configData = obj.data as SystemConfigGeneral;
         } else {
           // Nếu không có wrapper, dùng trực tiếp responseData
-          configData = responseData;
+          configData = obj as SystemConfigGeneral;
         }
 
         // Map legacy fields nếu cần
-        if ((configData as any).site_name && !(configData as any).name) {
-          (configData as any).name = (configData as any).site_name;
+        if (configData.site_name && !configData.name) {
+          configData.name = configData.site_name;
         }
         return configData;
       }
@@ -180,9 +181,9 @@ export function useSystemConfig(
       // Nếu API trả về array của config items (format cũ)
       if (Array.isArray(responseData)) {
         configData = {};
-        responseData.forEach((item: any) => {
+        (responseData as { key?: string; value?: unknown }[]).forEach((item) => {
           if (item?.key && item.value !== undefined) {
-            (configData as any)[item.key] = item.value;
+            configData[item.key] = item.value;
           }
         });
         return configData;
@@ -277,7 +278,7 @@ export function useSystemConfig(
 
   // Function để lấy một config value cụ thể
   const getConfigValue = useCallback(
-    (key: string, defaultValue: any = null): any => {
+    (key: string, defaultValue: unknown = null): unknown => {
       if (!data) return defaultValue;
       return data[key] ?? defaultValue;
     },
@@ -293,9 +294,12 @@ export function useSystemConfig(
     [getConfigValue]
   );
 
-  // Load data on mount
+  // Load data on mount — getData phụ thuộc vào `data` (circular dep nếu thêm vào deps).
+  // Dùng ref pattern để tránh infinite loop khi dữ liệu load xong trigger effect tiếp.
+  const getDataRef = useRef(getData);
+  getDataRef.current = getData;
   useEffect(() => {
-    getData();
+    getDataRef.current();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return {

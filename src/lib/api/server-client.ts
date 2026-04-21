@@ -24,7 +24,7 @@ interface FetchOptions extends RequestInit {
 export async function serverFetch<T = any>(
     endpoint: string,
     options: FetchOptions = {}
-): Promise<{ data: T | null; meta?: any; error: string | null }> {
+): Promise<{ data: T | null; meta?: Record<string, unknown>; error: string | null }> {
     try {
         let token: string | undefined;
         let groupId: string | undefined;
@@ -75,12 +75,15 @@ export async function serverFetch<T = any>(
         } finally {
             clearTimeout(timeoutId);
         }
-    } catch (error: any) {
-        if (error.name === 'AbortError') {
-            console.error(`[API Fetch] TIMEOUT: ${endpoint}`);
-            return { data: null, error: "Connection Timeout" };
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            if (error.name === 'AbortError') {
+                console.error(`[API Fetch] TIMEOUT: ${endpoint}`);
+                return { data: null, error: "Connection Timeout" };
+            }
+            console.error(`[Server Fetch Error] ${endpoint}:`, error.message);
+            return { data: null, error: error.message };
         }
-        console.error(`[Server Fetch Error] ${endpoint}:`, error.message);
-        return { data: null, error: error.message };
+        return { data: null, error: "Unknown error" };
     }
 }

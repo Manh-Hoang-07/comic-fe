@@ -16,7 +16,7 @@ interface SelectFilterProps {
   error?: string;
   options?: Option[];
   apiEndpoint?: string;
-  apiParams?: Record<string, any>;
+  apiParams?: Record<string, string | number | boolean>;
   valueField?: string;
   labelField?: string;
   onChange?: (value: string | number) => void;
@@ -38,36 +38,31 @@ export default function SelectFilter({
   const [loading, setLoading] = useState(false);
   const [normalizedOptions, setNormalizedOptions] = useState<Option[]>([]);
 
-  const normalize = useCallback((items: any[]): Option[] => {
+  const normalize = useCallback((items: Record<string, unknown>[]): Option[] => {
     return (items || []).map((i) => ({
-      value: i?.value ?? i?.[valueField],
-      label: i?.label ?? i?.[labelField] ?? String(i?.[valueField] ?? ""),
+      value: (i?.value ?? i?.[valueField]) as string | number,
+      label: String(i?.label ?? i?.[labelField] ?? i?.[valueField] ?? ""),
     }));
   }, [valueField, labelField]);
 
-  const loadOptions = useCallback(async () => {
-    if (!apiEndpoint) {
-      setNormalizedOptions(normalize(options || []));
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const res = await api.get(apiEndpoint, { params: apiParams });
-      setNormalizedOptions(normalize(res.data?.data || []));
-    } catch (e) {
-      setNormalizedOptions([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [apiEndpoint, apiParams, options, normalize]);
-
+  // JSON.stringify để stabilize object props — tránh infinite loop khi parent truyền inline object
   const apiParamsStr = useMemo(() => JSON.stringify(apiParams), [apiParams]);
   const optionsStr = useMemo(() => JSON.stringify(options), [options]);
 
   useEffect(() => {
-    loadOptions();
-  }, [loadOptions, apiParamsStr, optionsStr]);
+    if (!apiEndpoint) {
+      setNormalizedOptions(normalize((options || []) as unknown as Record<string, unknown>[]));
+      return;
+    }
+    setLoading(true);
+    api
+      .get(apiEndpoint, { params: apiParams })
+      .then((res) => setNormalizedOptions(normalize(res.data?.data || [])))
+      .catch(() => setNormalizedOptions([]))
+      .finally(() => setLoading(false));
+  // apiParamsStr/optionsStr là string ổn định thay cho object refs
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [apiEndpoint, apiParamsStr, optionsStr, normalize]);
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value;

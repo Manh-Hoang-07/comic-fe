@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 };
 
 async function getCertificates() {
-  const { data } = await serverFetch<any[]>(publicEndpoints.certificates.list, {
+  const { data } = await serverFetch<Record<string, unknown>[]>(publicEndpoints.certificates.list, {
     revalidate: 3600,
     skipCookies: true,
   });

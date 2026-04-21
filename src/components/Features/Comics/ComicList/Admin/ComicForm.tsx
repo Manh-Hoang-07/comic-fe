@@ -22,9 +22,9 @@ import { userEndpoints } from "@/lib/api/endpoints";
 interface ComicFormProps {
     show: boolean;
     comic?: AdminComic | null;
-    apiErrors?: any;
+    apiErrors?: Record<string, string | string[]> | null;
     loading?: boolean;
-    onSubmit?: (data: any) => void;
+    onSubmit?: (data: Record<string, unknown>) => void;
     onCancel: () => void;
 }
 
@@ -109,7 +109,7 @@ export default function ComicForm({
     const fetchCategories = async () => {
         try {
             const response = await adminComicService.getCategories({ limit: 100 });
-            setCategories(response.data as any);
+            setCategories(response.data);
         } catch (error) {
             console.error("Failed to fetch categories:", error);
         }

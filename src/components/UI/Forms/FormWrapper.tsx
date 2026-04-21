@@ -2,6 +2,14 @@
 
 import { useState, useEffect, ReactNode } from "react";
 
+export interface FormChildProps {
+  form: Record<string, unknown>;
+  errors: Record<string, string | string[]>;
+  isSubmitting: boolean;
+  clearError: (field?: string) => void;
+  setField: (field: string, value: unknown) => void;
+}
+
 interface FormWrapperProps {
   initialData?: Record<string, any>;
   defaultValues?: Record<string, any>;
@@ -11,16 +19,9 @@ interface FormWrapperProps {
   submittingText?: string;
   cancelText?: string;
   disableSubmit?: boolean;
-  onSubmit?: (data: Record<string, any>) => void | Promise<void>;
+  onSubmit?: (data: Record<string, unknown>) => void | Promise<void>;
   onCancel?: () => void;
-  children?:
-  | ReactNode
-  | ((props: {
-    form: Record<string, any>;
-    errors: Record<string, string | string[]>;
-    isSubmitting: boolean;
-    clearError: (field?: string) => void;
-  }) => ReactNode);
+  children?: ReactNode | ((props: FormChildProps) => ReactNode);
   actions?: ReactNode;
 }
 
@@ -42,19 +43,19 @@ export default function FormWrapper({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // initialData ghi đè lên defaultValues (data từ server ưu tiên hơn)
   useEffect(() => {
-    if (initialData && Object.keys(initialData).length > 0) {
-      setForm((prev) => ({ ...prev, ...initialData }));
+    const overrides = { ...defaultValues, ...initialData };
+    if (Object.keys(overrides).length > 0) {
+      setForm((prev) => ({ ...prev, ...overrides }));
     }
-  }, [initialData]);
-
-  useEffect(() => {
-    if (defaultValues && Object.keys(defaultValues).length > 0) {
-      setForm((prev) => ({ ...prev, ...defaultValues }));
-    }
-  }, [defaultValues]);
+  }, [initialData, defaultValues]);
 
   const displayErrors = { ...errors, ...apiErrors };
+
+  const setField = (field: string, value: unknown) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+  };
 
   const clearError = (field?: string) => {
     if (field) {
@@ -85,7 +86,7 @@ export default function FormWrapper({
   return (
     <div className="form-wrapper">
       {typeof children === "function"
-        ? children({ form, errors: displayErrors, isSubmitting, clearError })
+        ? children({ form, errors: displayErrors, isSubmitting, clearError, setField })
         : children}
       <div className="mt-4 flex justify-end space-x-2">
         {actions || (

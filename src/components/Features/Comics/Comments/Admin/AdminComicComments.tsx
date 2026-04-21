@@ -40,7 +40,7 @@ export default function AdminComicComments() {
 
     const [togglingId, setTogglingId] = useState<string | number | null>(null);
 
-    const handleToggleStatus = async (comment: any) => {
+    const handleToggleStatus = async (comment: Comment) => {
         const newStatus = comment.status === "visible" ? "hidden" : "visible";
         setTogglingId(comment.id);
         try {
@@ -171,7 +171,7 @@ export default function AdminComicComments() {
                     </td>
                 </tr>
                 {comment.replies && comment.replies.length > 0 &&
-                    comment.replies.map((reply, rIndex) => renderCommentRows(reply as any, rIndex, depth + 1))
+                    comment.replies.map((reply, rIndex) => renderCommentRows(reply, rIndex, depth + 1))
                 }
             </Fragment>
         );
@@ -217,7 +217,7 @@ export default function AdminComicComments() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-200 bg-white">
-                                {items.map((comment: any, index) => renderCommentRows(comment, index))}
+                                {items.map((comment: Record<string, unknown>, index: number) => renderCommentRows(comment as unknown as Comment, index))}
                                 {items.length === 0 && (
                                     <tr>
                                         <td colSpan={6} className="px-6 py-10 text-center text-gray-500 italic">

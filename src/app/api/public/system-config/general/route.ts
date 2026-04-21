@@ -17,7 +17,7 @@ const CACHE_TTL = 60 * 60 * 1000; // 1 giờ
 const CACHE_KEY = "public:general-config";
 
 // Simple in-memory cache (in production, use Redis or similar)
-const cache = new Map<string, { data: any; timestamp: number }>();
+const cache = new Map<string, { data: unknown; timestamp: number }>();
 
 export async function GET(request: NextRequest) {
   try {
@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
         "X-Cache": "MISS",
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     // Nếu có cache cũ, trả về cache cũ thay vì lỗi
     const cached = cache.get(CACHE_KEY);
     if (cached) {

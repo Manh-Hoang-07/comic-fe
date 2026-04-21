@@ -15,9 +15,9 @@ import { userEndpoints } from "@/lib/api/endpoints";
 
 interface ComicCategoryFormProps {
     category?: AdminComicCategory | null;
-    apiErrors?: any;
+    apiErrors?: Record<string, string | string[]> | null;
     loading?: boolean;
-    onSubmit?: (data: any) => void;
+    onSubmit?: (data: Record<string, unknown>) => void;
     onCancel: () => void;
 }
 

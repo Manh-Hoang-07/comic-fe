@@ -5,9 +5,9 @@ import { Bookmark, ReadingHistory, Follow } from "@/types/comic";
 export const userComicService = {
     // Bookmark
     getBookmarks: async (): Promise<Bookmark[]> => {
-        const response = await api.get<{ data: any }>(userEndpoints.bookmarks.list);
+        const response = await api.get<{ data: Bookmark[] | { data: Bookmark[] } }>(userEndpoints.bookmarks.list);
         const data = response.data.data;
-        return Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : []);
+        return Array.isArray(data) ? data : (Array.isArray((data as { data: Bookmark[] }).data) ? (data as { data: Bookmark[] }).data : []);
     },
     createBookmark: async (data: { chapter_id: string | number; page_number: number }): Promise<Bookmark> => {
         const response = await api.post<{ data: Bookmark }>(userEndpoints.bookmarks.create, data);
@@ -20,9 +20,9 @@ export const userComicService = {
 
     // Reading History
     getReadingHistory: async (): Promise<ReadingHistory[]> => {
-        const response = await api.get<{ data: any }>(userEndpoints.readingHistory.list);
+        const response = await api.get<{ data: ReadingHistory[] | { data: ReadingHistory[] } }>(userEndpoints.readingHistory.list);
         const data = response.data.data;
-        return Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : []);
+        return Array.isArray(data) ? data : (Array.isArray((data as { data: ReadingHistory[] }).data) ? (data as { data: ReadingHistory[] }).data : []);
     },
     updateReadingHistory: async (data: { comic_id: string | number; chapter_id: string | number }): Promise<ReadingHistory> => {
         const response = await api.post<{ data: ReadingHistory }>(userEndpoints.readingHistory.update, data);
@@ -35,9 +35,9 @@ export const userComicService = {
 
     // Follows
     getFollows: async (): Promise<Follow[]> => {
-        const response = await api.get<{ data: any }>(userEndpoints.follows.list);
+        const response = await api.get<{ data: Follow[] | { data: Follow[] } }>(userEndpoints.follows.list);
         const data = response.data.data;
-        return Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : []);
+        return Array.isArray(data) ? data : (Array.isArray((data as { data: Follow[] }).data) ? (data as { data: Follow[] }).data : []);
     },
     followComic: async (comicId: string | number): Promise<{ success: boolean }> => {
         const response = await api.post<{ success: boolean }>(userEndpoints.follows.follow(comicId));

@@ -50,7 +50,7 @@ export interface UserManagementResult {
   success: boolean;
   message?: string;
   errors?: Record<string, string[]>;
-  data?: any;
+  data?: Record<string, unknown>;
 }
 
 export function useUserManagement() {
@@ -72,9 +72,9 @@ export function useUserManagement() {
         showError(response.data.message || "Không thể lấy thông tin user");
         return null;
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorMessage =
-        error.response?.data?.message || "Không thể lấy thông tin user";
+        (error as { response?: { data?: { message?: string } } })?.response?.data?.message || "Không thể lấy thông tin user";
       showError(errorMessage);
       return null;
     } finally {
@@ -120,14 +120,14 @@ export function useUserManagement() {
             errors: response.data.errors,
           };
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         const errorMessage =
-          error.response?.data?.message || "Có lỗi xảy ra, vui lòng thử lại";
+          (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||"Có lỗi xảy ra, vui lòng thử lại";
         showError(errorMessage);
         return {
           success: false,
           message: errorMessage,
-          errors: error.response?.data?.errors,
+          errors: (error as { response?: { data?: { errors?: Record<string, string[]> } } })?.response?.data?.errors,
         };
       } finally {
         setLoading(false);
@@ -162,14 +162,14 @@ export function useUserManagement() {
             errors: response.data.errors,
           };
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         const errorMessage =
-          error.response?.data?.message || "Có lỗi xảy ra, vui lòng thử lại";
+          (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||"Có lỗi xảy ra, vui lòng thử lại";
         showError(errorMessage);
         return {
           success: false,
           message: errorMessage,
-          errors: error.response?.data?.errors,
+          errors: (error as { response?: { data?: { errors?: Record<string, string[]> } } })?.response?.data?.errors,
         };
       } finally {
         setLoading(false);

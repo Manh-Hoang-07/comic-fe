@@ -37,16 +37,16 @@ export default function MultiSelectFilter({
   const [storeOptions, setStoreOptions] = useState<Option[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const normalize = useCallback((items: any[]): Option[] => {
+  const normalize = useCallback((items: Record<string, unknown>[]): Option[] => {
     return (items || []).map((i) => ({
-      value: i?.value ?? i?.[valueField],
-      label: i?.label ?? i?.[labelField] ?? String(i?.[valueField] ?? ""),
+      value: (i?.value ?? i?.[valueField]) as string | number,
+      label: String(i?.label ?? i?.[labelField] ?? i?.[valueField] ?? ""),
     }));
   }, [valueField, labelField]);
 
   const loadOptions = useCallback(async () => {
     if (!apiEndpoint) {
-      setStoreOptions(normalize(options));
+      setStoreOptions(normalize(options as unknown as Record<string, unknown>[]));
       return;
     }
     setLoading(true);

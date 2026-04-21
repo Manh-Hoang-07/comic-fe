@@ -8,7 +8,7 @@ import apiClient from "@/lib/api/client";
  * Đồng bộ URL <-> API list (pagination, filters, sort) mà không bao gồm CRUD.
  * Dùng cho các trang chỉ cần danh sách.
  */
-export function useUrlListSync<T extends { id: any } = any>(config: {
+export function useUrlListSync<T extends { id: number | string } = { id: number | string } & Record<string, unknown>>(config: {
   endpoint: string;
   transformItem?: (item: T) => T;
 }) {
@@ -19,7 +19,7 @@ export function useUrlListSync<T extends { id: any } = any>(config: {
 
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState<T[]>([]);
-  const [error, setError] = useState<any>(null);
+  const [error, setError] = useState<unknown>(null);
   const [pagination, setPagination] = useState({
     page: 1,
     totalPages: 1,
@@ -27,8 +27,8 @@ export function useUrlListSync<T extends { id: any } = any>(config: {
     totalItems: 0,
   });
 
-  const getUrlParams = useCallback((): Record<string, any> => {
-    const params: Record<string, any> = {};
+  const getUrlParams = useCallback((): Record<string, string | number> => {
+    const params: Record<string, string | number> = {};
 
     searchParams.forEach((value, key) => {
       if (value !== undefined && value !== null) {
@@ -55,8 +55,8 @@ export function useUrlListSync<T extends { id: any } = any>(config: {
       const response = await apiClient.get(endpoint, { params });
 
       // Parse response theo format chuẩn: { success, data: { items, meta }, ... }
-      let itemsData: any[] = [];
-      let metaData: any = null;
+      let itemsData: T[] = [];
+      let metaData: Record<string, unknown> | null = null;
 
       if (response.data?.success && response.data?.data) {
         // Format chuẩn: data.data.items và data.data.meta
@@ -83,7 +83,7 @@ export function useUrlListSync<T extends { id: any } = any>(config: {
       setItems(transformedData);
 
       if (metaData) {
-        const toNumber = (val: any): number | undefined => {
+        const toNumber = (val: unknown): number | undefined => {
           if (val === null || val === undefined || val === "") return undefined;
           const n = typeof val === "number" ? val : parseInt(String(val), 10);
           return Number.isFinite(n) ? n : undefined;
@@ -117,7 +117,7 @@ export function useUrlListSync<T extends { id: any } = any>(config: {
             prev.totalItems,
         }));
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err);
     } finally {
       setLoading(false);
@@ -148,7 +148,7 @@ export function useUrlListSync<T extends { id: any } = any>(config: {
   );
 
   const updateFilters = useCallback(
-    (filters: Record<string, any>) => {
+    (filters: Record<string, string | number>) => {
       const params = new URLSearchParams();
 
       // Keep page and limit

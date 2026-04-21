@@ -14,7 +14,7 @@ import { BookmarkButton } from "./BookmarkButton";
 interface ReadingToolbarProps {
     nextChapter: { id: string } | null;
     prevChapter: { id: string } | null;
-    chapters: any[];
+    chapters: Record<string, unknown>[];
     currentChapterId: string;
 }
 
@@ -116,14 +116,14 @@ export const ReadingToolbar: React.FC<ReadingToolbarProps> = ({
                     <div className="max-h-[60vh] overflow-y-auto p-4 space-y-1">
                         {chapters.map((chapter) => (
                             <Link
-                                key={chapter.id}
-                                href={`/chapters/${chapter.id}`}
+                                key={chapter.id as string}
+                                href={`/chapters/${chapter.id as string}`}
                                 onClick={() => setShowSelector(false)}
                                 className={`flex items-center justify-between px-5 py-3.5 rounded-2xl text-sm font-bold transition-all ${chapter.id == currentChapterId ? 'bg-red-50 text-red-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
                             >
                                 <div className="flex flex-col">
-                                    <span className="line-clamp-1">{chapter.title}</span>
-                                    <span className="opacity-50 text-[11px] font-medium mt-0.5">{chapter.chapter_label}</span>
+                                    <span className="line-clamp-1">{chapter.title as string}</span>
+                                    <span className="opacity-50 text-[11px] font-medium mt-0.5">{chapter.chapter_label as string}</span>
                                 </div>
                                 {chapter.id == currentChapterId && <CheckIcon className="w-5 h-5" />}
                             </Link>

@@ -5,8 +5,8 @@ import api from "@/lib/api/client";
 import { adminEndpoints } from "@/lib/api/endpoints";
 
 interface ComicCommentFilterProps {
-    initialFilters?: Record<string, any>;
-    onUpdateFilters?: (filters: Record<string, any>) => void;
+    initialFilters?: Record<string, unknown>;
+    onUpdateFilters?: (filters: Record<string, unknown>) => void;
 }
 
 export default function ComicCommentFilter({
@@ -21,9 +21,9 @@ export default function ComicCommentFilter({
                 const response = await api.get(adminEndpoints.comics.list, { params: { limit: 100 } });
                 const data = response.data.data || response.data;
                 if (Array.isArray(data)) {
-                    setComics(data.map((comic: any) => ({
-                        value: comic.id.toString(),
-                        label: comic.title || comic.name,
+                    setComics(data.map((comic: Record<string, unknown>) => ({
+                        value: String(comic.id),
+                        label: (comic.title || comic.name) as string,
                     })));
                 }
             } catch (error) {

@@ -81,7 +81,7 @@ export default function RegisterPage() {
       } else {
         showError(result.message || "Không thể gửi OTP. Vui lòng thử lại.");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       showError("Có lỗi xảy ra khi gửi OTP.");
     } finally {
       setIsSendingOtp(false);
@@ -117,8 +117,9 @@ export default function RegisterPage() {
         }
         showError(result.message || "Đăng ký thất bại. Vui lòng kiểm tra lại thông tin.");
       }
-    } catch (err: any) {
-      showError(err.message || "Có lỗi xảy ra, vui lòng thử lại");
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { message?: string } }; message?: string };
+      showError(e.message || "Có lỗi xảy ra, vui lòng thử lại");
     } finally {
       setIsLoading(false);
     }

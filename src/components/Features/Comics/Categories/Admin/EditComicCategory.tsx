@@ -3,10 +3,11 @@
 import ComicCategoryForm from "./ComicCategoryForm";
 import Modal from "@/components/UI/Feedback/Modal";
 import { useFormModal } from "@/hooks";
+import { EditTarget } from "@/hooks/crud/useFormModal";
 
 interface EditComicCategoryProps {
     show: boolean;
-    target: { fetchApi?: string; initialData?: any; updateApi: string } | null;
+    target: EditTarget | null;
     onSuccess?: () => void;
     onClose?: () => void;
 }

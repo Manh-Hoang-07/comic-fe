@@ -2,10 +2,11 @@
 
 import AboutSectionForm from "./AboutSectionForm";
 import { useFormModal } from "@/hooks";
+import { EditTarget } from "@/hooks/crud/useFormModal";
 
 interface EditAboutSectionProps {
   show: boolean;
-  target: { fetchApi?: string; initialData?: any; updateApi: string } | null;
+  target: EditTarget | null;
   onSuccess?: () => void;
   onClose?: () => void;
 }

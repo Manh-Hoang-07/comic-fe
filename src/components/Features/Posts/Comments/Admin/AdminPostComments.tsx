@@ -167,7 +167,7 @@ export default function AdminPostComments({
                     </td>
                 </tr>
                 {comment.replies && comment.replies.length > 0 &&
-                    comment.replies.map((reply, rIndex) => renderCommentRows(reply as any, rIndex, depth + 1))
+                    comment.replies.map((reply, rIndex) => renderCommentRows(reply, rIndex, depth + 1))
                 }
             </Fragment>
         );

@@ -35,9 +35,9 @@ interface Partner {
 interface PartnerFormProps {
   show: boolean;
   partner?: Partner | null;
-  apiErrors?: Record<string, string | string[]>;
+  apiErrors?: Record<string, string | string[]> | null;
   loading?: boolean;
-  onSubmit?: (data: any) => void;
+  onSubmit?: (data: Record<string, unknown>) => void;
   onCancel?: () => void;
 }
 

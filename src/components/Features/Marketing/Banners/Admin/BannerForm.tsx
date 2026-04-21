@@ -12,10 +12,10 @@ import { adminEndpoints } from "@/lib/api/endpoints";
 
 interface BannerFormProps {
   show: boolean;
-  banner?: any;
+  banner?: Record<string, unknown>;
   statusEnums?: Array<{ value: string; label?: string; name?: string }>;
   locationEnums?: Array<{ value: number; label?: string; name?: string }>;
-  apiErrors?: Record<string, string | string[]>;
+  apiErrors?: Record<string, string | string[]> | null;
   loading?: boolean;
   onSubmit?: (data: BannerFormValues) => void;
   onCancel?: () => void;
@@ -64,22 +64,23 @@ export default function BannerForm({
   useEffect(() => {
     if (show) {
       if (banner) {
+        const b = banner as Record<string, string | number | undefined | null>;
         reset({
-          title: banner.title || "",
-          subtitle: banner.subtitle || "",
-          description: banner.description || "",
-          image: banner.image || "",
-          mobile_image: banner.mobile_image || "",
-          link: banner.link || "",
-          link_target: banner.link_target || "_self",
-          button_text: banner.button_text || "",
-          button_color: banner.button_color || "#ff6b6b",
-          text_color: banner.text_color || "#ffffff",
-          location_id: banner.location_id,
-          sort_order: banner.sort_order || 1,
-          status: banner.status || "active",
-          start_date: banner.start_date ? new Date(banner.start_date).toISOString().slice(0, 16) : "",
-          end_date: banner.end_date ? new Date(banner.end_date).toISOString().slice(0, 16) : "",
+          title: (b.title as string) || "",
+          subtitle: (b.subtitle as string) || "",
+          description: (b.description as string) || "",
+          image: (b.image as string) || "",
+          mobile_image: (b.mobile_image as string) || "",
+          link: (b.link as string) || "",
+          link_target: (b.link_target as string) || "_self",
+          button_text: (b.button_text as string) || "",
+          button_color: (b.button_color as string) || "#ff6b6b",
+          text_color: (b.text_color as string) || "#ffffff",
+          location_id: b.location_id as number | undefined,
+          sort_order: (b.sort_order as number) || 1,
+          status: (b.status as string) || "active",
+          start_date: b.start_date ? new Date(b.start_date as string).toISOString().slice(0, 16) : "",
+          end_date: b.end_date ? new Date(b.end_date as string).toISOString().slice(0, 16) : "",
         });
       } else {
         reset({
@@ -116,7 +117,7 @@ export default function BannerForm({
   const statusOptions = useMemo(() =>
     statusEnums.map(item => ({
       value: item.value,
-      label: item.label || (item as any).name || item.value
+      label: item.label || item.name || item.value
     })), [statusEnums]);
 
   const formTitle = banner ? "Chỉnh sửa banner" : "Thêm banner mới";

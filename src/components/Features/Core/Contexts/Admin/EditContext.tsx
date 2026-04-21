@@ -2,10 +2,11 @@
 
 import ContextForm from "./ContextForm";
 import { useFormModal } from "@/hooks";
+import { EditTarget } from "@/hooks/crud/useFormModal";
 
 interface EditContextProps {
   show: boolean;
-  target: { fetchApi?: string; updateApi: string; initialData?: any } | null;
+  target: EditTarget | null;
   statusEnums?: Array<{ value: string; label?: string; name?: string }>;
   onSuccess?: () => void;
   onClose?: () => void;

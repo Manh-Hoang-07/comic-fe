@@ -9,6 +9,7 @@ import FormField from "@/components/UI/Forms/FormField";
 import SingleSelectEnhanced from "@/components/UI/Forms/SingleSelectEnhanced";
 import SearchableSelect from "@/components/UI/Forms/SearchableSelect";
 import { adminEndpoints } from "@/lib/api/endpoints";
+import { MenuTreeItem } from "@/hooks/data/useMenus";
 
 interface Menu {
   id?: number;
@@ -31,11 +32,11 @@ interface MenuFormProps {
   show: boolean;
   menu?: Menu | null;
   statusEnums?: Array<{ value: string; label?: string }>;
-  parentMenus?: Array<any>;
+  parentMenus?: MenuTreeItem[];
   permissions?: Array<{ id: number; name: string; code: string }>;
-  apiErrors?: Record<string, string | string[]>;
+  apiErrors?: Record<string, string | string[]> | null;
   loading?: boolean;
-  onSubmit?: (data: any) => void;
+  onSubmit?: (data: Record<string, unknown>) => void;
   onCancel?: () => void;
 }
 
@@ -75,8 +76,10 @@ export default function MenuForm({
     },
   });
 
-  const flattenMenus = useCallback((menusArray: any[], level = 0): any[] => {
-    const result: any[] = [];
+  type MenuTreeItemWithDisplay = MenuTreeItem & { displayName?: string };
+
+  const flattenMenus = useCallback((menusArray: MenuTreeItem[], level = 0): MenuTreeItemWithDisplay[] => {
+    const result: MenuTreeItemWithDisplay[] = [];
     if (!Array.isArray(menusArray) || menusArray.length === 0) return result;
     menusArray.forEach((m) => {
       if (!m?.id) return;
@@ -98,9 +101,9 @@ export default function MenuForm({
     if (!menu?.id) return flattenMenus(menus);
 
     const excludeIds = [menu.id];
-    const getChildrenIds = (m: any) => {
+    const getChildrenIds = (m: MenuTreeItem) => {
       if (m?.children && Array.isArray(m.children) && m.children.length > 0) {
-        m.children.forEach((child: any) => {
+        m.children.forEach((child: MenuTreeItem) => {
           if (child?.id) {
             excludeIds.push(child.id);
             getChildrenIds(child);
@@ -109,7 +112,7 @@ export default function MenuForm({
       }
     };
 
-    const findAndExclude = (menusArr: any[]) => {
+    const findAndExclude = (menusArr: MenuTreeItem[]) => {
       menusArr.forEach((m) => {
         if (m?.id === menu.id) getChildrenIds(m);
         else if (m?.children && Array.isArray(m.children)) findAndExclude(m.children);

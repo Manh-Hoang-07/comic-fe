@@ -40,14 +40,14 @@ export default function SearchableSelect({
   const [isInteracting, setIsInteracting] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const getLabel = useCallback((option: any): string => {
+  const getLabel = useCallback((option: Record<string, unknown>): string => {
     if (labelField && option[labelField]) {
-      return option[labelField];
+      return String(option[labelField]);
     }
     if (labelField === "display_name") {
-      return option.display_name || option.name || option.title || option.label || "Không có tên";
+      return String(option.display_name || option.name || option.title || option.label || "Không có tên");
     }
-    return option.name || option.label || option.title || option.value || "Không có tên";
+    return String(option.name || option.label || option.title || option.value || "Không có tên");
   }, [labelField]);
 
   const displayValue = useMemo(() => {
@@ -73,8 +73,8 @@ export default function SearchableSelect({
       const response = await api.get(`${searchApi}?limit=50`);
       const allOptions = response.data?.data || [];
 
-      let transformedOptions: Option[] = allOptions.map((option: any) => ({
-        value: option.id,
+      let transformedOptions: Option[] = (allOptions as Record<string, unknown>[]).map((option) => ({
+        value: option.id as string | number,
         label: getLabel(option),
       }));
 
@@ -94,33 +94,43 @@ export default function SearchableSelect({
     }
   }, [searchApi, excludeId, getLabel]);
 
-  const debouncedSearch = debounce(async () => {
-    if (searchQuery.length < minSearchLength) {
-      setOptions([]);
-      return;
-    }
+  const debouncedSearch = useMemo(
+    () =>
+      debounce(async (query: string) => {
+        if (query.length < minSearchLength) {
+          setOptions([]);
+          return;
+        }
 
-    setLoading(true);
-    try {
-      const response = await api.get(`${searchApi}?search=${encodeURIComponent(searchQuery)}&limit=50`);
-      const searchResults = response.data?.data || [];
+        setLoading(true);
+        try {
+          const response = await api.get(`${searchApi}?search=${encodeURIComponent(query)}&limit=50`);
+          const searchResults = response.data?.data || [];
 
-      let transformedResults: Option[] = searchResults.map((option: any) => ({
-        value: option.id,
-        label: getLabel(option),
-      }));
+          let transformedResults: Option[] = (searchResults as Record<string, unknown>[]).map((option) => ({
+            value: option.id as string | number,
+            label: getLabel(option),
+          }));
 
-      if (excludeId) {
-        transformedResults = transformedResults.filter((option) => option.value != excludeId);
-      }
+          if (excludeId) {
+            transformedResults = transformedResults.filter((option) => option.value != excludeId);
+          }
 
-      setOptions(transformedResults);
-    } catch (error) {
-      setOptions([]);
-    } finally {
-      setLoading(false);
-    }
-  }, 300);
+          setOptions(transformedResults);
+        } catch {
+          setOptions([]);
+        } finally {
+          setLoading(false);
+        }
+      }, 300),
+    [searchApi, excludeId, getLabel, minSearchLength]
+  );
+
+  useEffect(() => {
+    return () => {
+      debouncedSearch.flush?.();
+    };
+  }, [debouncedSearch]);
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newQuery = e.target.value;
@@ -132,7 +142,7 @@ export default function SearchableSelect({
     }
 
     if (newQuery.length >= minSearchLength) {
-      debouncedSearch();
+      debouncedSearch(newQuery);
     } else {
       setOptions([]);
     }
@@ -209,11 +219,11 @@ export default function SearchableSelect({
         .get(`${searchApi}?ids=${value}`)
         .then((response) => {
           const data = response.data?.data || [];
-          const filtered = data.filter((option: any) => String(option.id) === String(value));
+          const filtered = (data as Record<string, unknown>[]).filter((option) => String(option.id) === String(value));
           if (filtered.length > 0) {
             const option = filtered[0];
             const newOption = {
-              value: option.id,
+              value: option.id as string | number,
               label: getLabel(option),
             };
             setSelectedOption(newOption);

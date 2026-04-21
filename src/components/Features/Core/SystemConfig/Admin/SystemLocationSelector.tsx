@@ -4,10 +4,10 @@ import SingleSelectEnhanced from "@/components/UI/Forms/SingleSelectEnhanced";
 import { adminEndpoints } from "@/lib/api/endpoints";
 
 interface SystemLocationSelectorProps {
-    value: any;
-    onChange: (value: any) => void;
-    formData: Record<string, any>;
-    onUpdate: (key: string, value: any) => void;
+    value: unknown;
+    onChange: (value: unknown) => void;
+    formData: Record<string, unknown>;
+    onUpdate: (key: string, value: unknown) => void;
 }
 
 export default function SystemLocationSelector({
@@ -16,22 +16,22 @@ export default function SystemLocationSelector({
     formData,
     onUpdate,
 }: SystemLocationSelectorProps) {
-    const countryId = formData.site_country_id;
-    const provinceId = formData.site_province_id;
-    const wardId = formData.site_ward_id;
+    const countryId = formData.site_country_id as string | number | null | undefined;
+    const provinceId = formData.site_province_id as string | number | null | undefined;
+    const wardId = formData.site_ward_id as string | number | null | undefined;
 
-    const handleCountryChange = (val: any) => {
+    const handleCountryChange = (val: string | number | null) => {
         onUpdate("site_country_id", val);
         onUpdate("site_province_id", null);
         onUpdate("site_ward_id", null);
     };
 
-    const handleProvinceChange = (val: any) => {
+    const handleProvinceChange = (val: string | number | null) => {
         onUpdate("site_province_id", val);
         onUpdate("site_ward_id", null);
     };
 
-    const handleWardChange = (val: any) => {
+    const handleWardChange = (val: string | number | null) => {
         onUpdate("site_ward_id", val);
     };
 
