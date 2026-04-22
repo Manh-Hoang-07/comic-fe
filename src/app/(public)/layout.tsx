@@ -1,52 +1,50 @@
 import { Suspense } from "react";
 import { getSystemConfig } from "@/lib/api/public/general";
 import { getPublicMenus } from "@/lib/api/public/menu";
-import { PublicHeader, PublicFooter, PublicLayoutWrapper } from "@/components/Layouts/Public";
+import { PublicHeader, PublicFooter } from "@/components/Layouts/Public";
+import FloatingContactChannels from "@/components/Layouts/Public/contact-channels/FloatingContactChannels";
+import { BackToTop } from "@/components/UI/Navigation/BackToTop";
 import ErrorBoundary from "@/components/UI/Feedback/ErrorBoundary";
+import { ReadingPageGuard } from "@/components/Layouts/Public/ReadingPageGuard";
 
-/**
- * Async Server Components để fetch data không blocking children
- */
-async function AsyncHeaderFooter({ children }: { children: React.ReactNode }) {
+// Async Server Component — fetch header data
+async function AsyncHeader() {
   const [systemConfig, menus] = await Promise.all([
     getSystemConfig("general"),
-    getPublicMenus()
+    getPublicMenus(),
   ]);
+  return <PublicHeader systemConfig={systemConfig} initialMenus={menus} />;
+}
 
+// Async Server Component — fetch footer data (React.cache() deduplicates getSystemConfig)
+async function AsyncFooter() {
+  const systemConfig = await getSystemConfig("general");
+  return <PublicFooter systemConfig={systemConfig} />;
+}
+
+// Async Server Component — fetch floating contact channels
+async function AsyncFloatingChannels() {
+  const systemConfig = await getSystemConfig("general");
   return (
-    <PublicLayoutWrapper
-      contactChannels={systemConfig?.contact_channels ?? {}}
-      header={<PublicHeader key="header" systemConfig={systemConfig} initialMenus={menus} />}
-      footer={<PublicFooter key="footer" systemConfig={systemConfig} />}
-    >
-      {children}
-    </PublicLayoutWrapper>
+    <FloatingContactChannels
+      channels={systemConfig?.contact_channels as Parameters<typeof FloatingContactChannels>[0]["channels"]}
+    />
   );
 }
 
-/**
- * Layout skeleton hiện khi data đang fetch
- */
-function LayoutSkeleton({ children }: { children: React.ReactNode }) {
+// Skeleton cho header khi đang load
+function HeaderSkeleton() {
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Header skeleton */}
-      <div className="h-20 bg-white border-b border-gray-100 animate-pulse">
-        <div className="container mx-auto px-4 h-full flex items-center justify-between">
-          <div className="h-8 w-32 bg-gray-200 rounded" />
-          <div className="hidden md:flex gap-6">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-4 w-16 bg-gray-200 rounded" />
-            ))}
-          </div>
-          <div className="h-8 w-8 bg-gray-200 rounded-full" />
+    <div className="h-20 bg-white border-b border-gray-100 animate-pulse fixed top-0 left-0 right-0 z-50">
+      <div className="container mx-auto px-4 h-full flex items-center justify-between">
+        <div className="h-8 w-32 bg-gray-200 rounded" />
+        <div className="hidden md:flex gap-6">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="h-4 w-16 bg-gray-200 rounded" />
+          ))}
         </div>
+        <div className="h-8 w-8 bg-gray-200 rounded-full" />
       </div>
-
-      {/* Main content - render ngay, không chờ header/footer */}
-      <main className="flex-1 min-h-screen pt-20">
-        {children}
-      </main>
     </div>
   );
 }
@@ -57,10 +55,27 @@ export default function PublicLayout({
   children: React.ReactNode;
 }) {
   return (
-    <Suspense fallback={<LayoutSkeleton>{children}</LayoutSkeleton>}>
-      <AsyncHeaderFooter>
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      {/* Header — independent Suspense, không block children */}
+      <Suspense fallback={<HeaderSkeleton />}>
+        <AsyncHeader />
+      </Suspense>
+
+      {/* Main content — render ngay, không chờ header hay footer */}
+      <main className="flex-1 min-h-screen pt-20">
         <ErrorBoundary>{children}</ErrorBoundary>
-      </AsyncHeaderFooter>
-    </Suspense>
+      </main>
+
+      {/* Footer + floating channels — ẩn trên trang đọc truyện */}
+      <ReadingPageGuard>
+        <Suspense fallback={null}>
+          <AsyncFooter />
+        </Suspense>
+        <Suspense fallback={null}>
+          <AsyncFloatingChannels />
+        </Suspense>
+        <BackToTop />
+      </ReadingPageGuard>
+    </div>
   );
 }

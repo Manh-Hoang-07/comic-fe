@@ -1,46 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
 import { env } from "@/config/env";
+import { getRedisClient } from "@/lib/redis";
 
-/**
- * Public API: Lấy cấu hình chung (có cache 1 giờ)
- *
- * Route: GET /api/public/SystemConfig/general
- *
- * Ghi chú:
- * - API này có cache 1 giờ (3600 giây) để tối ưu hiệu năng.
- * - Cache key: 'public:general-config'
- * - Cache tự động bị xóa khi admin cập nhật config.
- * - Proxy đến backend API thực tế.
- */
-
-const CACHE_TTL = 60 * 60 * 1000; // 1 giờ
+const CACHE_TTL_SECONDS = 60 * 60; // 1 giờ
 const CACHE_KEY = "public:general-config";
 
-// Simple in-memory cache (in production, use Redis or similar)
-const cache = new Map<string, { data: unknown; timestamp: number }>();
-
 export async function GET(request: NextRequest) {
-  try {
-    // Kiểm tra cache
-    const cached = cache.get(CACHE_KEY);
+  const redis = getRedisClient();
 
-    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-      // Trả về dữ liệu từ cache
-      return NextResponse.json(cached.data, {
-        headers: {
-          "X-Cache": "HIT",
-        },
-      });
+  try {
+    // Kiểm tra Redis cache
+    if (redis) {
+      const cached = await redis.get(CACHE_KEY).catch(() => null);
+      if (cached) {
+        return NextResponse.json(JSON.parse(cached), {
+          headers: { "X-Cache": "HIT" },
+        });
+      }
     }
 
     // Gọi backend API
-    const apiBase = env.apiUrl;
-    const response = await fetch(`${apiBase}/api/public/SystemConfig/general`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    const response = await fetch(
+      `${env.apiUrl}/api/public/SystemConfig/general`,
+      {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      }
+    );
 
     if (!response.ok) {
       throw new Error(`Backend API error: ${response.status}`);
@@ -48,29 +34,26 @@ export async function GET(request: NextRequest) {
 
     const data = await response.json();
 
-    // Lưu vào cache
-    cache.set(CACHE_KEY, {
-      data,
-      timestamp: Date.now(),
-    });
-
-    return NextResponse.json(data, {
-      headers: {
-        "X-Cache": "MISS",
-      },
-    });
-  } catch (error: unknown) {
-    // Nếu có cache cũ, trả về cache cũ thay vì lỗi
-    const cached = cache.get(CACHE_KEY);
-    if (cached) {
-      return NextResponse.json(cached.data, {
-        headers: {
-          "X-Cache": "STALE",
-        },
-      });
+    // Lưu vào Redis
+    if (redis) {
+      await redis
+        .set(CACHE_KEY, JSON.stringify(data), "EX", CACHE_TTL_SECONDS)
+        .catch(() => null);
     }
 
-    // Nếu không có cache và backend lỗi, trả về config mặc định
+    return NextResponse.json(data, { headers: { "X-Cache": "MISS" } });
+  } catch (error: unknown) {
+    // Stale fallback từ Redis nếu backend lỗi
+    if (redis) {
+      const stale = await redis.get(CACHE_KEY).catch(() => null);
+      if (stale) {
+        return NextResponse.json(JSON.parse(stale), {
+          headers: { "X-Cache": "STALE" },
+        });
+      }
+    }
+
+    // Default config nếu không có cache và backend lỗi
     const defaultConfig = {
       site_name: env.siteName,
       site_description: env.siteDescription,
@@ -97,14 +80,6 @@ export async function GET(request: NextRequest) {
       twitter_site: null,
     };
 
-    // Proxy lỗi từ backend nhưng vẫn trả về default config
-    return NextResponse.json(defaultConfig, {
-      headers: {
-        "X-Cache": "ERROR",
-      },
-    });
+    return NextResponse.json(defaultConfig, { headers: { "X-Cache": "ERROR" } });
   }
 }
-
-
-
