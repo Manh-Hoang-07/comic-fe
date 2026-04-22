@@ -2,14 +2,8 @@
 
 import PermissionForm from "./PermissionForm";
 import { useFormModal } from "@/hooks";
+import { type CreatePermissionProps } from "./Constants/types";
 
-interface CreatePermissionProps {
-  show: boolean;
-  createApi: string;
-  statusEnums?: Array<{ value: string; label: string; name?: string }>;
-  onSuccess?: () => void;
-  onClose?: () => void;
-}
 
 export default function CreatePermission({
   show,

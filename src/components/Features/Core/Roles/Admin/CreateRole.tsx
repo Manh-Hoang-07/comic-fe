@@ -2,14 +2,8 @@
 
 import RoleForm from "./RoleForm";
 import { useFormModal } from "@/hooks";
+import { type CreateRoleProps } from "./Constants/types";
 
-interface CreateRoleProps {
-  show: boolean;
-  createApi: string;
-  statusEnums?: Array<{ value: string; label: string; name?: string }>;
-  onSuccess?: () => void;
-  onClose?: () => void;
-}
 
 export default function CreateRole({
   show,

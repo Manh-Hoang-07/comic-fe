@@ -6,13 +6,8 @@ import { ContentTemplate } from "@/types/api";
 import FormField from "@/components/UI/Forms/FormField";
 import SingleSelectEnhanced from "@/components/UI/Forms/SingleSelectEnhanced";
 
-interface FormProps {
-    initialData?: Partial<ContentTemplate>;
-    onSubmit: (data: Record<string, unknown>) => void;
-    apiErrors?: Record<string, string | string[]> | null;
-    loading?: boolean;
-    onCancel?: () => void;
-}
+import { type ContentTemplateFormProps } from "./Constants/types";
+
 
 export default function ContentTemplateForm({
     initialData,
@@ -20,7 +15,7 @@ export default function ContentTemplateForm({
     apiErrors,
     loading = false,
     onCancel,
-}: FormProps) {
+}: ContentTemplateFormProps) {
     const {
         register,
         handleSubmit,

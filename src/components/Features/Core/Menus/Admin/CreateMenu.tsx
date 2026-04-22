@@ -2,17 +2,8 @@
 
 import MenuForm from "./MenuForm";
 import { useFormModal } from "@/hooks";
-import { MenuTreeItem } from "@/hooks/data/system/useMenus";
+import { type CreateMenuProps } from "./Constants/types";
 
-interface CreateMenuProps {
-  show: boolean;
-  createApi: string;
-  statusEnums?: Array<{ value: string; label: string; name?: string }>;
-  parentMenus?: MenuTreeItem[];
-  permissions?: Array<{ id: number; name: string; code: string }>;
-  onSuccess?: () => void;
-  onClose?: () => void;
-}
 
 export default function CreateMenu({
   show,

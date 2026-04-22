@@ -8,26 +8,9 @@ import FormField from "@/components/UI/Forms/FormField";
 import SingleSelectEnhanced from "@/components/UI/Forms/SingleSelectEnhanced";
 import api from "@/lib/api/client";
 import { adminEndpoints } from "@/lib/api/endpoints";
-import { groupSchema, type GroupFormValues } from "./groupSchema";
+import { groupSchema, type GroupFormValues } from "./Constants/schemas";
+import { type Group, type GroupFormProps } from "./Constants/types";
 
-interface Group {
-  id?: number;
-  type?: string;
-  context_id?: number | null;
-  code?: string;
-  name?: string;
-  description?: string;
-  metadata?: Record<string, unknown>;
-}
-
-interface GroupFormProps {
-  show: boolean;
-  group?: Group | null;
-  apiErrors?: Record<string, string | string[]> | null;
-  loading?: boolean;
-  onSubmit?: (data: Record<string, unknown>) => void;
-  onCancel?: () => void;
-}
 
 const getTypeLabel = (type?: string): string => {
   if (!type) return "";

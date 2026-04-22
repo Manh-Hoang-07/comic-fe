@@ -2,14 +2,8 @@
 
 import GroupForm from "./GroupForm";
 import { useFormModal } from "@/hooks";
-import { EditTarget } from "@/hooks/crud/useFormModal";
+import { type EditGroupProps } from "./Constants/types";
 
-interface EditGroupProps {
-  show: boolean;
-  target: EditTarget | null;
-  onSuccess?: () => void;
-  onClose?: () => void;
-}
 
 export default function EditGroup({
   show,

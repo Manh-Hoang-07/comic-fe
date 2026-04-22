@@ -6,13 +6,8 @@ import FormWrapper from "@/components/UI/Forms/FormWrapper";
 import MultipleSelect from "@/components/UI/Forms/MultipleSelect";
 import api from "@/lib/api/client";
 import { adminEndpoints } from "@/lib/api/endpoints";
+import { type AssignPermissionsProps } from "./Constants/types";
 
-interface AssignPermissionsProps {
-  show: boolean;
-  role?: Record<string, any>;
-  onPermissionsAssigned?: () => void;
-  onClose?: () => void;
-}
 
 export default function AssignPermissions({
   show,

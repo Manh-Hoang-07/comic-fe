@@ -2,13 +2,8 @@
 
 import GroupForm from "./GroupForm";
 import { useFormModal } from "@/hooks";
+import { type CreateGroupProps } from "./Constants/types";
 
-interface CreateGroupProps {
-  show: boolean;
-  createApi: string;
-  onSuccess?: () => void;
-  onClose?: () => void;
-}
 
 export default function CreateGroup({
   show,

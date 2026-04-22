@@ -3,15 +3,8 @@
 import { useCallback } from "react";
 import UserForm from "./UserForm";
 import { useFormModal } from "@/hooks";
+import { type CreateUserProps } from "./Constants/types";
 
-interface CreateUserProps {
-  show: boolean;
-  createApi: string;
-  statusEnums?: Array<{ value: string; label: string; name?: string }>;
-  genderEnums?: Array<{ value: string; label: string; name?: string }>;
-  onSuccess?: () => void;
-  onClose?: () => void;
-}
 
 const buildUserPayload = (formData: Record<string, unknown>) => {
   const data = formData || {};

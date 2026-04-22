@@ -12,13 +12,9 @@ import RolesFilter from "./RolesFilter";
 import CreateRole from "./CreateRole";
 import EditRole from "./EditRole";
 import AssignPermissions from "./AssignPermissions";
+import { type AdminRolesProps, type Role } from "./Constants/types";
 
 const endpoints = adminEndpoints.roles;
-
-interface AdminRolesProps {
-  title?: string;
-  createButtonText?: string;
-}
 
 export default function AdminRoles({
   title = "Quản lý vai trò",

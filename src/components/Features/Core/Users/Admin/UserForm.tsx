@@ -8,36 +8,9 @@ import FormField from "@/components/UI/Forms/FormField";
 import ImageUploader from "@/components/UI/Forms/ImageUploader";
 import SingleSelectEnhanced from "@/components/UI/Forms/SingleSelectEnhanced";
 import LocationSelector from "@/components/Features/Core/Locations/Shared/LocationSelector";
-import { userSchema, type UserFormValues } from "./userSchema";
+import { userSchema, type UserFormValues } from "./Constants/schemas";
+import { type User, type UserFormProps } from "./Constants/types";
 
-interface User {
-  id?: number;
-  username?: string;
-  email?: string;
-  phone?: string;
-  password?: string;
-  name?: string;
-  gender?: string;
-  birthday?: string;
-  country_id?: number | null;
-  province_id?: number | null;
-  ward_id?: number | null;
-  address?: string;
-  image?: string | null;
-  about?: string;
-  status?: string;
-}
-
-interface UserFormProps {
-  show: boolean;
-  user?: User | null;
-  statusEnums?: Array<{ value: string; label: string; name?: string }>;
-  genderEnums?: Array<{ value: string; label: string; name?: string }>;
-  apiErrors?: Record<string, string | string[]> | null;
-  loading?: boolean;
-  onSubmit?: (data: Record<string, unknown>) => void;
-  onCancel?: () => void;
-}
 
 export default function UserForm({
   show,

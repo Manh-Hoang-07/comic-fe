@@ -10,26 +10,9 @@ import SingleSelectEnhanced from "@/components/UI/Forms/SingleSelectEnhanced";
 import MultipleSelect from "@/components/UI/Forms/MultipleSelect";
 import { adminEndpoints } from "@/lib/api/endpoints";
 import api from "@/lib/api/client";
-import { roleSchema, type RoleFormValues } from "./roleSchema";
+import { roleSchema, type RoleFormValues } from "./Constants/schemas";
+import { type Role, type RoleFormProps } from "./Constants/types";
 
-interface Role {
-  id?: number;
-  code?: string;
-  name?: string;
-  parent_id?: number | null;
-  status?: string;
-  contexts?: Array<{ id: number; name: string; type: string }>;
-}
-
-interface RoleFormProps {
-  show: boolean;
-  role?: Role | null;
-  statusEnums?: Array<{ value: string; label: string; name?: string }>;
-  apiErrors?: Record<string, string | string[]> | null;
-  loading?: boolean;
-  onSubmit?: (data: Record<string, unknown>) => void;
-  onCancel?: () => void;
-}
 
 export default function RoleForm({
   show,

@@ -6,31 +6,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Modal from "@/components/UI/Feedback/Modal";
 import FormField from "@/components/UI/Forms/FormField";
 import SingleSelectEnhanced from "@/components/UI/Forms/SingleSelectEnhanced";
-import { permissionSchema, type PermissionFormValues } from "./permissionSchema";
+import { permissionSchema, type PermissionFormValues } from "./Constants/schemas";
+import { type Permission, type PermissionFormProps } from "./Constants/types";
 
 const getBasicStatusArray = (): Array<{ value: string; label: string; name?: string }> => [
   { value: "active", label: "Hoạt động" },
   { value: "inactive", label: "Ngừng hoạt động" },
 ];
 
-interface Permission {
-  id?: number;
-  code?: string;
-  name?: string;
-  scope?: string;
-  parent_id?: number | null;
-  status?: string;
-}
-
-interface PermissionFormProps {
-  show: boolean;
-  permission?: Permission | null;
-  statusEnums?: Array<{ value: string; label: string; name?: string }>;
-  apiErrors?: Record<string, string | string[]> | null;
-  loading?: boolean;
-  onSubmit?: (data: Record<string, unknown>) => void;
-  onCancel?: () => void;
-}
 
 export default function PermissionForm({
   show,

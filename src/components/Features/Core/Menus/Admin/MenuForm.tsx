@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useCallback } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { menuSchema, type MenuFormValues } from "./menuSchema";
+import { menuSchema, type MenuFormValues } from "./Constants/schemas";
+import { type Menu, type MenuFormProps } from "./Constants/types";
 import Modal from "@/components/UI/Feedback/Modal";
 import FormField from "@/components/UI/Forms/FormField";
 import SingleSelectEnhanced from "@/components/UI/Forms/SingleSelectEnhanced";
@@ -11,34 +12,6 @@ import SearchableSelect from "@/components/UI/Forms/SearchableSelect";
 import { adminEndpoints } from "@/lib/api/endpoints";
 import { MenuTreeItem } from "@/hooks/data/system/useMenus";
 
-interface Menu {
-  id?: number;
-  code?: string;
-  name?: string;
-  path?: string | null;
-  api_path?: string | null;
-  icon?: string | null;
-  type?: string;
-  status?: string;
-  parent_id?: number | string | null;
-  sort_order?: number;
-  is_public?: boolean;
-  show_in_menu?: boolean;
-  required_permission_id?: number | string | null;
-  group?: string;
-}
-
-interface MenuFormProps {
-  show: boolean;
-  menu?: Menu | null;
-  statusEnums?: Array<{ value: string; label: string }>;
-  parentMenus?: MenuTreeItem[];
-  permissions?: Array<{ id: number; name: string; code: string }>;
-  apiErrors?: Record<string, string | string[]> | null;
-  loading?: boolean;
-  onSubmit?: (data: Record<string, unknown>) => void;
-  onCancel?: () => void;
-}
 
 export default function MenuForm({
   show,

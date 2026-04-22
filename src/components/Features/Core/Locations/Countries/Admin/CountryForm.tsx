@@ -6,26 +6,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Modal from "@/components/UI/Feedback/Modal";
 import FormField from "@/components/UI/Forms/FormField";
 import SingleSelectEnhanced from "@/components/UI/Forms/SingleSelectEnhanced";
-import { countrySchema, type CountryFormValues } from "./countrySchema";
+import { countrySchema, type CountryFormValues } from "./Constants/schemas";
+import { type Country, type CountryFormProps } from "./Constants/types";
 
-export interface AdminCountryFormEntity {
-  id?: number;
-  code?: string;
-  name?: string;
-  official_name?: string | null;
-  phone_code?: string | null;
-  currency_code?: string | null;
-  status?: string | null;
-}
-
-interface CountryFormProps {
-  show: boolean;
-  country?: AdminCountryFormEntity | null;
-  apiErrors?: Record<string, string | string[]> | null;
-  loading?: boolean;
-  onSubmit?: (data: CountryFormValues) => void;
-  onCancel?: () => void;
-}
 
 export default function CountryForm({
   show,

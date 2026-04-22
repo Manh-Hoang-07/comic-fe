@@ -6,6 +6,8 @@ import api from "@/lib/api/client";
 import { adminEndpoints } from "@/lib/api/endpoints";
 import { useToastContext } from "@/contexts/ToastContext";
 
+import { type AssignRoleProps, type AssignRoleTarget } from "./Constants/types";
+
 type Id = string | number;
 
 interface RoleTreeRow {
@@ -22,18 +24,6 @@ interface GroupTreeRow {
   roles: RoleTreeRow[];
 }
 
-export interface AssignRoleTarget {
-  user: { id: Id; name?: string; username?: string; email?: string };
-  /** Giữ tương thích cũ; lưu dùng `roles/batch` theo user.id */
-  assignApi?: string;
-}
-
-interface AssignRoleProps {
-  show: boolean;
-  target: AssignRoleTarget | null;
-  onSuccess?: () => void;
-  onClose?: () => void;
-}
 
 function normId(v: Id): string {
   return String(v);

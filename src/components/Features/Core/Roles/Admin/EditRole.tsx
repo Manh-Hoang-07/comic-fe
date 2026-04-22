@@ -2,15 +2,8 @@
 
 import RoleForm from "./RoleForm";
 import { useFormModal } from "@/hooks";
-import { EditTarget } from "@/hooks/crud/useFormModal";
+import { type EditRoleProps } from "./Constants/types";
 
-interface EditRoleProps {
-  show: boolean;
-  target: EditTarget | null;
-  statusEnums?: Array<{ value: string; label: string; name?: string }>;
-  onSuccess?: () => void;
-  onClose?: () => void;
-}
 
 export default function EditRole({
   show,

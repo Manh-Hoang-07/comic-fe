@@ -3,16 +3,8 @@
 import { useCallback, useMemo } from "react";
 import UserForm from "./UserForm";
 import { useFormModal } from "@/hooks";
-import { EditTarget } from "@/hooks/crud/useFormModal";
+import { type EditUserProps } from "./Constants/types";
 
-interface EditUserProps {
-  show: boolean;
-  target: EditTarget | null;
-  statusEnums?: Array<{ value: string; label: string; name?: string }>;
-  genderEnums?: Array<{ value: string; label: string; name?: string }>;
-  onSuccess?: () => void;
-  onClose?: () => void;
-}
 
 const formatDate = (dateString?: string, format: string = "yyyy-MM-dd"): string => {
   if (!dateString) return "";

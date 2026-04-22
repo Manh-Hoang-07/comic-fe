@@ -4,13 +4,8 @@ import { useState } from "react";
 import ChangePasswordForm from "./ChangePasswordForm";
 import api from "@/lib/api/client";
 import { useToastContext } from "@/contexts/ToastContext";
+import { type ChangePasswordProps } from "./Constants/types";
 
-interface ChangePasswordProps {
-  show: boolean;
-  target: { passApi: string; user: Record<string, unknown> } | null;
-  onSuccess?: () => void;
-  onClose?: () => void;
-}
 
 export default function ChangePassword({
   show,

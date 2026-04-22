@@ -15,14 +15,10 @@ import CreateUser from "./CreateUser";
 import EditUser from "./EditUser";
 import ChangePassword from "./ChangePassword";
 import AssignRole from "./AssignRole";
-import type { AssignRoleTarget } from "./AssignRole";
+import { type AdminUsersProps, type ChangePasswordTarget, type AssignRoleTarget } from "./Constants/types";
 
 const endpoints = adminEndpoints.users;
 
-interface AdminUsersProps {
-  title?: string;
-  createButtonText?: string;
-}
 
 export default function AdminUsers({
   title = "Quản lý người dùng",

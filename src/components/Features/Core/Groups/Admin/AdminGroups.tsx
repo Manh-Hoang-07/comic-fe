@@ -11,21 +11,10 @@ import Pagination from "@/components/UI/DataDisplay/Pagination";
 import GroupsFilter from "./GroupsFilter";
 import CreateGroup from "./CreateGroup";
 import EditGroup from "./EditGroup";
+import { type AdminGroupsProps, type Group } from "./Constants/types";
 
 const endpoints = adminEndpoints.groups;
 
-interface Group {
-  id: number;
-  type?: string;
-  code: string;
-  name?: string;
-  status?: string;
-}
-
-interface AdminGroupsProps {
-  title?: string;
-  createButtonText?: string;
-}
 
 const getTypeLabel = (type?: string): string => {
   const typeMap: Record<string, string> = {

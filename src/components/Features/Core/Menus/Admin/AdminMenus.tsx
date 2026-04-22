@@ -12,28 +12,16 @@ import Pagination from "@/components/UI/DataDisplay/Pagination";
 import MenusFilter from "./MenusFilter";
 import CreateMenu from "./CreateMenu";
 import EditMenu from "./EditMenu";
+import { type Menu } from "./Constants/types";
 import { MenuTreeItem } from "@/hooks/data/system/useMenus";
 
 const endpoints = adminEndpoints.menus;
-
-interface Menu {
-  id: number;
-  code: string;
-  name: string;
-  path?: string;
-  type?: string;
-  status?: string;
-  icon?: string;
-  show_in_menu?: boolean;
-  deleted_at?: string;
-  parent?: { id: number; name: string };
-  group?: string;
-}
 
 interface AdminMenusProps {
   title?: string;
   createButtonText?: string;
 }
+
 
 const getTypeLabel = (type?: string): string => {
   const typeMap: Record<string, string> = {

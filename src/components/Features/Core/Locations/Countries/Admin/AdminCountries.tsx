@@ -7,10 +7,10 @@ import Pagination from "@/components/UI/DataDisplay/Pagination";
 import SkeletonLoader from "@/components/UI/Feedback/SkeletonLoader";
 import Actions from "@/components/UI/DataDisplay/Actions";
 import ConfirmModal from "@/components/UI/Feedback/ConfirmModal";
-import type { AdminCountry } from "@/types/location";
 import CountryFilter from "./CountryFilter";
 import CreateCountry from "./CreateCountry";
 import EditCountry from "./EditCountry";
+import { type Country } from "./Constants/types";
 
 const endpoints = adminEndpoints.location.countries;
 
@@ -67,7 +67,7 @@ export default function AdminCountries() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {items.map((country: AdminCountry, index: number) => {
+                {items.map((country: Country, index: number) => {
                   const badge = getStatusBadge(country.status || "", BASIC_STATUS_BADGES);
                   return (
                     <tr key={country.id}>

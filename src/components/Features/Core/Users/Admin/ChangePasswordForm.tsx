@@ -5,15 +5,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Modal from "@/components/UI/Feedback/Modal";
 import FormField from "@/components/UI/Forms/FormField";
-import { changePasswordSchema, type ChangePasswordFormValues } from "./changePasswordSchema";
+import { changePasswordSchema, type ChangePasswordFormValues } from "./Constants/schemas";
+import { type ChangePasswordFormProps } from "./Constants/types";
 
-interface ChangePasswordFormProps {
-  show: boolean;
-  user?: Record<string, unknown>;
-  apiErrors?: Record<string, string | string[]> | null;
-  onSubmit?: (data: Record<string, unknown>) => void;
-  onCancel?: () => void;
-}
 
 export default function ChangePasswordForm({
   show,

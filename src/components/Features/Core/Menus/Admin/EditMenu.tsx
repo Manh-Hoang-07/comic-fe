@@ -2,18 +2,8 @@
 
 import MenuForm from "./MenuForm";
 import { useFormModal } from "@/hooks";
-import { EditTarget } from "@/hooks/crud/useFormModal";
-import { MenuTreeItem } from "@/hooks/data/system/useMenus";
+import { type EditMenuProps } from "./Constants/types";
 
-interface EditMenuProps {
-  show: boolean;
-  target: EditTarget | null;
-  statusEnums?: Array<{ value: string; label: string; name?: string }>;
-  parentMenus?: MenuTreeItem[];
-  permissions?: Array<{ id: number; name: string; code: string }>;
-  onSuccess?: () => void;
-  onClose?: () => void;
-}
 
 export default function EditMenu({
   show,

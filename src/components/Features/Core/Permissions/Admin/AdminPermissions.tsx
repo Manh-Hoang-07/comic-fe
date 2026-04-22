@@ -10,13 +10,9 @@ import Pagination from "@/components/UI/DataDisplay/Pagination";
 import PermissionsFilter from "./PermissionsFilter";
 import CreatePermission from "./CreatePermission";
 import EditPermission from "./EditPermission";
+import { type AdminPermissionsProps, type Permission } from "./Constants/types";
 
 const endpoints = adminEndpoints.permissions;
-
-interface AdminPermissionsProps {
-  title?: string;
-  createButtonText?: string;
-}
 
 export default function AdminPermissions({
   title = "Quản lý quyền",
