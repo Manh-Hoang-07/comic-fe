@@ -1,22 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { env } from "@/config/env";
-import { getRedisClient } from "@/lib/redis";
+import { cacheGet, cacheSet } from "@/lib/redis";
 
 const CACHE_TTL_SECONDS = 60 * 60; // 1 giờ
 const CACHE_KEY = "public:general-config";
 
 export async function GET(request: NextRequest) {
-  const redis = getRedisClient();
-
   try {
-    // Kiểm tra Redis cache
-    if (redis) {
-      const cached = await redis.get(CACHE_KEY).catch(() => null);
-      if (cached) {
-        return NextResponse.json(JSON.parse(cached), {
-          headers: { "X-Cache": "HIT" },
-        });
-      }
+    // Kiểm tra cache (Redis hoặc in-memory tùy REDIS_ENABLED)
+    const cached = await cacheGet(CACHE_KEY);
+    if (cached) {
+      return NextResponse.json(JSON.parse(cached), {
+        headers: { "X-Cache": "HIT" },
+      });
     }
 
     // Gọi backend API
@@ -34,23 +30,17 @@ export async function GET(request: NextRequest) {
 
     const data = await response.json();
 
-    // Lưu vào Redis
-    if (redis) {
-      await redis
-        .set(CACHE_KEY, JSON.stringify(data), "EX", CACHE_TTL_SECONDS)
-        .catch(() => null);
-    }
+    // Lưu vào cache
+    await cacheSet(CACHE_KEY, JSON.stringify(data), CACHE_TTL_SECONDS);
 
     return NextResponse.json(data, { headers: { "X-Cache": "MISS" } });
   } catch (error: unknown) {
-    // Stale fallback từ Redis nếu backend lỗi
-    if (redis) {
-      const stale = await redis.get(CACHE_KEY).catch(() => null);
-      if (stale) {
-        return NextResponse.json(JSON.parse(stale), {
-          headers: { "X-Cache": "STALE" },
-        });
-      }
+    // Stale fallback từ cache nếu backend lỗi
+    const stale = await cacheGet(CACHE_KEY);
+    if (stale) {
+      return NextResponse.json(JSON.parse(stale), {
+        headers: { "X-Cache": "STALE" },
+      });
     }
 
     // Default config nếu không có cache và backend lỗi
