@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import PageMeta from "@/components/UI/Navigation/PageMeta";
-import UserProfileClient from "./UserProfileClient";
+import UserProfile from "@/components/Features/Core/Users/User/Profile/UserProfile";
 
 export const metadata: Metadata = {
   title: "Hồ sơ cá nhân | User",
@@ -18,8 +18,7 @@ export default function UserProfilePage() {
           { label: "Hồ sơ" },
         ]}
       />
-      <UserProfileClient />
+      <UserProfile />
     </>
   );
 }
-

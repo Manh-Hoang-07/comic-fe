@@ -1,51 +1,18 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/UI/Navigation/Button";
 import { Breadcrumbs } from "@/components/UI/Navigation/Breadcrumbs";
 import HeroBanner from "@/components/Features/Marketing/Banners/Public/HeroBanner";
+import { useGalleryFilter, GalleryItem } from "@/hooks/ui-ux/public/useGalleryFilter";
 
-interface GalleryItem {
-    id: number;
-    title: string;
-    slug: string;
-    description: string;
-    cover_image: string;
-    images: string[];
-    featured: boolean;
-    status: string;
-    category?: string;
-    date?: string;
-}
-
-interface GalleryClientProps {
+interface GalleryGridProps {
     initialItems: GalleryItem[];
 }
 
-export default function GalleryClient({ initialItems }: GalleryClientProps) {
-    const [galleryItems] = useState<GalleryItem[]>(initialItems);
-    const [filteredItems, setFilteredItems] = useState<GalleryItem[]>(initialItems);
-    const [filters, setFilters] = useState({
-        search: "",
-    });
-    const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-
-    // Apply filters
-    useEffect(() => {
-        let filtered = [...galleryItems];
-
-        if (filters.search) {
-            const searchLower = filters.search.toLowerCase();
-            filtered = filtered.filter(item =>
-                item.title.toLowerCase().includes(searchLower) ||
-                item.description.toLowerCase().includes(searchLower)
-            );
-        }
-
-        setFilteredItems(filtered);
-    }, [galleryItems, filters]);
+export default function GalleryGrid({ initialItems }: GalleryGridProps) {
+    const { filteredItems, search, setSearch, viewMode, setViewMode } = useGalleryFilter(initialItems);
 
     return (
         <div className="min-h-screen bg-[#f8f9fa] pb-20 transition-colors duration-300">
@@ -63,8 +30,8 @@ export default function GalleryClient({ initialItems }: GalleryClientProps) {
                                 name="search"
                                 type="text"
                                 placeholder="Tìm kiếm dự án..."
-                                value={filters.search}
-                                onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
                                 className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all shadow-sm"
                             />
                         </div>

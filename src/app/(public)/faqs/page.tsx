@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { Metadata } from "next";
-import FAQsClient from "./FAQsClient";
+import FaqsPage from "@/components/Features/Introduction/Faqs/Public/FaqsPage";
 import { serverFetch } from "@/lib/api/server-client";
 
 export const metadata: Metadata = {
@@ -15,7 +15,7 @@ export default async function FAQsPage() {
 
   return (
     <Suspense fallback={<div className="text-center py-10 text-gray-500">Đang tải câu hỏi...</div>}>
-      <FAQsClient initialFaqs={faqs || []} />
+      <FaqsPage initialFaqs={faqs || []} />
     </Suspense>
   );
 }

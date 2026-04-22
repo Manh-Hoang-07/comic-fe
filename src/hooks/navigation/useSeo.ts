@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { usePathname } from "next/navigation";
-import { useSystemConfig } from "../data/useSystemConfig";
+import { useSystemConfig } from "../data/system/useSystemConfig";
 import { env } from "@/config/env";
 
 export interface SeoOptions {

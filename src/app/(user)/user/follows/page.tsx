@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import PageMeta from "@/components/UI/Navigation/PageMeta";
-import UserFollowsClient from "./UserFollowsClient";
+import UserFollows from "@/components/Features/Core/Users/User/Follows/UserFollows";
 
 export const metadata: Metadata = {
   title: "Đang theo dõi | User",
@@ -18,7 +18,7 @@ export default function UserFollowsPage() {
           { label: "Theo dõi" },
         ]}
       />
-      <UserFollowsClient />
+      <UserFollows />
     </>
   );
 }

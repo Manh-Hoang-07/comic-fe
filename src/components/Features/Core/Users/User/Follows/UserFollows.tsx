@@ -1,54 +1,19 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { userComicService } from "@/lib/api/user/comic";
-import { Follow } from "@/types/comic";
-import { useToastContext } from "@/contexts/ToastContext";
-import { useAuthStore } from "@/lib/store/authStore";
+import { useFollows } from "@/hooks/data/user/useFollows";
 import { BookmarkIcon, XMarkIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 
-export default function UserFollowsClient() {
-    const [loading, setLoading] = useState(true);
-    const [follows, setFollows] = useState<Follow[]>([]);
-    const { isAuthenticated } = useAuthStore();
-    const { showSuccess, showError } = useToastContext();
+export default function UserFollows() {
+    const { follows, isLoading, unfollowComic } = useFollows();
 
-    const fetchFollows = useCallback(async () => {
-        setLoading(true);
-        try {
-            const data = await userComicService.getFollows();
-            setFollows(data);
-        } catch (error) {
-            showError("Không thể tải danh sách theo dõi");
-        } finally {
-            setLoading(false);
-        }
-    }, [showError]);
-
-    useEffect(() => {
-        const hasToken = typeof window !== 'undefined' && document.cookie.includes('auth_token');
-        if (isAuthenticated && hasToken) {
-            fetchFollows();
-        } else {
-            setLoading(false);
-        }
-    }, [isAuthenticated, fetchFollows]);
-
-    const handleUnfollow = async (comicId: string | number) => {
+    const handleUnfollow = (comicId: string | number) => {
         if (!confirm("Bạn có chắc muốn bỏ theo dõi bộ truyện này?")) return;
-
-        try {
-            await userComicService.unfollowComic(comicId);
-            setFollows(prev => prev.filter(f => f.comic_id !== comicId));
-            showSuccess("Đã bỏ theo dõi");
-        } catch (error) {
-            showError("Không thể thực hiện thao tác");
-        }
+        unfollowComic(comicId);
     };
 
-    if (loading) {
+    if (isLoading) {
         return (
             <div className="min-h-screen bg-gray-50 py-8">
                 <div className="w-full px-4 sm:px-6 lg:px-8">

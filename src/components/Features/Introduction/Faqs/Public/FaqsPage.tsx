@@ -1,62 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { Button } from "@/components/UI/Navigation/Button";
 import { Breadcrumbs } from "@/components/UI/Navigation/Breadcrumbs";
+import { useFaqFilter, FAQ } from "@/hooks/ui-ux/public/useFaqFilter";
 
-interface FAQ {
-    id: string;
-    question: string;
-    answer: string;
-    category: string;
-    sort_order?: number;
-}
-
-interface FAQsClientProps {
+interface FaqsPageProps {
     initialFaqs: FAQ[];
 }
 
-export default function FAQsClient({ initialFaqs }: FAQsClientProps) {
-    const [faqs] = useState<FAQ[]>(initialFaqs);
-    const [filteredFAQs, setFilteredFAQs] = useState<FAQ[]>(initialFaqs);
-    const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
-    const [filters, setFilters] = useState({
-        category: "all",
-        search: "",
-    });
-
-    // Apply filters
-    useEffect(() => {
-        let filtered = [...faqs];
-
-        if (filters.category !== "all") {
-            filtered = filtered.filter(faq => faq.category === filters.category);
-        }
-
-        if (filters.search) {
-            const searchLower = filters.search.toLowerCase();
-            filtered = filtered.filter(faq =>
-                faq.question.toLowerCase().includes(searchLower) ||
-                faq.answer.toLowerCase().includes(searchLower)
-            );
-        }
-
-        filtered.sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
-
-        setFilteredFAQs(filtered);
-    }, [faqs, filters]);
-
-    const toggleExpanded = (id: string) => {
-        const newExpanded = new Set(expandedItems);
-        if (newExpanded.has(id)) {
-            newExpanded.delete(id);
-        } else {
-            newExpanded.add(id);
-        }
-        setExpandedItems(newExpanded);
-    };
-
-    const categories = Array.from(new Set(faqs.map(faq => String(faq.category)))).filter(cat => cat && cat !== "all");
+export default function FaqsPage({ initialFaqs }: FaqsPageProps) {
+    const { filteredFAQs, categories, filters, setFilters, expandedItems, toggleExpanded } = useFaqFilter(initialFaqs);
 
     return (
         <div className="min-h-screen bg-[#f8f9fa] pb-20 transition-colors duration-300">

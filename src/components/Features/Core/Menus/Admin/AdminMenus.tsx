@@ -12,7 +12,7 @@ import Pagination from "@/components/UI/DataDisplay/Pagination";
 import MenusFilter from "./MenusFilter";
 import CreateMenu from "./CreateMenu";
 import EditMenu from "./EditMenu";
-import { MenuTreeItem } from "@/hooks/data/useMenus";
+import { MenuTreeItem } from "@/hooks/data/system/useMenus";
 
 const endpoints = adminEndpoints.menus;
 

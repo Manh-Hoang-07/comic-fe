@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuthStore } from "@/lib/store/authStore";
 
-export default function UserDashboardClient() {
+export default function UserDashboard() {
   const router = useRouter();
   const authStore = useAuthStore();
   const user = authStore.user;

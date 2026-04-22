@@ -3,7 +3,7 @@
 import MenuForm from "./MenuForm";
 import { useFormModal } from "@/hooks";
 import { EditTarget } from "@/hooks/crud/useFormModal";
-import { MenuTreeItem } from "@/hooks/data/useMenus";
+import { MenuTreeItem } from "@/hooks/data/system/useMenus";
 
 interface EditMenuProps {
   show: boolean;

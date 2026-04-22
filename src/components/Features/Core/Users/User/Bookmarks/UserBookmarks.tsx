@@ -1,54 +1,19 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { userComicService } from "@/lib/api/user/comic";
-import { Bookmark } from "@/types/comic";
-import { useToastContext } from "@/contexts/ToastContext";
+import { useBookmarks } from "@/hooks/data/user/useBookmarks";
 import { TrashIcon, BookOpenIcon } from "@heroicons/react/24/outline";
-import { useAuthStore } from "@/lib/store/authStore";
 
-export default function UserBookmarksClient() {
-    const [loading, setLoading] = useState(true);
-    const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
-    const { isAuthenticated } = useAuthStore();
-    const { showSuccess, showError } = useToastContext();
+export default function UserBookmarks() {
+    const { bookmarks, isLoading, deleteBookmark } = useBookmarks();
 
-    const fetchBookmarks = useCallback(async () => {
-        setLoading(true);
-        try {
-            const data = await userComicService.getBookmarks();
-            setBookmarks(data);
-        } catch (error) {
-            showError("Không thể tải danh sách bookmark");
-        } finally {
-            setLoading(false);
-        }
-    }, [showError]);
-
-    useEffect(() => {
-        const hasToken = typeof window !== 'undefined' && document.cookie.includes('auth_token');
-        if (isAuthenticated && hasToken) {
-            fetchBookmarks();
-        } else {
-            setLoading(false);
-        }
-    }, [isAuthenticated, fetchBookmarks]);
-
-    const handleDelete = async (id: string | number) => {
+    const handleDelete = (id: string | number) => {
         if (!confirm("Bạn có chắc muốn xóa bookmark này?")) return;
-
-        try {
-            await userComicService.deleteBookmark(id);
-            setBookmarks(prev => prev.filter(b => b.id !== id));
-            showSuccess("Đã xóa bookmark");
-        } catch (error) {
-            showError("Không thể xóa bookmark");
-        }
+        deleteBookmark(id);
     };
 
-    if (loading) {
+    if (isLoading) {
         return (
             <div className="min-h-screen bg-gray-50 py-8">
                 <div className="w-full px-4 sm:px-6 lg:px-8">
@@ -87,8 +52,6 @@ export default function UserBookmarksClient() {
                             <div key={bookmark.id} className="bg-white rounded-2xl border border-gray-100 p-4 hover:shadow-xl hover:shadow-gray-200/50 transition-all group">
                                 <div className="flex gap-4">
                                     <div className="relative w-24 h-32 flex-shrink-0 rounded-xl overflow-hidden shadow-sm">
-                                        {/* Debug Log */}
-                                        {/* {console.log("Rendering bookmark:", bookmark)} */}
                                         <Image
                                             src={bookmark.chapter.comic.cover_image || "/placeholder-comic.png"}
                                             alt={bookmark.chapter.comic.title}

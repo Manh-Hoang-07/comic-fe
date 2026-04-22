@@ -1,54 +1,19 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { userComicService } from "@/lib/api/user/comic";
-import { ReadingHistory } from "@/types/comic";
-import { useToastContext } from "@/contexts/ToastContext";
-import { useAuthStore } from "@/lib/store/authStore";
+import { useReadingHistory } from "@/hooks/data/user/useReadingHistory";
 import { ClockIcon, TrashIcon, BookOpenIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 
-export default function UserReadingHistoryClient() {
-    const [loading, setLoading] = useState(true);
-    const [history, setHistory] = useState<ReadingHistory[]>([]);
-    const { isAuthenticated } = useAuthStore();
-    const { showSuccess, showError } = useToastContext();
+export default function UserReadingHistory() {
+    const { history, isLoading, deleteReadingHistory } = useReadingHistory();
 
-    const fetchHistory = useCallback(async () => {
-        setLoading(true);
-        try {
-            const data = await userComicService.getReadingHistory();
-            setHistory(data);
-        } catch (error) {
-            showError("Không thể tải lịch sử đọc");
-        } finally {
-            setLoading(false);
-        }
-    }, [showError]);
-
-    useEffect(() => {
-        const hasToken = typeof window !== 'undefined' && document.cookie.includes('auth_token');
-        if (isAuthenticated && hasToken) {
-            fetchHistory();
-        } else {
-            setLoading(false);
-        }
-    }, [isAuthenticated, fetchHistory]);
-
-    const handleDelete = async (comicId: string | number) => {
+    const handleDelete = (comicId: string | number) => {
         if (!confirm("Bạn có chắc muốn xóa lịch sử đọc của bộ truyện này?")) return;
-
-        try {
-            await userComicService.deleteReadingHistory(comicId);
-            setHistory(prev => prev.filter(item => item.comic_id !== comicId));
-            showSuccess("Đã xóa lịch sử đọc");
-        } catch (error) {
-            showError("Không thể xóa lịch sử đọc");
-        }
+        deleteReadingHistory(comicId);
     };
 
-    if (loading) {
+    if (isLoading) {
         return (
             <div className="min-h-screen bg-gray-50 py-8">
                 <div className="w-full px-4 sm:px-6 lg:px-8">

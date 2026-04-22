@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import UserDashboardClient from "./UserDashboardClient";
+import UserDashboard from "@/components/Features/Core/Users/User/Dashboard/UserDashboard";
 
 export const dynamic = "force-dynamic";
 
@@ -9,14 +9,5 @@ export const metadata: Metadata = {
 };
 
 export default function UserIndexPage() {
-  return <UserDashboardClient />;
+  return <UserDashboard />;
 }
-
-
-
-
-
-
-
-
-

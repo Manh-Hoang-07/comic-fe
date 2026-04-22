@@ -2,7 +2,7 @@
 
 import MenuForm from "./MenuForm";
 import { useFormModal } from "@/hooks";
-import { MenuTreeItem } from "@/hooks/data/useMenus";
+import { MenuTreeItem } from "@/hooks/data/system/useMenus";
 
 interface CreateMenuProps {
   show: boolean;

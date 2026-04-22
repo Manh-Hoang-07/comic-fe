@@ -9,7 +9,7 @@ import FormField from "@/components/UI/Forms/FormField";
 import SingleSelectEnhanced from "@/components/UI/Forms/SingleSelectEnhanced";
 import SearchableSelect from "@/components/UI/Forms/SearchableSelect";
 import { adminEndpoints } from "@/lib/api/endpoints";
-import { MenuTreeItem } from "@/hooks/data/useMenus";
+import { MenuTreeItem } from "@/hooks/data/system/useMenus";
 
 interface Menu {
   id?: number;

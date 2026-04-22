@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { Metadata } from "next";
-import GalleryClient from "./GalleryClient";
+import GalleryGrid from "@/components/Features/Introduction/Gallery/Public/GalleryGrid";
 import { serverFetch } from "@/lib/api/server-client";
 
 export const metadata: Metadata = {
@@ -15,7 +15,7 @@ export default async function GalleryPage() {
 
   return (
     <Suspense fallback={<div className="text-center py-10 text-gray-500">Đang tải thư viện...</div>}>
-      <GalleryClient initialItems={galleryItems || []} />
+      <GalleryGrid initialItems={galleryItems || []} />
     </Suspense>
   );
 }
