@@ -12,15 +12,11 @@ import Pagination from "@/components/UI/DataDisplay/Pagination";
 import MenusFilter from "./MenusFilter";
 import CreateMenu from "./CreateMenu";
 import EditMenu from "./EditMenu";
-import { type Menu } from "./Constants/types";
+import { type Menu, type AdminMenusProps } from "./Constants/types";
 import { MenuTreeItem } from "@/hooks/data/system/useMenus";
 
 const endpoints = adminEndpoints.menus;
 
-interface AdminMenusProps {
-  title?: string;
-  createButtonText?: string;
-}
 
 
 const getTypeLabel = (type?: string): string => {

@@ -21,6 +21,12 @@ export interface Menu {
   displayName?: string; // For tree display
 }
 
+export interface AdminMenusProps {
+  title?: string;
+  createButtonText?: string;
+}
+
+
 export interface MenuFormProps {
   show: boolean;
   menu?: Menu | null;

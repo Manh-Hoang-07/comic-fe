@@ -1,7 +1,7 @@
 import { EditTarget } from "@/hooks/crud/useFormModal";
 
 export interface Role {
-  id?: number;
+  id: number;
   code?: string;
   name?: string;
   parent_id?: number | null;

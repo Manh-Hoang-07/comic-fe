@@ -3,7 +3,7 @@
 import { useCallback, useMemo } from "react";
 import UserForm from "./UserForm";
 import { useFormModal } from "@/hooks";
-import { type EditUserProps } from "./Constants/types";
+import { type EditUserProps, type User } from "./Constants/types";
 
 
 const formatDate = (dateString?: string, format: string = "yyyy-MM-dd"): string => {
@@ -95,7 +95,7 @@ export default function EditUser({
     { updateSuccessMessage: "Cập nhật người dùng thành công", fetchErrorMessage: "Không thể tải thông tin người dùng", onSuccess, onClose }
   );
 
-  const userData = useMemo(() => entityData ? transformUserData(entityData) : null, [entityData]);
+  const userData = useMemo(() => entityData ? transformUserData(entityData) as unknown as User : null, [entityData]);
 
   const handleFormSubmit = useCallback(
     (formData: Record<string, unknown>) => handleSubmit(buildUserPayload(formData)),

@@ -1,7 +1,7 @@
 import { EditTarget } from "@/hooks/crud/useFormModal";
 
 export interface Permission {
-  id?: number;
+  id: number;
   code?: string;
   name?: string;
   scope?: string;
@@ -18,6 +18,12 @@ export interface PermissionFormProps {
   onSubmit?: (data: Record<string, unknown>) => void;
   onCancel?: () => void;
 }
+
+export interface AdminPermissionsProps {
+  title?: string;
+  createButtonText?: string;
+}
+
 
 export interface CreatePermissionProps {
   show: boolean;

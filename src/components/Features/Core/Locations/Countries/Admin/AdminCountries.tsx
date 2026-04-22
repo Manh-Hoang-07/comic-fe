@@ -10,11 +10,15 @@ import ConfirmModal from "@/components/UI/Feedback/ConfirmModal";
 import CountryFilter from "./CountryFilter";
 import CreateCountry from "./CreateCountry";
 import EditCountry from "./EditCountry";
-import { type Country } from "./Constants/types";
+import { type Country, type AdminCountriesProps } from "./Constants/types";
 
 const endpoints = adminEndpoints.location.countries;
 
-export default function AdminCountries() {
+export default function AdminCountries({ 
+  title = "Quản lý quốc gia", 
+  createButtonText = "Thêm quốc gia mới" 
+}: AdminCountriesProps) {
+
   const {
     data, actions, ui,
     createModal, editModal, deleteModal,
@@ -30,13 +34,14 @@ export default function AdminCountries() {
   return (
     <div className="admin-countries">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Quản lý quốc gia</h1>
+        <h1 className="text-2xl font-bold">{title}</h1>
         <button
           onClick={() => openCreate(endpoints.create)}
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none"
         >
-          Thêm quốc gia mới
+          {createButtonText}
         </button>
+
       </div>
 
       <CountryFilter initialFilters={filters} onUpdateFilters={actions.updateFilters} />

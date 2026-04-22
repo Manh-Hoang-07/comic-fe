@@ -1,8 +1,7 @@
 import { EditTarget } from "@/hooks/crud/useFormModal";
-import { type CountryFormValues } from "./schemas";
 
 export interface Country {
-  id?: number;
+  id: number;
   code?: string;
   name?: string;
   official_name?: string | null;
@@ -12,14 +11,21 @@ export interface Country {
   displayName?: string;
 }
 
+export interface AdminCountriesProps {
+  title?: string;
+  createButtonText?: string;
+}
+
+
 export interface CountryFormProps {
   show: boolean;
   country?: Country | null;
   apiErrors?: Record<string, string | string[]> | null;
   loading?: boolean;
-  onSubmit?: (data: CountryFormValues) => void;
+  onSubmit?: (data: Record<string, any>) => void;
   onCancel?: () => void;
 }
+
 
 export interface CreateCountryProps {
   show: boolean;
