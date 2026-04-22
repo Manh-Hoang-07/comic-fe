@@ -6,4 +6,6 @@ export const env = {
   ogImage: process.env.OG_IMAGE || "/default.svg",
   appSecret: process.env.APP_SECRET || "",
   revalidateSecret: process.env.REVALIDATE_SECRET || "",
+  redisUrl: process.env.REDIS_URL || "redis://localhost:6379",
+  redisEnabled: process.env.REDIS_ENABLED === "true",
 } as const;

@@ -1,10 +1,11 @@
 import Redis from "ioredis";
+import { env } from "@/config/env";
 
 // ---------------------------------------------------------------------------
 // Flag: set REDIS_ENABLED=true trong .env để dùng Redis
 // Mặc định dùng in-memory cache (phù hợp cho single-instance / dev local)
 // ---------------------------------------------------------------------------
-const USE_REDIS = process.env.REDIS_ENABLED === "true";
+const USE_REDIS = env.redisEnabled;
 
 // --- Redis client -----------------------------------------------------------
 
@@ -15,7 +16,7 @@ export function getRedisClient(): Redis | null {
   if (client) return client;
 
   try {
-    const redis = new Redis(process.env.REDIS_URL || "redis://localhost:6379", {
+    const redis = new Redis(env.redisUrl, {
       maxRetriesPerRequest: 1,
       connectTimeout: 3000,
       lazyConnect: true,
