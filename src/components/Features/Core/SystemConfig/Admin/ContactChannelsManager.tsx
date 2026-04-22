@@ -81,22 +81,22 @@ export default function ContactChannelsManager({ value: rawValue = DEFAULT_VALUE
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {channels.map((channel, index) => (
-                    <div key={index} className="p-5 border border-gray-200 rounded-2xl bg-white shadow-sm space-y-4 relative group hover:border-primary/30 transition-all">
+                    <div key={index} className="p-6 border border-gray-200 rounded-3xl bg-white shadow-sm space-y-6 relative group hover:border-primary/40 transition-all">
                         <button
                             type="button"
                             onClick={() => handleRemove(index)}
-                            className="absolute top-3 right-3 p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg opacity-0 group-hover:opacity-100 transition-all"
+                            className="absolute top-4 right-4 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl opacity-0 group-hover:opacity-100 transition-all z-10"
                         >
                             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                             </svg>
                         </button>
 
-                        <div className="flex gap-4">
-                            {/* Icon Uploader Section */}
-                            <div className="flex-shrink-0">
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Icon</label>
-                                <div className="w-20">
+                        <div className="grid grid-cols-1 sm:grid-cols-[128px_1fr] gap-x-8 gap-y-6">
+                            {/* Icon Column */}
+                            <div className="flex flex-col gap-2">
+                                <label className="text-sm font-semibold text-gray-700">Icon</label>
+                                <div className="w-32 h-32">
                                     <ImageUploader
                                         value={channel.icon}
                                         onChange={(val) => handleUpdate(index, { icon: val as string })}
@@ -105,57 +105,58 @@ export default function ContactChannelsManager({ value: rawValue = DEFAULT_VALUE
                                 </div>
                             </div>
 
-                            {/* Type and Label Section */}
-                            <div className="flex-1 grid grid-cols-1 gap-3">
+                            {/* Info Column */}
+                            <div className="flex flex-col gap-5">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                    <FormField
+                                        label="Loại (Type)"
+                                        value={channel.type}
+                                        onChange={(e) => handleUpdate(index, { type: e.target.value })}
+                                        placeholder="hotline, zalo..."
+                                    />
+                                    <FormField
+                                        label="Nhãn (Label)"
+                                        value={channel.label}
+                                        onChange={(e) => handleUpdate(index, { label: e.target.value })}
+                                        placeholder="Hotline hỗ trợ..."
+                                    />
+                                </div>
                                 <FormField
-                                    label="Loại (Type)"
-                                    value={channel.type}
-                                    onChange={(e) => handleUpdate(index, { type: e.target.value })}
-                                    placeholder="hotline, zalo..."
-                                />
-                                <FormField
-                                    label="Nhãn (Label)"
-                                    value={channel.label}
-                                    onChange={(e) => handleUpdate(index, { label: e.target.value })}
-                                    placeholder="Zalo tư vấn..."
+                                    label="Giá trị (Value)"
+                                    value={channel.value}
+                                    onChange={(e) => handleUpdate(index, { value: e.target.value })}
+                                    placeholder="19001234, link..."
                                 />
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 gap-4 pt-2">
-                            <FormField
-                                label="Giá trị (Value)"
-                                value={channel.value}
-                                onChange={(e) => handleUpdate(index, { value: e.target.value })}
-                                placeholder="SĐT, Link, ID..."
-                            />
-
+                        <div className="space-y-4">
                             <FormField
                                 label="URL Template"
                                 value={channel.url_template}
                                 onChange={(e) => handleUpdate(index, { url_template: e.target.value })}
-                                placeholder="https://zalo.me/{value}"
-                                helpText="Dùng {value} để thay thế giá trị trên"
+                                placeholder="tel:{value}"
+                                helpText="Sử dụng {value} để tự động thay thế giá trị trên vào URL"
                             />
-                        </div>
 
-                        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                            <div className="flex items-center gap-6">
-                                <FormField
-                                    type="checkbox"
-                                    label="Kích hoạt"
-                                    value={channel.enabled}
-                                    onChange={(e) => handleUpdate(index, { enabled: (e.target as HTMLInputElement).checked })}
-                                />
-
-                                <div className="flex items-center gap-2">
-                                    <label className="text-sm font-medium text-gray-700">Thứ tự:</label>
-                                    <input
-                                        type="number"
-                                        value={channel.sort_order}
-                                        onChange={(e) => handleUpdate(index, { sort_order: Number(e.target.value) })}
-                                        className="w-16 px-2 py-1 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                            <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                                <div className="flex items-center gap-8">
+                                    <FormField
+                                        type="checkbox"
+                                        label="Kích hoạt"
+                                        value={channel.enabled}
+                                        onChange={(e) => handleUpdate(index, { enabled: (e.target as HTMLInputElement).checked })}
                                     />
+
+                                    <div className="flex items-center gap-3">
+                                        <label className="text-sm font-semibold text-gray-700 whitespace-nowrap">Thứ tự:</label>
+                                        <input
+                                            type="number"
+                                            value={channel.sort_order}
+                                            onChange={(e) => handleUpdate(index, { sort_order: Number(e.target.value) })}
+                                            className="w-20 px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>

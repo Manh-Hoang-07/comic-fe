@@ -62,7 +62,7 @@ export default function SearchableSelect({
 
   const filteredOptions = useMemo(() => {
     if (!searchQuery) {
-      return options.slice(0, 10);
+      return options;
     }
     return options.filter((option) => option.label.toLowerCase().includes(searchQuery.toLowerCase()));
   }, [searchQuery, options]);

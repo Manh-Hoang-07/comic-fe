@@ -64,8 +64,8 @@ export default function AdminMenus({ title = "Quản lý menu", createButtonText
   const fetchRelatedData = useCallback(async () => {
     try {
       const [treeRes, permRes] = await Promise.all([
-        api.get(endpoints.tree),
-        api.get(adminEndpoints.permissions.list)
+        api.get(adminEndpoints.menus.tree),
+        api.get(adminEndpoints.permissions.simple)
       ]);
 
       if (treeRes.data?.success || treeRes.data) {

@@ -344,7 +344,7 @@ export default function MenuForm({
                   <label className="block text-sm font-semibold text-gray-700 mb-1">Permission yêu cầu</label>
                   <SearchableSelect
                     value={value || ""}
-                    searchApi={adminEndpoints.permissions.list}
+                    searchApi={adminEndpoints.permissions.simple}
                     placeholder="Không yêu cầu (Công khai)"
                     labelField="name"
                     onChange={(val) => onChange(val || null)}

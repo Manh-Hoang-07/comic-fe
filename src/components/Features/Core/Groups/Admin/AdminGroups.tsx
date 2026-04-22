@@ -54,7 +54,7 @@ export default function AdminGroups({ title = "Quản lý Groups", createButtonT
   const { getSerialNumber } = ui;
 
   const navigateToMembers = (groupId: number) => {
-    router.push(`/admin/core/groups/${groupId}/members`);
+    router.push(`/admin/groups/${groupId}/members`);
   };
 
   return (

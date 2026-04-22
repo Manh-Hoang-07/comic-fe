@@ -1,14 +1,19 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api/client";
 import { adminEndpoints } from "@/lib/api/endpoints";
 import { useToastContext } from "@/contexts/ToastContext";
 import SkeletonLoader from "@/components/UI/Feedback/SkeletonLoader";
 import ConfirmModal from "@/components/UI/Feedback/ConfirmModal";
+import Actions from "@/components/UI/DataDisplay/Actions";
 import AddMemberModal from "./AddMemberModal";
 import EditMemberRolesModal from "./EditMemberRolesModal";
+import useModal from "@/hooks/ui-ux/useModal";
+import { useCrudList } from "@/hooks";
+import MemberFilter from "./MemberFilter";
+import Pagination from "@/components/UI/DataDisplay/Pagination";
 
 interface GroupMember {
   user_id: number;
@@ -44,55 +49,56 @@ interface GroupMembersProps {
 export default function GroupMembers({ groupId }: GroupMembersProps) {
   const router = useRouter();
   const [group, setGroup] = useState<Group | null>(null);
-  const [members, setMembers] = useState<GroupMember[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [apiErrors, setApiErrors] = useState<Record<string, any> | null>(null);
-  const [modals, setModals] = useState({ addMember: false, editRoles: false, delete: false });
-  const [selectedMember, setSelectedMember] = useState<GroupMember | null>(null);
-  const { showSuccess, showError } = useToastContext();
+  const { showError } = useToastContext();
 
-  const loadGroup = useCallback(async () => {
-    try {
-      const response = await api.get(adminEndpoints.groups.show(groupId));
-      const groupData = response.data?.data || response.data;
-      if (!groupData) {
-        showError("Không tìm thấy group");
-        router.push("/admin/groups");
-      } else {
-        setGroup(groupData);
-      }
-    } catch (error) {
-      showError("Không thể tải thông tin group");
-      router.push("/admin/groups");
-    }
-  }, [groupId, router, showError]);
+  const endpoint = useMemo(() => adminEndpoints.groups.members.list(groupId), [groupId]);
+  
+  const transformItem = useCallback((item: any) => ({
+      ...item,
+      id: item.user_id,
+  }), []);
 
-  const loadMembers = useCallback(async () => {
-    setLoading(true);
-    try {
-      const response = await api.get(adminEndpoints.groups.members.list(groupId));
+  const {
+      data,
+      actions,
+      ui,
+      deleteModal,
+      handleDeleteConfirm,
+      openDelete
+  } = useCrudList({
+      endpoint,
+      deleteSuccessMessage: "Thành viên đã được xóa khỏi nhóm thành công",
+      transformItem,
+  });
 
-      let membersData: GroupMember[] = [];
-      if (response.data?.success && Array.isArray(response.data.data)) {
-        membersData = response.data.data;
-      } else if (Array.isArray(response.data)) {
-        membersData = response.data;
-      } else if (Array.isArray(response.data?.data)) {
-        membersData = response.data.data;
-      }
+  const { items, loading, pagination, filters, hasData } = data;
+  const { getSerialNumber } = ui;
 
-      setMembers(membersData);
-    } catch (error: unknown) {
-      showError("Không thể tải danh sách members");
-      setMembers([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [groupId, showError]);
+  const addMemberModal = useModal();
+  const editRolesModal = useModal<GroupMember>();
 
   useEffect(() => {
-    Promise.all([loadGroup(), loadMembers()]);
-  }, [loadGroup, loadMembers]);
+    const loadGroup = async () => {
+      try {
+        const response = await api.get(adminEndpoints.groups.show(groupId));
+        const groupData = response.data?.data || response.data;
+        if (!groupData) {
+          showError("Không tìm thấy group");
+          router.push("/admin/groups");
+        } else {
+          setGroup(groupData);
+        }
+      } catch (error) {
+        // Only push if we are still on this page
+        if (window.location.pathname.includes(`/admin/groups/${groupId}/members`)) {
+          showError("Không thể tải thông tin group");
+          router.push("/admin/groups");
+        }
+      }
+    };
+
+    loadGroup();
+  }, [groupId, router, showError]);
 
   const getMemberRoles = (member: GroupMember) => {
     if (member.roles && Array.isArray(member.roles)) {
@@ -108,173 +114,171 @@ export default function GroupMembers({ groupId }: GroupMembersProps) {
     return group ? member.user_id === group.owner_id : false;
   };
 
-  const openAddMemberModal = () => {
-    setModals((prev) => ({ ...prev, addMember: true }));
-    setApiErrors(null);
+  const handleMemberAdded = () => {
+    addMemberModal.close();
+    actions.refresh();
   };
 
-  const closeAddMemberModal = () => {
-    setModals((prev) => ({ ...prev, addMember: false }));
-    setApiErrors(null);
+  const handleRolesUpdated = () => {
+    editRolesModal.close();
+    actions.refresh();
   };
 
-  const openEditRolesModal = (member: GroupMember) => {
-    setSelectedMember(member);
-    setModals((prev) => ({ ...prev, editRoles: true }));
-    setApiErrors(null);
-  };
-
-  const closeEditRolesModal = () => {
-    setSelectedMember(null);
-    setModals((prev) => ({ ...prev, editRoles: false }));
-    setApiErrors(null);
-  };
-
-  const confirmRemoveMember = (member: GroupMember) => {
-    setSelectedMember(member);
-    setModals((prev) => ({ ...prev, delete: true }));
-  };
-
-  const closeDeleteModal = () => {
-    setSelectedMember(null);
-    setModals((prev) => ({ ...prev, delete: false }));
-  };
-
-  const handleMemberAdded = async () => {
-    closeAddMemberModal();
-    await loadMembers();
-    showSuccess("Thêm member thành công");
-  };
-
-  const handleRolesUpdated = async () => {
-    closeEditRolesModal();
-    await loadMembers();
-    showSuccess("Cập nhật roles thành công");
-  };
-
-  const removeMember = async () => {
-    if (!selectedMember) return;
-    setLoading(true);
-    try {
-      await api.delete(adminEndpoints.groups.members.remove(groupId, selectedMember.user_id));
-      showSuccess("Xóa member thành công");
-      closeDeleteModal();
-      await loadMembers();
-    } catch (error: unknown) {
-      showError("Không thể xóa member");
-    } finally {
-      setLoading(false);
-    }
+  const handleDeleteMember = (member: GroupMember) => {
+      // Mock CrudEndpoints as useCrudList expects the full object
+      const mockEndpoints = {
+          list: "",
+          create: "",
+          show: (id: string | number) => "",
+          update: (id: string | number) => "",
+          delete: (id: string | number) => adminEndpoints.groups.members.remove(groupId, id)
+      };
+      openDelete(member, mockEndpoints, "user.username");
   };
 
   return (
-    <div className="group-members">
-      <div className="flex justify-between items-center mb-6">
+    <div className="admin-group-members">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Quản lý Members</h1>
+          <h1 className="text-2xl font-bold text-gray-900 font-primary">Quản lý Thành viên</h1>
           {group && (
-            <p className="text-sm text-gray-500 mt-1">
-              Group: <span className="font-medium">{group.name}</span> ({group.code})
-            </p>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="text-sm text-gray-500">Nhóm:</span>
+              <span className="px-2 py-0.5 bg-blue-50 text-blue-700 text-xs font-bold rounded uppercase border border-blue-100">
+                {group.name}
+              </span>
+              <code className="text-xs text-gray-400 bg-gray-50 px-1 rounded">{group.code}</code>
+            </div>
           )}
         </div>
-        <button onClick={openAddMemberModal} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none">
-          Thêm member
+        <button
+          onClick={() => addMemberModal.open()}
+          className="flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700 shadow-sm"
+        >
+          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+          Thêm thành viên
         </button>
       </div>
 
-      <div className="bg-white shadow-md rounded-lg overflow-hidden">
+      <MemberFilter
+          initialFilters={filters}
+          onUpdateFilters={actions.updateFilters}
+      />
+
+      <div className="bg-white shadow-md rounded-lg overflow-hidden mt-6">
         {loading ? (
-          <SkeletonLoader type="table" rows={5} columns={5} />
+          <SkeletonLoader type="table" rows={10} columns={5} />
         ) : (
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">STT</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Roles</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thao tác</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {members.map((member, index) => (
-                <tr key={member.user_id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{index + 1}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{member.user?.username || "N/A"}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{member.user?.email || "N/A"}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex flex-wrap gap-1">
-                      {getMemberRoles(member).map((role) => (
-                        <span key={role.id} className="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                          {role.name || role.code}
-                        </span>
-                      ))}
-                      {getMemberRoles(member).length === 0 && <span className="text-xs text-gray-400">Chưa có role</span>}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => openEditRolesModal(member)}
-                        className="px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700"
-                      >
-                        Sửa roles
-                      </button>
-                      <button
-                        onClick={() => confirmRemoveMember(member)}
-                        disabled={isOwner(member)}
-                        className={`px-3 py-1 text-xs rounded ${isOwner(member)
-                          ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                          : "bg-red-600 text-white hover:bg-red-700"
-                          }`}
-                      >
-                        Xóa
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {!loading && members.length === 0 && (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
                 <tr>
-                  <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
-                    Không có members
-                  </td>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">STT</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Tên người dùng</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Email</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Vai trò</th>
+                  <th className="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Thao tác</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {items.map((member: any, index: number) => (
+                  <tr key={member.user_id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{getSerialNumber(index)}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-xs mr-3">
+                          {member.user?.username?.charAt(0).toUpperCase() || "U"}
+                        </div>
+                        <span className="text-sm font-medium text-gray-900">{member.user?.username || "N/A"}</span>
+                        {isOwner(member) && (
+                          <span className="ml-2 px-1.5 py-0.5 text-[10px] font-bold bg-amber-100 text-amber-700 rounded uppercase">Chủ nhóm</span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{member.user?.email || "N/A"}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex flex-wrap gap-1">
+                        {getMemberRoles(member).map((role: any) => (
+                          <span key={role.id} className="px-2 py-0.5 text-[11px] font-bold rounded bg-blue-100 text-blue-800 uppercase">
+                            {role.name || role.code}
+                          </span>
+                        ))}
+                        {getMemberRoles(member).length === 0 && <span className="text-xs text-gray-400 italic">Chưa có vai trò</span>}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                      <Actions
+                        item={member}
+                        showView={false}
+                        showEdit={false}
+                        showDelete={!isOwner(member)}
+                        deleteTitle="Xóa thành viên"
+                        onDelete={() => handleDeleteMember(member)}
+                        additionalActions={[
+                          {
+                            label: "Sửa vai trò",
+                            icon: "key",
+                            action: () => editRolesModal.open(member),
+                            className: "text-green-600 hover:text-green-700",
+                          },
+                        ]}
+                      />
+                    </td>
+                  </tr>
+                ))}
+                {items.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-12 text-center text-gray-500 italic">
+                      {loading ? "Đang tải dữ liệu..." : "Chưa có thành viên nào thỏa mãn bộ lọc"}
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 
-      {modals.addMember && (
+      {hasData && (
+          <div className="mt-6">
+              <Pagination
+                  currentPage={pagination.page}
+                  totalPages={pagination.totalPages}
+                  totalItems={pagination.totalItems}
+                  onPageChange={actions.changePage}
+              />
+          </div>
+      )}
+
+      {addMemberModal.isOpen && (
         <AddMemberModal
-          show={modals.addMember}
+          show={addMemberModal.isOpen}
           groupId={groupId}
-          apiErrors={apiErrors || undefined}
-          onClose={closeAddMemberModal}
+          onClose={addMemberModal.close}
           onMemberAdded={handleMemberAdded}
         />
       )}
 
-      {modals.editRoles && selectedMember && (
+      {editRolesModal.isOpen && editRolesModal.data && (
         <EditMemberRolesModal
-          show={modals.editRoles}
+          show={editRolesModal.isOpen}
           groupId={groupId}
-          member={selectedMember}
-          apiErrors={apiErrors || undefined}
-          onClose={closeEditRolesModal}
+          member={editRolesModal.data}
+          onClose={editRolesModal.close}
           onRolesUpdated={handleRolesUpdated}
         />
       )}
 
-      {modals.delete && selectedMember && (
+      {deleteModal.isOpen && deleteModal.data && (
         <ConfirmModal
-          show={modals.delete}
+          show={deleteModal.isOpen}
           title="Xác nhận xóa"
-          message={`Bạn có chắc chắn muốn xóa member ${selectedMember.user?.username || ""} khỏi group?`}
-          onClose={closeDeleteModal}
-          onConfirm={removeMember}
+          message={`Bạn có chắc chắn muốn xóa thành viên "${deleteModal.data.displayName || ""}" khỏi nhóm?`}
+          onClose={deleteModal.close}
+          onConfirm={handleDeleteConfirm}
+          confirmText="Xác nhận xóa"
         />
       )}
     </div>
