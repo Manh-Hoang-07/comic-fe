@@ -14,14 +14,9 @@ import BannersFilter from "./BannersFilter";
 import CreateBanner from "./CreateBanner";
 import EditBanner from "./EditBanner";
 import { BASIC_STATUS, BASIC_STATUS_BADGES, getStatusBadge } from "@/config/constants/status";
+import { formatDateTime as formatDate } from "@/utils/formatters";
 
 const endpoints = adminEndpoints.banners;
-
-const formatDate = (dateStr?: string): string => {
-  if (!dateStr) return "—";
-  const date = new Date(dateStr);
-  return isNaN(date.getTime()) ? "—" : date.toLocaleDateString("vi-VN", { year: "numeric", month: "short", day: "numeric" });
-};
 
 const getImageUrl = (path: string | null): string | null => {
   if (!path) return null;

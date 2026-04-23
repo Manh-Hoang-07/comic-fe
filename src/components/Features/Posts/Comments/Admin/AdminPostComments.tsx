@@ -13,19 +13,9 @@ import PostCommentsFilter from "./PostCommentsFilter";
 import { PostComment } from "@/types/api";
 import { User, MessageSquare, CornerDownRight, FileText } from "lucide-react";
 import Modal from "@/components/UI/Feedback/Modal";
+import { formatDateTime as formatDate } from "@/utils/formatters";
 
 const endpoints = adminEndpoints.postComments;
-
-const formatDate = (dateString?: string): string => {
-    if (!dateString) return "—";
-    return new Date(dateString).toLocaleString("vi-VN", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-    });
-};
 
 interface AdminPostCommentsProps {
     title?: string;

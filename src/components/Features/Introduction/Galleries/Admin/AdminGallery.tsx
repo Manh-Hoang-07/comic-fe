@@ -11,14 +11,9 @@ import GalleryFilter from "./GalleryFilter";
 import CreateGallery from "./CreateGallery";
 import EditGallery from "./EditGallery";
 import { BASIC_STATUS_BADGES, getStatusBadge } from "@/config/constants/status";
+import { formatDateTime as formatDate } from "@/utils/formatters";
 
 const endpoints = adminEndpoints.gallery;
-
-const formatDate = (dateStr?: string): string => {
-  if (!dateStr) return "-";
-  const date = new Date(dateStr);
-  return isNaN(date.getTime()) ? "-" : date.toLocaleDateString("vi-VN");
-};
 
 interface Gallery {
   id: number;

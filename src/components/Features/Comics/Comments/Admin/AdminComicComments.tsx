@@ -12,19 +12,9 @@ import { Comment } from "@/types/comic";
 import Image from "next/image";
 import { User, MessageSquare, CornerDownRight, BookOpen, Layers } from "lucide-react";
 import api from "@/lib/api/client";
+import { formatDateTime as formatDate } from "@/utils/formatters";
 
 const endpoints = adminEndpoints.comicComments;
-
-const formatDate = (dateString?: string): string => {
-    if (!dateString) return "—";
-    return new Date(dateString).toLocaleString("vi-VN", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-    });
-};
 
 export default function AdminComicComments() {
     const {

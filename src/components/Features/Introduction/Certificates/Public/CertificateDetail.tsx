@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/UI/Navigation/Button";
+import { formatDateTime as formatDate } from "@/utils/formatters";
 
 export interface Certificate {
     id: number;
@@ -21,15 +22,6 @@ interface CertificateDetailProps {
     cert: Certificate;
 }
 
-// Helper to format date safely
-const formatDate = (date: string | object | null | undefined) => {
-    if (!date || typeof date === 'object') return null;
-    try {
-        return new Date(date).toLocaleDateString('vi-VN');
-    } catch (e) {
-        return null;
-    }
-};
 
 const getDateObject = (date: string | object | null | undefined) => {
     if (!date || typeof date === 'object') return null;

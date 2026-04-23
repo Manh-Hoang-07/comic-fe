@@ -13,7 +13,7 @@ import EditChapter from "./EditChapter";
 import PageManager from "./PageManager";
 import { AdminChapter } from "@/types/comic";
 import { useSearchParams } from "next/navigation";
-import { formatDateTime } from "@/utils/formatters";
+import { formatDateTime, formatNumber } from "@/utils/formatters";
 import Link from "next/link";
 import { adminComicService } from "@/lib/api/admin/comic";
 import { useState, useEffect } from "react";
@@ -152,7 +152,7 @@ export default function AdminChapters() {
                                             </span>
                                         </td>
                                         <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
-                                            {chapter.view_count?.toLocaleString() || 0}
+                                            {formatNumber(chapter.view_count)}
                                         </td>
                                         <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-400">
                                             {formatDateTime(chapter.created_at)}

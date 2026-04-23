@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useComicStats } from "@/hooks/data/admin/useComicStats";
 import { StatCard } from "./StatCard";
+import { formatNumber } from "@/utils/formatters";
 import PageMeta from "@/components/UI/Navigation/PageMeta";
 import SkeletonLoader from "@/components/UI/Feedback/SkeletonLoader";
 import DateRangeFilter from "@/components/UI/Filters/DateRangeFilter";
@@ -156,8 +157,8 @@ export default function ComicStats() {
                                     </div>
                                     <div className="text-right">
                                         <p className="text-sm font-bold text-blue-600">
-                                            {topFilter.sortBy === 'views' ? item.stats.view_count.toLocaleString() :
-                                                topFilter.sortBy === 'follows' ? item.stats.follow_count.toLocaleString() :
+                                            {topFilter.sortBy === 'views' ? formatNumber(item.stats.view_count) :
+                                                topFilter.sortBy === 'follows' ? formatNumber(item.stats.follow_count) :
                                                     (item.stats.rating_sum / (item.stats.rating_count || 1)).toFixed(1)}
                                         </p>
                                         <p className="text-[10px] uppercase text-gray-400 font-medium">

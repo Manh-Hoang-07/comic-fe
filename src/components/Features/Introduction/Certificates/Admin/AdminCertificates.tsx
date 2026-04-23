@@ -11,6 +11,7 @@ import CertificatesFilter from "./CertificatesFilter";
 import CreateCertificate from "./CreateCertificate";
 import EditCertificate from "./EditCertificate";
 import { BASIC_STATUS_BADGES, getStatusBadge } from "@/config/constants/status";
+import { formatDateTime as formatDate } from "@/utils/formatters";
 
 const endpoints = adminEndpoints.certificates;
 
@@ -24,12 +25,6 @@ const getCertificateTypeLabel = (value: string): string => {
     other: "Khác",
   };
   return labels[value] || value;
-};
-
-const formatDate = (dateStr?: string): string => {
-  if (!dateStr) return "-";
-  const date = new Date(dateStr);
-  return isNaN(date.getTime()) ? "-" : date.toLocaleString("vi-VN");
 };
 
 interface Certificate {

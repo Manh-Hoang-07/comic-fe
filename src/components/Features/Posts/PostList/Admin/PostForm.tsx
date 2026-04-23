@@ -17,6 +17,7 @@ import SearchableSelect from "@/components/UI/Forms/SearchableSelect";
 import MultipleSelect from "@/components/UI/Forms/MultipleSelect";
 import { adminEndpoints } from "@/lib/api/endpoints";
 import api from "@/lib/api/client";
+import { formatDate } from "@/utils/formatters";
 
 interface PostFormProps {
   show: boolean;
@@ -31,12 +32,6 @@ interface PostFormProps {
   onCancel?: () => void;
 }
 
-const formatDateTimeForInput = (dateString?: string): string => {
-  if (!dateString) return "";
-  const date = new Date(dateString);
-  if (isNaN(date.getTime())) return "";
-  return date.toISOString().slice(0, 16);
-};
 
 export default function PostForm({
   show,
@@ -141,7 +136,7 @@ export default function PostForm({
           video_url: (post.video_url as string) || "",
           audio_url: (post.audio_url as string) || "",
           status: (post.status as string) || "draft",
-          published_at: post.published_at ? formatDateTimeForInput(post.published_at as string) : "",
+          published_at: post.published_at ? formatDate(post.published_at as string, "yyyy-MM-dd") : "",
           primary_postcategory_id: post.primary_postcategory_id as number | undefined,
           category_ids: (post.categories as { id: number | string }[] | undefined)?.map((c) => c.id as number) || [],
           tag_ids: (post.tags as { id: number | string }[] | undefined)?.map((t) => t.id as number) || [],

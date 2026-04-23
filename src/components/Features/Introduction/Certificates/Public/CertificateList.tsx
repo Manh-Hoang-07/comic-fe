@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/UI/Navigation/Button";
+import { formatDateTime as formatDate } from "@/utils/formatters";
 
 interface Certificate {
     id: number;
@@ -29,14 +30,6 @@ const getDateTime = (dateString: string | object | null | undefined): number => 
     return new Date(dateString).getTime();
 };
 
-const formatDate = (date: string | object | null | undefined) => {
-    if (!date || typeof date === 'object') return "";
-    try {
-        return new Date(date).toLocaleDateString('vi-VN');
-    } catch (e) {
-        return "";
-    }
-};
 
 export function CertificateList({ initialCertificates }: CertificateListProps) {
     const [certificates] = useState<Certificate[]>(initialCertificates);

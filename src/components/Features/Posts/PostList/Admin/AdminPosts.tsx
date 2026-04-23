@@ -11,17 +11,9 @@ import Pagination from "@/components/UI/DataDisplay/Pagination";
 import PostsFilter from "./PostsFilter";
 import CreatePost from "./CreatePost";
 import EditPost from "./EditPost";
+import { formatDate } from "@/utils/formatters";
 
 const endpoints = adminEndpoints.posts;
-
-const formatDate = (dateString?: string): string => {
-  if (!dateString) return "—";
-  return new Date(dateString).toLocaleDateString("vi-VN", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-};
 
 const getCategoryNames = (categories?: Array<{ id: number; name: string }>): string => {
   if (!categories || !Array.isArray(categories) || categories.length === 0) {

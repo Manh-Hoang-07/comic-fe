@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Modal from '@/components/UI/Feedback/Modal';
+import { formatDate } from "@/utils/formatters";
 
 interface User {
   id: number;
@@ -25,11 +26,6 @@ export default function UserCard({ user, onEdit, onDelete }: UserCardProps) {
     .join("")
     .toUpperCase()
     .slice(0, 2);
-
-  const formatDate = (dateString?: string): string => {
-    if (!dateString) return "N/A";
-    return new Date(dateString).toLocaleDateString("vi-VN");
-  };
 
   return (
     <>

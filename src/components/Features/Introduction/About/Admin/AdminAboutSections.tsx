@@ -10,6 +10,7 @@ import AboutSectionsFilter from "./AboutSectionsFilter";
 import CreateAboutSection from "./CreateAboutSection";
 import EditAboutSection from "./EditAboutSection";
 import { BASIC_STATUS_BADGES, getStatusBadge } from "@/config/constants/status";
+import { formatDateTime as formatDate } from "@/utils/formatters";
 
 const endpoints = adminEndpoints.aboutSections;
 
@@ -25,12 +26,6 @@ const getAboutSectionTypeLabel = (value: string): string => {
     other: "Khác",
   };
   return labels[value] || value;
-};
-
-const formatDate = (dateStr?: string): string => {
-  if (!dateStr) return "-";
-  const date = new Date(dateStr);
-  return isNaN(date.getTime()) ? "-" : date.toLocaleString("vi-VN");
 };
 
 interface AboutSection {

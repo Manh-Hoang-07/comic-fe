@@ -22,6 +22,7 @@ import { Line, Doughnut } from 'react-chartjs-2';
 import Link from 'next/link';
 import { BarChart3, TrendingUp, Eye, MessageSquare, FileText, Clock } from 'lucide-react';
 import SkeletonLoader from '@/components/UI/Feedback/SkeletonLoader';
+import { formatNumber } from '@/utils/formatters';
 
 ChartJS.register(
     CategoryScale,
@@ -234,7 +235,7 @@ export default function AdminPostStatistics() {
                     <div className="flex items-center justify-between">
                         <div>
                             <p className="text-sm text-gray-600 mb-1">Tổng số bài viết</p>
-                            <p className="text-2xl font-bold text-gray-900">{overview.total_posts.toLocaleString()}</p>
+                            <p className="text-2xl font-bold text-gray-900">{formatNumber(overview.total_posts)}</p>
                         </div>
                         <FileText className="text-blue-500" size={32} />
                     </div>
@@ -244,7 +245,7 @@ export default function AdminPostStatistics() {
                     <div className="flex items-center justify-between">
                         <div>
                             <p className="text-sm text-gray-600 mb-1">Đã xuất bản</p>
-                            <p className="text-2xl font-bold text-gray-900">{overview.published_posts.toLocaleString()}</p>
+                            <p className="text-2xl font-bold text-gray-900">{formatNumber(overview.published_posts)}</p>
                         </div>
                         <TrendingUp className="text-green-500" size={32} />
                     </div>
@@ -254,7 +255,7 @@ export default function AdminPostStatistics() {
                     <div className="flex items-center justify-between">
                         <div>
                             <p className="text-sm text-gray-600 mb-1">Bản nháp</p>
-                            <p className="text-2xl font-bold text-gray-900">{overview.draft_posts.toLocaleString()}</p>
+                            <p className="text-2xl font-bold text-gray-900">{formatNumber(overview.draft_posts)}</p>
                         </div>
                         <FileText className="text-yellow-500" size={32} />
                     </div>
@@ -264,7 +265,7 @@ export default function AdminPostStatistics() {
                     <div className="flex items-center justify-between">
                         <div>
                             <p className="text-sm text-gray-600 mb-1">Đã lên lịch</p>
-                            <p className="text-2xl font-bold text-gray-900">{overview.scheduled_posts.toLocaleString()}</p>
+                            <p className="text-2xl font-bold text-gray-900">{formatNumber(overview.scheduled_posts)}</p>
                         </div>
                         <Clock className="text-cyan-500" size={32} />
                     </div>
@@ -274,7 +275,7 @@ export default function AdminPostStatistics() {
                     <div className="flex items-center justify-between">
                         <div>
                             <p className="text-sm text-gray-600 mb-1">Tổng bình luận</p>
-                            <p className="text-2xl font-bold text-gray-900">{overview.total_comments.toLocaleString()}</p>
+                            <p className="text-2xl font-bold text-gray-900">{formatNumber(overview.total_comments)}</p>
                         </div>
                         <MessageSquare className="text-purple-500" size={32} />
                     </div>
@@ -284,7 +285,7 @@ export default function AdminPostStatistics() {
                     <div className="flex items-center justify-between">
                         <div>
                             <p className="text-sm text-gray-600 mb-1">Chờ duyệt</p>
-                            <p className="text-2xl font-bold text-gray-900">{overview.pending_comments.toLocaleString()}</p>
+                            <p className="text-2xl font-bold text-gray-900">{formatNumber(overview.pending_comments)}</p>
                         </div>
                         <Clock className="text-red-500" size={32} />
                     </div>
@@ -294,7 +295,7 @@ export default function AdminPostStatistics() {
                     <div className="flex items-center justify-between text-white">
                         <div>
                             <p className="text-sm text-blue-100 mb-1">Lượt xem (30 ngày)</p>
-                            <p className="text-3xl font-bold">{overview.total_views_last_30_days.toLocaleString()}</p>
+                            <p className="text-3xl font-bold">{formatNumber(overview.total_views_last_30_days)}</p>
                         </div>
                         <Eye className="text-white" size={40} />
                     </div>
@@ -356,7 +357,7 @@ export default function AdminPostStatistics() {
                             </div>
                             <div className="flex-shrink-0 text-right">
                                 <p className="text-xl font-bold text-blue-600">
-                                    {parseInt(post.view_count).toLocaleString()}
+                                    {formatNumber(parseInt(post.view_count))}
                                 </p>
                                 <p className="text-xs text-gray-500">lượt xem</p>
                             </div>
@@ -438,18 +439,17 @@ export default function AdminPostStatistics() {
                                     <div>
                                         <span className="text-sm text-gray-600">Tổng lượt xem:</span>
                                         <span className="ml-2 text-xl font-bold text-blue-600">
-                                            {postStats
-                                                .reduce((sum, stat) => sum + stat.view_count, 0)
-                                                .toLocaleString()}
+                                            {formatNumber(postStats
+                                                .reduce((sum, stat) => sum + stat.view_count, 0))}
                                         </span>
                                     </div>
                                     <div>
                                         <span className="text-sm text-gray-600">Trung bình/ngày:</span>
                                         <span className="ml-2 text-xl font-bold text-blue-600">
-                                            {Math.round(
+                                            {formatNumber(Math.round(
                                                 postStats.reduce((sum, stat) => sum + stat.view_count, 0) /
                                                 postStats.length
-                                            ).toLocaleString()}
+                                            ))}
                                         </span>
                                     </div>
                                 </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { formatNumber } from "@/utils/formatters";
 
 interface StatCardProps {
     title: string;
@@ -35,7 +36,7 @@ export function StatCard({ title, value, icon, color, loading }: StatCardProps) 
                 </div>
                 <div>
                     <p className="text-sm font-medium text-gray-500 uppercase tracking-wider">{title}</p>
-                    <p className="text-2xl font-bold text-gray-900">{value.toLocaleString()}</p>
+                    <p className="text-2xl font-bold text-gray-900">{formatNumber(value)}</p>
                 </div>
             </div>
         </div>

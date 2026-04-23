@@ -11,14 +11,9 @@ import CreateProject from "./CreateProject";
 import EditProject from "./EditProject";
 import { getStatusBadge } from "@/config/constants/status";
 import { PROJECT_STATUS, PROJECT_STATUS_BADGES } from "@/components/Features/Introduction/Projects/constants";
+import { formatDateTime as formatDate } from "@/utils/formatters";
 
 const endpoints = adminEndpoints.projects;
-
-const formatDate = (dateStr?: string): string => {
-  if (!dateStr) return "-";
-  const date = new Date(dateStr);
-  return isNaN(date.getTime()) ? "-" : date.toLocaleDateString("vi-VN");
-};
 
 interface Project {
   id: number;

@@ -11,14 +11,9 @@ import CreateTestimonial from "./CreateTestimonial";
 import EditTestimonial from "./EditTestimonial";
 import { BASIC_STATUS_BADGES, getStatusBadge } from "@/config/constants/status";
 import Modal from "@/components/UI/Feedback/Modal";
+import { formatDateTime as formatDate } from "@/utils/formatters";
 
 const endpoints = adminEndpoints.testimonials;
-
-const formatDate = (dateStr?: string): string => {
-  if (!dateStr) return "-";
-  const date = new Date(dateStr);
-  return isNaN(date.getTime()) ? "-" : date.toLocaleDateString("vi-VN");
-};
 
 interface Testimonial {
   id: number;

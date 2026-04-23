@@ -10,14 +10,9 @@ import FAQsFilter from "./FAQsFilter";
 import CreateFAQ from "./CreateFAQ";
 import EditFAQ from "./EditFAQ";
 import { BASIC_STATUS_BADGES, getStatusBadge } from "@/config/constants/status";
+import { formatDateTime as formatDate } from "@/utils/formatters";
 
 const endpoints = adminEndpoints.faqs;
-
-const formatDate = (dateStr?: string): string => {
-  if (!dateStr) return "-";
-  const date = new Date(dateStr);
-  return isNaN(date.getTime()) ? "-" : date.toLocaleString("vi-VN");
-};
 
 interface FAQ {
   id: number;
