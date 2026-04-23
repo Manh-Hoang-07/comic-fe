@@ -13,6 +13,7 @@ export const ComicCard = memo<ComicCardProps>(function ComicCard({ comic, priori
     return (
         <Link
             href={`/comics/${comic.slug}`}
+            prefetch={false}
             className="group relative flex h-full flex-col overflow-hidden rounded-xl bg-white shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-1px_rgba(0,0,0,0.06)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_10px_10px_-5px_rgba(0,0,0,0.04)]"
         >
             <div className="relative aspect-[2/3] overflow-hidden">

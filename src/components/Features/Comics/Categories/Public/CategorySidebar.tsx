@@ -17,6 +17,7 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({ categories }) 
                     <Link
                         key={category.id}
                         href={`/comics?comic_category_id=${category.id}`}
+                        prefetch={false}
                         className="mb-1 block rounded-lg px-3 py-2 text-sm font-medium text-[#4b4b4b] transition-all hover:translate-x-1 hover:bg-red-500 hover:text-white"
                     >
                         {category.name}

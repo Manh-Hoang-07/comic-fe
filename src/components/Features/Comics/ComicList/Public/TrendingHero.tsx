@@ -29,7 +29,7 @@ export const TrendingHero: React.FC<TrendingHeroProps> = ({ comics }) => {
         return (
             <section className="relative w-full mb-10 group/hero">
                 <div className="w-full h-[320px] md:h-[360px] lg:h-[380px] rounded-xl overflow-hidden shadow-xl bg-white border border-gray-100">
-                    <Link href={`/comics/${firstComic.slug}`} className="block w-full h-full">
+                    <Link href={`/comics/${firstComic.slug}`} prefetch={false} className="block w-full h-full">
                         <div className="absolute inset-0 w-full h-full overflow-hidden">
                             <div className="absolute inset-0 w-full h-full">
                                 <Image

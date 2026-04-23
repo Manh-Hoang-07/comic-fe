@@ -46,7 +46,7 @@ export default function TrendingHeroSwiper({ comics }: TrendingHeroSwiperProps) 
             >
                 {comics.map((comic, index) => (
                     <SwiperSlide key={comic.id} className="relative w-full h-full group/slide cursor-pointer">
-                        <Link href={`/comics/${comic.slug}`} className="block w-full h-full">
+                        <Link href={`/comics/${comic.slug}`} prefetch={false} className="block w-full h-full">
                             <div className="absolute inset-0 w-full h-full overflow-hidden">
                                 <div className="absolute inset-0 w-full h-full">
                                     <Image

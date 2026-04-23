@@ -18,7 +18,7 @@ function ComicSectionInner({ title, comics, viewAllLink, className = "" }: Comic
             <div className="mb-6 flex items-center justify-between border-l-4 border-red-500 pl-4">
                 <h2 className="text-2xl font-extrabold uppercase tracking-wide text-gray-800">{title}</h2>
                 {viewAllLink && (
-                    <Link href={viewAllLink} className="text-sm font-semibold text-red-500 transition-colors hover:text-red-600">
+                    <Link href={viewAllLink} prefetch={false} className="text-sm font-semibold text-red-500 transition-colors hover:text-red-600">
                         Xem tất cả
                     </Link>
                 )}
