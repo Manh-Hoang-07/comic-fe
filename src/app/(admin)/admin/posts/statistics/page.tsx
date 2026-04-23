@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import dynamic from 'next/dynamic';
+import PageMeta from "@/components/UI/Navigation/PageMeta";
 
 const AdminPostStatistics = dynamic(
     () => import('@/components/Features/Posts/PostList/Admin/AdminPostStatistics'),
@@ -22,7 +23,19 @@ export const metadata: Metadata = {
 };
 
 export default function AdminPostStatisticsPage() {
-    return <AdminPostStatistics />;
+    return (
+        <>
+            <PageMeta
+                title="Thống kê bài viết"
+                breadcrumbs={[
+                    { label: "Trang quản trị", href: "/admin" },
+                    { label: "Bài viết" },
+                    { label: "Thống kê" },
+                ]}
+            />
+            <AdminPostStatistics />
+        </>
+    );
 }
 
 

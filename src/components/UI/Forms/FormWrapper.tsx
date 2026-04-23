@@ -44,12 +44,14 @@ export default function FormWrapper({
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // initialData ghi đè lên defaultValues (data từ server ưu tiên hơn)
+  // Dùng JSON.stringify để so sánh theo value, tránh infinite loop khi parent re-render tạo object reference mới
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const overrides = { ...defaultValues, ...initialData };
     if (Object.keys(overrides).length > 0) {
       setForm((prev) => ({ ...prev, ...overrides }));
     }
-  }, [initialData, defaultValues]);
+  }, [JSON.stringify(initialData), JSON.stringify(defaultValues)]);
 
   const displayErrors = { ...errors, ...apiErrors };
 

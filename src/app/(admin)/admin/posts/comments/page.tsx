@@ -1,4 +1,5 @@
 import AdminPostComments from "@/components/Features/Posts/Comments/Admin/AdminPostComments";
+import PageMeta from "@/components/UI/Navigation/PageMeta";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -9,6 +10,14 @@ export const metadata: Metadata = {
 export default function AdminPostCommentsPage() {
     return (
         <div className="p-4 md:p-6 lg:p-8">
+            <PageMeta
+                title="Bình luận bài viết"
+                breadcrumbs={[
+                    { label: "Trang quản trị", href: "/admin" },
+                    { label: "Bài viết" },
+                    { label: "Bình luận" },
+                ]}
+            />
             <AdminPostComments />
         </div>
     );

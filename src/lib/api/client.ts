@@ -97,9 +97,14 @@ apiClient.interceptors.response.use(
       const status = error.response.status;
 
       // Handle 401 Unauthorized: Token hết hạn → logout
+      // Chỉ redirect khi đang ở trang protected (admin/user), không redirect ở public page
+      // vì background auth-check (fetchUserInfo) tự xử lý 401 trong catch block của nó
       if (status === 401 && typeof window !== "undefined") {
+        const path = window.location.pathname;
+        const isProtectedPage = path.startsWith("/admin") || path.startsWith("/user");
         const alreadyHandled = sessionStorage.getItem("auth_redirect");
-        if (!alreadyHandled && window.location.pathname !== "/login") {
+
+        if (isProtectedPage && !alreadyHandled && path !== "/login") {
           sessionStorage.setItem("auth_redirect", "1");
 
           // Xóa token và group_id

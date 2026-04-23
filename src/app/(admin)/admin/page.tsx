@@ -1,8 +1,17 @@
+import PageMeta from "@/components/UI/Navigation/PageMeta";
+
 export const dynamic = "force-dynamic";
 
 export default function AdminPage() {
   return (
     <div className="container mx-auto p-4">
+      <PageMeta
+        title="Tổng quan"
+        breadcrumbs={[
+          { label: "Trang quản trị", href: "/admin" },
+          { label: "Tổng quan" },
+        ]}
+      />
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
         <p className="text-gray-600">Tổng quan về hoạt động của hệ thống</p>

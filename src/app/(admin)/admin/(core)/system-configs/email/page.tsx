@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import SystemConfigForm from "@/components/Features/Core/SystemConfig/Admin/SystemConfigForm";
+import PageMeta from "@/components/UI/Navigation/PageMeta";
 
 interface ConfigField {
   key: string;
@@ -28,6 +29,14 @@ export default function AdminSystemConfigEmailPage() {
 
   return (
     <div className="w-full p-4">
+      <PageMeta
+        title="Cấu hình Email"
+        breadcrumbs={[
+          { label: "Trang quản trị", href: "/admin" },
+          { label: "Cấu hình hệ thống" },
+          { label: "Email" },
+        ]}
+      />
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Cấu hình Email</h1>
         <p className="text-gray-500 mt-2">Cấu hình SMTP để gửi email thông báo từ hệ thống</p>
