@@ -190,9 +190,9 @@ export function CertificateList({ initialCertificates }: CertificateListProps) {
                                 <p className="text-gray-600 mb-4 line-clamp-2">{certificate.description}</p>
                                 <div className="mb-4">
                                     <p className="text-sm text-gray-500 mb-1">Cấp bởi: {certificate.issued_by}</p>
-                                    <p className="text-sm text-gray-500">Ngày cấp: {formatDate(certificate.issued_date) || "N/A"}</p>
-                                    {formatDate(certificate.expiry_date) && (
-                                        <p className="text-sm text-gray-500">Ngày hết hạn: {formatDate(certificate.expiry_date)}</p>
+                                    <p className="text-sm text-gray-500">Ngày cấp: {formatDate(certificate.issued_date as string | null) || "N/A"}</p>
+                                    {formatDate(certificate.expiry_date as string | null) && (
+                                        <p className="text-sm text-gray-500">Ngày hết hạn: {formatDate(certificate.expiry_date as string | null)}</p>
                                     )}
                                 </div>
                                 <div className="flex flex-wrap gap-2 mb-4">

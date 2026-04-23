@@ -29,8 +29,8 @@ const getDateObject = (date: string | object | null | undefined) => {
 }
 
 export default function CertificateDetail({ cert }: CertificateDetailProps) {
-    const issuedDate = formatDate(cert.issued_date);
-    const expiryDate = formatDate(cert.expiry_date);
+    const issuedDate = formatDate(cert.issued_date as string | null);
+    const expiryDate = formatDate(cert.expiry_date as string | null);
 
     const end = getDateObject(cert.expiry_date);
     const isExpired = end ? end.getTime() < Date.now() : false;

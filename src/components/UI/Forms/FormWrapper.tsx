@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, ReactNode } from "react";
+import { useState, useEffect, useRef, ReactNode } from "react";
 
 export interface FormChildProps {
   form: Record<string, unknown>;
@@ -44,14 +44,17 @@ export default function FormWrapper({
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // initialData ghi đè lên defaultValues (data từ server ưu tiên hơn)
-  // Dùng JSON.stringify để so sánh theo value, tránh infinite loop khi parent re-render tạo object reference mới
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // Dùng ref để so sánh theo value, tránh infinite loop khi parent re-render tạo object reference mới
+  const prevKeyRef = useRef('');
   useEffect(() => {
+    const key = JSON.stringify(initialData) + JSON.stringify(defaultValues);
+    if (key === prevKeyRef.current) return;
+    prevKeyRef.current = key;
     const overrides = { ...defaultValues, ...initialData };
     if (Object.keys(overrides).length > 0) {
       setForm((prev) => ({ ...prev, ...overrides }));
     }
-  }, [JSON.stringify(initialData), JSON.stringify(defaultValues)]);
+  }, [initialData, defaultValues]);
 
   const displayErrors = { ...errors, ...apiErrors };
 
