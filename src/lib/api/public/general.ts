@@ -34,7 +34,7 @@ import { cache } from "react";
  */
 export const getSystemConfig = cache(async (group: string = "general") => {
     const { data } = await serverFetch<SystemConfig>(publicEndpoints.systemConfigs.getByGroup(group), {
-        revalidate: 600, // Cache 10 phút
+        revalidate: 3600, // Cache 1 giờ (thay vì 10p, config hiếm khi đổi)
         tags: ["system-config", `system-config-${group}`],
         skipCookies: true
     });

@@ -6,6 +6,34 @@ import FloatingContactChannels from "@/components/Layouts/Public/contact-channel
 import { BackToTop } from "@/components/UI/Navigation/BackToTop";
 import ErrorBoundary from "@/components/UI/Feedback/ErrorBoundary";
 import { ReadingPageGuard } from "@/components/Layouts/Public/ReadingPageGuard";
+import { env } from "@/config/env";
+import type { Metadata } from "next";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const systemConfig = await getSystemConfig("general");
+  const siteName = systemConfig?.site_name || env.siteName;
+  const siteDescription = systemConfig?.site_description || env.siteDescription;
+  const favicon = systemConfig?.site_favicon;
+
+  return {
+    title: {
+      default: siteName,
+      template: `%s | ${siteName}`,
+    },
+    description: siteDescription,
+    keywords: systemConfig?.meta_keywords || "",
+    icons: {
+      icon: favicon || "/favicon.ico",
+      shortcut: favicon || "/favicon.ico",
+      apple: favicon || "/favicon.ico",
+    },
+    openGraph: {
+      title: systemConfig?.og_title || siteName,
+      description: systemConfig?.og_description || siteDescription,
+      images: systemConfig?.og_image ? [{ url: systemConfig.og_image }] : [],
+    },
+  };
+}
 
 // Async Server Component — fetch header data
 async function AsyncHeader() {
